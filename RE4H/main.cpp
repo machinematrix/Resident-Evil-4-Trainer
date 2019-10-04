@@ -1,0 +1,521 @@
+#include <Windows.h>
+#include <CommCtrl.h>
+
+#include <vector>
+#include <tuple>
+#include "Handlers.h"
+#include "Utility.h"
+#include "Features.h"
+#include "InventoryListView.h"
+#include "KeyBindingsConfig.h"
+#include "resource.h"
+
+#pragma comment(linker,"\"/manifestdependency:type='win32' \
+name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
+DWORD WINAPI ThreadProc(LPVOID);
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
+{
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH: {
+		if (HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, hModule, 0, nullptr)) {
+			CloseHandle(hThread);
+		}
+		else ErrorBox(nullptr, TEXT("Could not create thread"));
+		break;
+	}
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+
+	return TRUE;
+}
+
+DWORD WINAPI ThreadProc(LPVOID lpParameter)
+{
+	using std::cout;
+	using std::endl;
+	const TCHAR *windowClass = TEXT("MainWnd"), *title = TEXT("RE4H");
+	const int horSize = 640, verSize = 540;
+	WNDCLASSEXW wcex;
+	MSG msg;
+
+#ifndef NDEBUG
+	AllocConsole();
+	RedirectSTDIO();
+#endif
+
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = (HINSTANCE)lpParameter;
+	wcex.hIcon = 0;
+	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+	wcex.lpszMenuName = NULL;
+	wcex.lpszClassName = windowClass;
+	wcex.hIconSm = 0;
+	RegisterClassEx(&wcex); //Register main window
+
+	HMENU hMenu = CreateMenu(), hMenuPopup = CreateMenu();
+
+	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::KeyBindings, TEXT("Key bindings"));
+	AppendMenu(hMenuPopup, MF_SEPARATOR, 0, nullptr);
+	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::Exit, TEXT("Exit"));
+	AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hMenuPopup, TEXT("File"));
+
+	if (HWND hWnd = CreateWindowW(windowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, horSize, verSize, nullptr, hMenu, (HINSTANCE)lpParameter, nullptr)) {
+		ShowWindow(hWnd, SW_SHOW);
+		UpdateWindow(hWnd);
+	}
+	else FreeLibraryAndExitThread((HMODULE)lpParameter, FALSE);
+
+	while (GetMessage(&msg, nullptr, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	
+	UnregisterClass(windowClass, (HMODULE)lpParameter);
+#ifndef NDEBUG
+	FreeConsole();
+#endif
+	FreeLibraryAndExitThread((HMODULE)lpParameter, (DWORD)msg.wParam);
+}
+
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static MainWindowInfo wndInfo;
+
+	switch (message)
+	{
+	case WM_CREATE: {
+		onWmCreate(hWnd, wParam, lParam, wndInfo);
+		break;
+	}
+
+	case WM_SIZE: {
+		onWmSize(hWnd, wParam, lParam, wndInfo);
+		break;
+	}
+
+	case WM_TIMER: {
+		onWmTimer(hWnd, wParam, lParam, wndInfo);
+		break;
+	}
+
+	case WM_COMMAND: {
+		onWmCommand(hWnd, wParam, lParam, wndInfo);
+		break;
+	}
+
+	case WM_NOTIFY: {
+		onWmNotify(hWnd, wParam, lParam, wndInfo);
+		break;
+	}
+
+	case WM_KEYDOWN: {
+		onWmKeydown(hWnd, wParam, lParam, wndInfo);
+		break;
+	}
+
+	case WM_DESTROY:
+		onWmDestroy(hWnd, wParam, lParam, wndInfo);
+		break;
+
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static Game *game;
+	static HWND itemCombo, amountEdit;
+	static int itemComboIdentifier;
+
+	switch (message)
+	{
+	case WM_INITDIALOG: {
+		game = (Game *)lParam;
+		itemCombo = GetDlgItem(hDlg, ItemMaxAmountCombo);
+		amountEdit = GetDlgItem(hDlg, ItemMaxAmountEdit);
+		itemComboIdentifier = GetDlgCtrlID(itemCombo);
+
+		for (const auto &name : game->getItemNames()) {
+			SendMessage(itemCombo, CB_ADDSTRING, 0, (LPARAM)name.c_str());
+		}
+
+		break;
+	}
+
+	case WM_COMMAND: {
+		switch (LOWORD(wParam))
+		{
+		case IDOK: {
+			std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
+			String strAmount = GetControlText(amountEdit);
+			std::uint32_t amount;
+
+			if (id == CB_ERR) {
+				ErrorBox(hDlg, TEXT("Select an item first"));
+				break;
+			}
+
+			try {
+				amount = std::stoul(strAmount);
+			}
+			catch (const std::invalid_argument &) {
+				ErrorBox(hDlg, TEXT("Invalid amount"));
+				break;
+			}
+
+			game->setMaxItemAmount(id, amount);
+		} //fall through
+		case IDCANCEL: {
+			game = nullptr;
+			EndDialog(hDlg, 0);
+			break;
+		}
+		case ItemMaxAmountCombo: {
+			if (HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
+				if (id != CB_ERR) {
+					std::wstring strAmount = std::to_wstring(game->getItemDimensions(id).stackLimit);
+					String strAmount2(strAmount.begin(), strAmount.end());
+					SetWindowText(amountEdit, strAmount.c_str());
+				}
+			}
+			break;
+		}
+		case ItemMaxAmountEdit: {
+			if (HIWORD(wParam) == EN_CHANGE) //if text in edit control changed...
+			{
+				std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
+				if (id != CB_ERR)
+				{
+					try {
+						game->setMaxItemAmount(id, std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
+					}
+					catch (const std::invalid_argument &) {
+						ErrorBox(hDlg, TEXT("Invalid capacity"));
+						//SetWindowText(amountEdit, TEXT(""));
+					}
+				}
+			}
+			break;
+		}
+		}
+
+		break;
+	}
+	}
+	return FALSE;
+}
+
+BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static DialogInfo *info;
+	static HWND itemCombo, amountEdit, firepowerCombo, firingSpeedCombo, reloadSpeedCombo, capacityCombo, ammoEdit, posXEdit, posYEdit, rotationCombo;
+
+	switch (message)
+	{
+	case WM_INITDIALOG: {
+		info = (DialogInfo*)lParam;
+		auto item = std::get<1>(*info);
+
+		itemCombo = GetDlgItem(hDlg, ItemCombo);
+		amountEdit = GetDlgItem(hDlg, AmountEdit);
+		firepowerCombo = GetDlgItem(hDlg, FirepowerCombo);
+		firingSpeedCombo = GetDlgItem(hDlg, FiringSpeedCombo);
+		reloadSpeedCombo = GetDlgItem(hDlg, ReloadSpeedCombo);
+		capacityCombo = GetDlgItem(hDlg, CapacityCombo);
+		ammoEdit = GetDlgItem(hDlg, AmmoEdit);
+		posXEdit = GetDlgItem(hDlg, PositionXEdit);
+		posYEdit = GetDlgItem(hDlg, PositionYEdit);
+		rotationCombo = GetDlgItem(hDlg, RotationCombo);
+		
+		for (const auto &name : std::get<0>(*info)->getItemNames()) {
+			SendMessage(itemCombo, CB_ADDSTRING, 0, (LPARAM)name.c_str());
+		}
+		for (unsigned i = 0; i < 7; ++i) {
+			TCHAR str[2] = { (TCHAR)(TEXT('0') + i), 0};
+			SendMessage(firepowerCombo, CB_ADDSTRING, 0, (LPARAM)str);
+			SendMessage(firingSpeedCombo, CB_ADDSTRING, 0, (LPARAM)str);
+			SendMessage(reloadSpeedCombo, CB_ADDSTRING, 0, (LPARAM)str);
+			SendMessage(capacityCombo, CB_ADDSTRING, 0, (LPARAM)str);
+		}
+
+		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Right"));
+		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Down"));
+		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Left"));
+		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Up"));
+
+		SendMessage(itemCombo, CB_SETCURSEL, item->id, 0);
+		SetWindowText(amountEdit, std::to_wstring(item->amount).c_str());
+		SendMessage(firepowerCombo, CB_SETCURSEL, item->firePower(), 0);
+		SendMessage(firingSpeedCombo, CB_SETCURSEL, item->firingSpeed(), 0);
+		SendMessage(reloadSpeedCombo, CB_SETCURSEL, item->reloadSpeed(), 0);
+		SendMessage(capacityCombo, CB_SETCURSEL, item->capacity(), 0);
+		SetWindowText(ammoEdit, std::to_wstring(item->ammo()).c_str());
+		SetWindowText(posXEdit, std::to_wstring(item->posX).c_str());
+		SetWindowText(posYEdit, std::to_wstring(item->posY).c_str());
+		SendMessage(rotationCombo, CB_SETCURSEL, item->rotation, 0);
+		break;
+	}
+	case WM_COMMAND: {
+		int valid = 0;
+		switch (LOWORD(wParam))
+		{
+		case IDOK: {
+			Game::ItemData *targetItem = std::get<1>(*info);
+			std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
+
+			if (id == CB_ERR) { //ID
+				ErrorBox(hDlg, TEXT("Select an item"));
+				break;
+			}
+
+			try { amount = std::stoi(GetControlText(amountEdit)); } //AMOUNT
+			catch (const std::invalid_argument&) {
+				ErrorBox(hDlg, TEXT("Invalid amount"));
+				break;
+			}
+
+			if ((fp = ComboBox_GetCurSel(firepowerCombo)) == CB_ERR) { //FP
+				ErrorBox(hDlg, TEXT("Select a fire power level"));
+				break;
+			}
+			
+			if ((fs = ComboBox_GetCurSel(firingSpeedCombo)) == CB_ERR) { //FS
+				ErrorBox(hDlg, TEXT("Select a firing speed level"));
+				break;
+			}
+
+			if ((rs = ComboBox_GetCurSel(reloadSpeedCombo)) == CB_ERR) { //RS
+				ErrorBox(hDlg, TEXT("Select a reload speed level"));
+				break;
+			}
+
+			if ((ca = ComboBox_GetCurSel(capacityCombo)) == CB_ERR) { //CA
+				ErrorBox(hDlg, TEXT("Select a capacity level"));
+				break;
+			}
+
+			try { ammo = std::stoi(GetControlText(ammoEdit)); } //AMMO
+			catch (const std::invalid_argument&) {
+				ErrorBox(hDlg, TEXT("Invalid ammo amount"));
+				break;
+			}
+
+			try { x = std::stoi(GetControlText(posXEdit)); } //X
+			catch (const std::invalid_argument&) {
+				ErrorBox(hDlg, TEXT("Invalid horizontal position"));
+				break;
+			}
+
+			try { y = std::stoi(GetControlText(posYEdit)); } //Y
+			catch (const std::invalid_argument&) {
+				ErrorBox(hDlg, TEXT("Invalid vertical position"));
+				break;
+			}
+
+			if ((rotation = ComboBox_GetCurSel(rotationCombo)) == CB_ERR) { //ROTATION
+				ErrorBox(hDlg, TEXT("Select an orientation"));
+				break;
+			}
+
+			targetItem->id = id;
+			targetItem->amount = amount;
+			targetItem->firePower(fp);
+			targetItem->firingSpeed(fs);
+			targetItem->reloadSpeed(rs);
+			targetItem->capacity(ca);
+			targetItem->ammo(ammo);
+			targetItem->posX = static_cast<std::uint8_t>(x);
+			targetItem->posY = static_cast<std::uint8_t>(y);
+			targetItem->rotation = static_cast<std::uint8_t>(rotation);
+			valid = 1;
+		}
+		case IDCANCEL:
+			info = nullptr;
+			EndDialog(hDlg, valid);
+			break;
+		}
+	}
+	}
+	return FALSE;
+}
+
+BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static WeaponStatsInfo *info;
+	static HWND firePowerEdits[7], capacityEdits[7], modelEdit, ammoCombo;
+
+	switch (message)
+	{
+	case WM_INITDIALOG: {
+		info = (WeaponStatsInfo*)lParam;
+		Game *hacks = std::get<0>(*info);
+		Game::WeaponData *data = std::get<1>(*info);
+		
+		if (!data) {
+			ErrorBox(hDlg, TEXT("Null weapon data pointer"));
+			EndDialog(hDlg, 0);
+			break;
+		}
+
+		firePowerEdits[0] = GetDlgItem(hDlg, FirePowerLv1);
+		firePowerEdits[1] = GetDlgItem(hDlg, FirePowerLv2);
+		firePowerEdits[2] = GetDlgItem(hDlg, FirePowerLv3);
+		firePowerEdits[3] = GetDlgItem(hDlg, FirePowerLv4);
+		firePowerEdits[4] = GetDlgItem(hDlg, FirePowerLv5);
+		firePowerEdits[5] = GetDlgItem(hDlg, FirePowerLv6);
+		firePowerEdits[6] = GetDlgItem(hDlg, FirePowerLv7);
+		capacityEdits[0] = GetDlgItem(hDlg, CapacityLv1);
+		capacityEdits[1] = GetDlgItem(hDlg, CapacityLv2);
+		capacityEdits[2] = GetDlgItem(hDlg, CapacityLv3);
+		capacityEdits[3] = GetDlgItem(hDlg, CapacityLv4);
+		capacityEdits[4] = GetDlgItem(hDlg, CapacityLv5);
+		capacityEdits[5] = GetDlgItem(hDlg, CapacityLv6);
+		capacityEdits[6] = GetDlgItem(hDlg, CapacityLv7);
+		modelEdit = GetDlgItem(hDlg, ModelEdit);
+		ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
+
+		float *firepowerEntry = hacks->getFirepowerTableEntry(data->firepowerIndex);
+		for (size_t i = 0; i < 7; ++i) {
+			SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
+			SetWindowText(capacityEdits[i], std::to_wstring(data->capacityValues[i]).c_str());
+		}
+		SetWindowText(modelEdit, std::to_wstring(data->model).c_str());
+		for (const auto &ammoId : hacks->getAmmoItemIds())
+		{
+			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)hacks->getItemName(ammoId).c_str());
+			if (data->ammoItemId == ammoId) {
+				SendMessage(ammoCombo, CB_SETCURSEL, SendMessage(ammoCombo, CB_GETCOUNT, 0, 0) - 1, 0);
+			}
+		}
+		break;
+	}
+
+	case WM_COMMAND: {
+		switch (LOWORD(wParam))
+		{
+		case IDOK: {
+			Game *hacks = std::get<0>(*info);
+			Game::WeaponData *data = std::get<1>(*info), newData = *data;;
+			float newFirepower[7];
+
+			try {
+				for (size_t i = 0; i < 7; ++i) {
+					newFirepower[i] = std::stof(GetControlText(firePowerEdits[i]));
+					newData.capacityValues[i] = std::stoi(GetControlText(capacityEdits[i]));
+				}
+			}
+			catch (const std::invalid_argument&) {
+				ErrorBox(hDlg, TEXT("Invalid value in fire power and/or capacity"));
+				break;
+			}
+
+			try { newData.model = std::stoi(GetControlText(modelEdit)); }
+			catch (const std::invalid_argument&) {
+				ErrorBox(hDlg, TEXT("Invalid value in model"));
+				break;
+			}
+
+			try {
+				auto curSel = ComboBox_GetCurSel(ammoCombo);
+				if (curSel != CB_ERR) {
+					String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
+					SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
+					newData.ammoItemId = static_cast<std::uint8_t>(hacks->getItemId(strAmmo));
+				}
+			}
+			catch (const std::out_of_range&) {
+				ErrorBox(hDlg, TEXT("Invalid ammo type"));
+				break;
+			}
+
+			hacks->setWeaponDataPtr(data, newData, newFirepower);
+		} //fall through
+		case IDCANCEL: {
+			EndDialog(hDlg, 0);
+			break;
+		}
+		}
+		break;
+	}
+	}
+	return FALSE;
+}
+
+BOOL CALLBACK ConfigDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static Bimap<UINT, String> keys;
+	static HWND ashleyKeyCombo, noclipKeyCombo, healKeyCombo;
+	static KeyBindingsConfig bindings(TEXT(".\\bindings.ini"));
+
+	switch (message)
+	{
+	case WM_INITDIALOG: {
+		if (keys.empty())
+		{
+			for (size_t i = VK_F1; i != 0x5B /*after Z*/; i == VK_F12 ? i = 0x41 /*A*/ : ++i)
+			{
+				String keyName(50, TEXT('\0'));
+				if (auto scanCode = MapVirtualKey(i, MAPVK_VK_TO_VSC)) //If there's a mapping for this key
+				{
+					keyName.resize(GetKeyNameText(scanCode << 16, &keyName.front(), keyName.size()));
+					if (!keyName.empty()) keys.insert({ i, keyName });
+				}
+			}
+		}
+
+		noclipKeyCombo = GetDlgItem(hDlg, IDC_NOCLIP_KEY);
+		ashleyKeyCombo = GetDlgItem(hDlg, IDC_ASHLEY_KEY);
+		healKeyCombo = GetDlgItem(hDlg, IDC_HEAL_KEY);
+
+		for (const auto &key : keys) {
+			for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i) {
+				SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_ADDSTRING, 0, (LPARAM)key.second.c_str());
+			}
+		}
+
+		for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i) {
+			SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_SETCURSEL, std::distance(keys.begin(), keys.find(bindings.getBinding(i))), 0);
+		}
+
+		break;
+	}
+	case WM_COMMAND: {
+		if (LOWORD(wParam) >= IDC_NOCLIP_KEY && LOWORD(wParam) < IDC_NOCLIP_KEY + bindings.getControlCount() && HIWORD(wParam) == CBN_SELCHANGE)
+		{
+			auto curSel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+			String keyName(SendMessage((HWND)lParam, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
+
+			SendMessage((HWND)lParam, CB_GETLBTEXT, curSel, (LPARAM)&keyName.front());
+			bindings.setBinding(LOWORD(wParam) - IDC_NOCLIP_KEY, keys.getKey(keyName));
+		}
+
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+		case IDCANCEL:
+			EndDialog(hDlg, 0);
+			break;
+		}
+		break;
+	}
+	}
+	return FALSE;
+}
