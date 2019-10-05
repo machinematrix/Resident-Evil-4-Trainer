@@ -5,6 +5,7 @@
 #endif
 #include <random>
 #include <type_traits>
+#include <cstdint>
 
 namespace ItemIds {
 	enum : std::uint16_t
@@ -377,16 +378,16 @@ int __cdecl myDropRandomizer(std::uint32_t enemyId, std::uint32_t *outItemId, st
 
 		for (Game::ItemData *item = game->begInventory(), *end = game->endInventory(); item != end; ++item)
 		{
-			if (item->valid)
+			if (item->valid())
 			{
 				auto &ammoIds = Game::getAmmoItemIds();
-				Game::WeaponData *gun = game->getWeaponDataPtr(item->id);
+				Game::WeaponData *gun = game->getWeaponDataPtr(item->itemId());
 
-				if (gun && std::find(ammoIds.cbegin(), ammoIds.cend(), gun->ammoItemId) != ammoIds.end())
+				if (gun && std::find(ammoIds.cbegin(), ammoIds.cend(), gun->weaponAmmo()) != ammoIds.end())
 				{
-					candidates.push_back(gun->ammoItemId);
-					candidates.push_back(gun->ammoItemId);
-					candidates.push_back(gun->ammoItemId);
+					candidates.push_back(gun->weaponAmmo());
+					candidates.push_back(gun->weaponAmmo());
+					candidates.push_back(gun->weaponAmmo());
 				}
 			}
 		}
@@ -522,7 +523,6 @@ Game::Game()
 	SaveProcedure((decltype(SaveProcedure))patternScan("55  8B EC  56 8B 75 08  8B 46 3C  6A FF")),
 	typewriterProc(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000"))
 	//SetPanel((decltype(SetPanel))patternScan("55 8B EC  8B 45 0C  8B 4D 10  8B 55 14  53  56  8B 75 08"))
-	//srcSchedulerCpp(patternScan("68 AF000000  68 ????????  6A 01"))
 {
 #ifndef NDEBUG
 	using std::cout;
@@ -585,7 +585,6 @@ bool Game::good()
 		&& refreshDoorsHookLocation
 		&& dropRandomizerHookLocation
 		&& getModelDataHookLocation
-		//&& dropRandomizerOriginal
 		&& setScenePtr
 		&& sceAtCreateItemAt
 		&& getInventoryModelData
@@ -594,7 +593,7 @@ bool Game::good()
 		&& readMinimumHeader
 		&& SaveProcedure
 		&& typewriterProc
-		;// &&srcSchedulerCpp;
+		;
 }
 
 void Game::setHealth(std::uint16_t health)
@@ -627,20 +626,6 @@ decltype(Game::items)::KeyType Game::getItemId(const decltype(items)::ValueType 
 	return items.at(id);
 }
 
-std::vector<Game::ItemData> Game::getInventory() const
-{
-	std::uint32_t inventorySize = getValue<std::uint32_t>(playerBase + PlayerBaseOffsets::InventorySize);
-	std::vector<ItemData> result;
-	result.reserve(inventorySize);
-	ItemData *item = getValue<ItemData*>(playerBase + PlayerBaseOffsets::Inventory);
-
-	for (unsigned i = 0; i < inventorySize; ++i) {
-		result.push_back(item[i]);
-	}
-
-	return result;
-}
-
 Game::ItemData* Game::begInventory() const
 {
 	return getValue<ItemData*>(playerBase + PlayerBaseOffsets::Inventory);
@@ -658,11 +643,11 @@ Game::ItemData* Game::addItem() const
 	
 	while (result != end)
 	{
-		if (!result->valid)
+		if (!result->valid())
 		{ //if we find a free slot
-			result->id = ItemIds::MagnumAmmo;
-			result->amount = 1;
-			result->valid = 1;
+			result->itemId(ItemIds::MagnumAmmo);
+			result->amount(1);
+			result->valid(1);
 			result->firePower(0);
 			result->firingSpeed(0);
 			result->reloadSpeed(0);
@@ -753,9 +738,9 @@ const std::vector<String>& Game::getCharacterCostumeNames(std::uint8_t id)
 Game::WeaponData* Game::getWeaponDataPtr(std::uint16_t id) const
 {
 	WeaponData *result = nullptr, *iter = (WeaponData*)weaponDataIndex;
-	while (iter->id)
+	while (iter->id())
 	{
-		if (iter->id == id) {
+		if (iter->id() == id) {
 			result = iter;
 			break;
 		}
@@ -769,10 +754,13 @@ void Game::setWeaponDataPtr(WeaponData *target, const WeaponData &source, const 
 	DWORD oldProtect;
 	VirtualProtect(target, sizeof(WeaponData), PAGE_READWRITE, &oldProtect);
 	
-	setFirepowerTableEntry(target->firepowerIndex, newFirepower);
-	std::copy(std::begin(source.capacityValues), std::end(source.capacityValues), std::begin(target->capacityValues));
-	target->ammoItemId = source.ammoItemId;
-	target->model = source.model;
+	setFirepowerTableEntry(target->firepowerIndex(), newFirepower);
+	for (size_t i = 0; i < WeaponData::capacitySlotCount; ++i) {
+		target->capacity(i, source.capacity(i));
+	}
+	//std::copy(std::begin(source.mCapacityValues), std::end(source.mCapacityValues), std::begin(target->mCapacityValues));
+	target->weaponAmmo(source.weaponAmmo());
+	target->model(source.model());
 
 	VirtualProtect(target, sizeof(WeaponData), oldProtect, &oldProtect);
 }
@@ -866,7 +854,6 @@ std::uint32_t Game::getScene()
 
 std::array<float, 3> Game::getSceneEntryCoords()
 {
-	//return std::array<float, 3>{ getValue<float>(healthBase + SceneEntryX), getValue<float>(healthBase + SceneEntryY), getValue<float>(healthBase + SceneEntryZ) };
 	return getValue<std::array<float, 3>>(healthBase + HealthBaseOffsets::SceneEntryX);
 }
 
@@ -955,7 +942,7 @@ auto Game::setLoggerCallback(void (__cdecl *callback)(const char*, ...)) -> void
 
 void Game::openTypewriter(TypewriterMode mode)
 {
-	Pointer node = getValue<Pointer>(linkedList + 0x34), secondNode = node;
+	Pointer node = getValue<Pointer>(linkedList + 0x34);
 	node = getValue<Pointer>(node + 0x14);
 	node += 0x18;
 
@@ -966,9 +953,9 @@ void Game::openTypewriter(TypewriterMode mode)
 
 std::ostream& operator<<(std::ostream &os, const Game::ItemData &data)
 {
-	os << "ID: " << data.id
-		<< " | Amount: " << data.amount
-		<< " | Valid: " << data.valid
+	os << "ID: " << data.itemId()
+		<< " | Amount: " << data.amount()
+		<< " | Valid: " << data.valid()
 		<< " | Fire Power: " << data.firePower()
 		<< " | Firing Speed: " << data.firingSpeed()
 		<< " | Reload Speed: " << data.reloadSpeed()
@@ -1251,3 +1238,170 @@ const Bimap<std::uint16_t, String> Game::items = {
 	{ ItemIds::Mission4TreasureMap, TEXT("Mission 4 Treasure Map") },
 	{ ItemIds::Mission5TreasureMap, TEXT("Mission 5 Treasure Map") },
 };
+
+//
+
+void Game::ItemData::itemId(std::uint16_t id)
+{
+	mId = id;
+}
+
+std::uint16_t Game::ItemData::itemId() const
+{
+	return mId;
+}
+
+void Game::ItemData::amount(std::uint16_t amount)
+{
+	mAmount = amount;
+}
+
+std::uint16_t Game::ItemData::amount() const
+{
+	return mAmount;
+}
+
+void Game::ItemData::valid(bool valid)
+{
+	mIsValid = valid;
+}
+
+bool Game::ItemData::valid() const
+{
+	return mIsValid ? true : false;
+}
+
+void Game::ItemData::firingSpeed(std::uint16_t level)
+{
+	mFiringSpeed = level;
+}
+
+std::uint16_t Game::ItemData::firingSpeed() const
+{
+	return mFiringSpeed;
+}
+
+void Game::ItemData::firePower(std::uint16_t level)
+{
+	mFirePower = level;
+}
+
+std::uint16_t Game::ItemData::firePower() const
+{
+	return mFirePower;
+}
+
+void Game::ItemData::capacity(std::uint16_t level)
+{
+	mCapacity = level;
+}
+
+std::uint16_t Game::ItemData::capacity() const
+{
+	return mCapacity;
+}
+
+void Game::ItemData::reloadSpeed(std::uint16_t level)
+{
+	mReloadSpeed = level;
+}
+
+std::uint16_t Game::ItemData::reloadSpeed() const
+{
+	return mReloadSpeed;
+}
+
+void Game::ItemData::ammo(std::uint16_t count)
+{
+	mAmmo = count << 3;
+}
+
+std::uint16_t Game::ItemData::ammo() const
+{
+	return mAmmo >> 3;
+}
+
+void Game::ItemData::posX(std::uint8_t pos)
+{
+	mPosX = pos;
+}
+
+std::uint8_t Game::ItemData::posX() const
+{
+	return mPosX;
+}
+
+void Game::ItemData::posY(std::uint8_t pos)
+{
+	mPosY = pos;
+}
+
+std::uint8_t Game::ItemData::posY() const
+{
+	return mPosY;
+}
+
+void Game::ItemData::rotation(std::uint8_t value)
+{
+	mRotation = value;
+}
+
+std::uint8_t Game::ItemData::rotation() const
+{
+	return mRotation;
+}
+
+void Game::ItemData::inInventory(bool value)
+{
+	mInInventory = value;
+}
+
+std::uint8_t Game::ItemData::inInventory() const
+{
+	return mInInventory;
+}
+
+std::uint16_t Game::WeaponData::id() const
+{
+	return mId;
+}
+
+void Game::WeaponData::firepowerIndex(std::uint8_t position)
+{
+	mFirepowerIndex = position;
+}
+
+std::uint8_t Game::WeaponData::firepowerIndex() const
+{
+	return mFirepowerIndex;
+}
+
+void Game::WeaponData::model(std::uint8_t value)
+{
+	mModel = value;
+}
+
+std::uint8_t Game::WeaponData::model() const
+{
+	return mModel;
+}
+
+void Game::WeaponData::weaponAmmo(std::uint16_t id)
+{
+	mAmmoItemId = id;
+}
+
+std::uint16_t Game::WeaponData::weaponAmmo() const
+{
+	return mAmmoItemId;
+}
+
+void Game::WeaponData::capacity(size_t position, std::uint16_t value)
+{
+	mCapacityValues[position] = value;
+}
+
+std::uint16_t Game::WeaponData::capacity(size_t position) const
+{
+	return mCapacityValues[position];
+}

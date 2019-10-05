@@ -48,7 +48,6 @@ private:
 	Pointer loggerFunction;
 	Pointer linkedList; //+0x34 next node, then do +0x14, that's second argument to SetPanel
 	Pointer typewriterProc;
-	//const char *srcSchedulerCpp;
 
 	std::int32_t originalLoggerCallbackOffset;
 	std::vector<void*> doors;
@@ -73,8 +72,8 @@ private:
 public:
 	enum class Difficulty : std::uint32_t { Amateur, Easy = 3, Normal = 5, Professional = 6 };
 	enum class TypewriterMode : std::uint32_t { Load, Save };
-	struct ItemData;
-	struct WeaponData;
+	class ItemData;
+	class WeaponData;
 	Game();
 	~Game();
 	bool good();
@@ -86,7 +85,6 @@ public:
 
 	decltype(items)::ValueType getItemName(const decltype(items)::KeyType &id) const; //throws out_of_range
 	decltype(items)::KeyType getItemId(const decltype(items)::ValueType &id) const; //throws out_of_range
-	std::vector<ItemData> getInventory() const;
 	ItemData* begInventory() const;
 	ItemData* endInventory() const;
 	ItemData* addItem() const;
@@ -143,49 +141,92 @@ public:
 	void openTypewriter(TypewriterMode mode);
 };
 
-struct Game::ItemData //Must be 14 bytes
+class Game::ItemData //Must be 14 bytes
 {
-	using uint16 = std::uint16_t;
-	using uint8 = std::uint8_t;
-	uint16 id;
-	uint16 amount; //not ammo
-	uint16 valid; //if this is 0, the item will not be in the inventory.
-private:
-	uint16 FP: 4;
-	uint16 FS: 4;
-	uint16 RS: 4;
-	uint16 CA: 4;
-	uint16 ammoCnt; //shift to the right 3 times to get actual ammo
+	std::uint16_t mId;
+	std::uint16_t mAmount; //not ammo
+	std::uint16_t mIsValid; //if this is 0, the item will not be in the inventory.
+	std::uint16_t mFirePower: 4;
+	std::uint16_t mFiringSpeed: 4;
+	std::uint16_t mReloadSpeed: 4;
+	std::uint16_t mCapacity: 4;
+	std::uint16_t mAmmo; //shift to the right 3 times to get actual ammo
+	std::uint8_t mPosX; //zero based coordinates of the lower right square occupied by the item. higher bits are Y, lower bits are X. Coordinates increase by 2 FSR.
+	std::uint8_t mPosY;
+	std::uint8_t mRotation; //0: right; 1: bottom; 2: left; 3: top
+	std::uint8_t mInInventory; //1 when the gun is in inventory, 0 when moved outside of it (to discard it)
+
+	ItemData() = delete;
+	ItemData(const ItemData&) = delete;
+	ItemData(ItemData&&) = delete;
+	ItemData& operator=(const ItemData&) = delete;
+	ItemData& operator=(ItemData&&) = delete;
 public:
-	uint8 posX; //zero based coordinates of the lower right square occupied by the item. higher bits are Y, lower bits are X. Coordinates increase by 2 FSR.
-	uint8 posY;
-	uint8 rotation; //0: right; 1: bottom; 2: left; 3: top
-	uint8 inInventory; //1 when the gun is in inventory, 0 when moved outside of it (to discard it)
+	void itemId(std::uint16_t id);
+	std::uint16_t itemId() const;
 
-	void firingSpeed(uint16 level) { FS = level; }
-	uint16 firingSpeed() const { return FS; }
-	void firePower(uint16 level) { FP = level; }
-	uint16 firePower() const { return FP; }
-	void capacity(uint16 level) { CA = level; }
-	uint16 capacity() const { return CA; }
-	void reloadSpeed(uint16 level) { RS = level; }
-	uint16 reloadSpeed() const { return RS; }
+	void amount(std::uint16_t amount);
+	std::uint16_t amount() const;
 
-	void ammo(uint16 count) { ammoCnt = count << 3; }
-	uint16 ammo() const { return ammoCnt >> 3; }
+	void valid(bool valid);
+	bool valid() const;
+
+	void firingSpeed(std::uint16_t level);// { FS = level; }
+	std::uint16_t firingSpeed() const;// { return FS; }
+
+	void firePower(std::uint16_t level);// { FP = level; }
+	std::uint16_t firePower() const;// { return FP; }
+
+	void capacity(std::uint16_t level);// { CA = level; }
+	std::uint16_t capacity() const;// { return CA; }
+
+	void reloadSpeed(std::uint16_t level);// { RS = level; }
+	std::uint16_t reloadSpeed() const;// { return RS; }
+
+	void ammo(std::uint16_t count);// { mAmmo = count << 3; }
+	std::uint16_t ammo() const;// { return mAmmo >> 3; }
+
+	void posX(std::uint8_t pos);
+	std::uint8_t posX() const;
+
+	void posY(std::uint8_t pos);
+	std::uint8_t posY() const;
+
+	void rotation(std::uint8_t value);
+	std::uint8_t rotation() const;
+
+	void inInventory(bool value);
+	std::uint8_t inInventory() const;
 };
 
-struct Game::WeaponData
+class Game::WeaponData
 {
-	using uint16 = std::uint16_t;
-	using uint8 = std::uint8_t;
-	uint16 id; //Weapon ID
-	uint8 unknown;
-	uint8 firepowerIndex;
-	uint8 model;
-	uint8 unknown2;
-	uint16 ammoItemId; //-1 on rocket launcher
-	uint16 capacityValues[7]; //0x8000 (a.k.a 32768) for infinite ammo
+public:
+	static constexpr size_t capacitySlotCount = 7;
+private:
+	std::uint16_t mId; //Weapon ID
+	std::uint8_t mUnknown;
+	std::uint8_t mFirepowerIndex;
+	std::uint8_t mModel;
+	std::uint8_t mUnknown2;
+	std::uint16_t mAmmoItemId; //-1 on rocket launcher
+	std::uint16_t mCapacityValues[capacitySlotCount]; //0x8000 (a.k.a 32768) for infinite ammo
+
+public:
+
+	std::uint16_t id() const;
+
+	void firepowerIndex(std::uint8_t position);
+	std::uint8_t firepowerIndex() const;
+
+	void model(std::uint8_t value);
+	std::uint8_t model() const;
+
+	void weaponAmmo(std::uint16_t id);
+	std::uint16_t weaponAmmo() const;
+
+	void capacity(size_t position, std::uint16_t value);
+	std::uint16_t capacity(size_t position) const;
 };
 
 std::ostream& operator<<(std::ostream &os, const Game::ItemData &data);

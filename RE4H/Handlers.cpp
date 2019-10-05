@@ -398,12 +398,12 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 	case AddItem: {
 		if (auto itemPtr = wndInfo.cheats.addItem())
 		{
-			itemPtr->amount = 1;
-			itemPtr->valid = 0;
-			itemPtr->inInventory = 0;
-			itemPtr->posX = 8;
-			itemPtr->posY = 15;
-			itemPtr->rotation = 1;
+			itemPtr->amount(1);
+			itemPtr->valid(0);
+			itemPtr->inInventory(0);
+			itemPtr->posX(8);
+			itemPtr->posY(15);
+			itemPtr->rotation(1);
 			DialogInfo info(&wndInfo.cheats, itemPtr);
 			auto result = DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemDialog), hWnd, ItemDlgProc, (LPARAM)& info);
 			if (result == -1) {
@@ -411,7 +411,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				msg += std::to_wstring(GetLastError());
 				ErrorBox(hWnd, msg.c_str());
 			}
-			else itemPtr->valid = static_cast<std::uint8_t>(result);
+			else itemPtr->valid(static_cast<std::uint8_t>(result));
 		}
 		else {
 			ErrorBox(hWnd, TEXT("Inventory is full"));
@@ -493,7 +493,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 		auto selectedItem = wndInfo.inventoryList->getSelectedItem();
 		if (selectedItem != -1)
 		{
-			WeaponStatsInfo info(&wndInfo.cheats, wndInfo.cheats.getWeaponDataPtr(wndInfo.inventoryList->getItemAddress(selectedItem)->id));
+			WeaponStatsInfo info(&wndInfo.cheats, wndInfo.cheats.getWeaponDataPtr(wndInfo.inventoryList->getItemAddress(selectedItem)->itemId()));
 			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_WEAPONS_STATS_DIALOG), hWnd, WeaponDlgProc, (LPARAM)& info);
 			if (DWORD error = GetLastError()) {
 				String msg = TEXT("Could not create dialog: ");
@@ -557,7 +557,7 @@ void onWmNotify(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 					POINT cursorPos = item.ptAction;
 					ClientToScreen(hWnd, &cursorPos);
 					AppendMenu(hMenu, MF_ENABLED | MF_STRING, MenuIdentifiers::EditItem, TEXT("Edit Item"));
-					AppendMenu(hMenu, (wndInfo.cheats.isWeapon(wndInfo.inventoryList->getItemAddress(item.iItem)->id) ? MF_ENABLED : MF_GRAYED) | MF_STRING, MenuIdentifiers::EditItemStats, TEXT("Edit Item Stats"));
+					AppendMenu(hMenu, (wndInfo.cheats.isWeapon(wndInfo.inventoryList->getItemAddress(item.iItem)->itemId()) ? MF_ENABLED : MF_GRAYED) | MF_STRING, MenuIdentifiers::EditItemStats, TEXT("Edit Item Stats"));
 					AppendMenu(hMenu, MF_ENABLED | MF_STRING, MenuIdentifiers::EraseItem, TEXT("Erase Item"));
 					if (BOOL result = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_TOPALIGN | TPM_LEFTALIGN | TPM_LEFTBUTTON, cursorPos.x, cursorPos.y, 0, item.hdr.hwndFrom, nullptr)) {
 						DestroyMenu(hMenu);

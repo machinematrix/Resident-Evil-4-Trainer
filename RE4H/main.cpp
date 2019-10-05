@@ -261,16 +261,16 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Left"));
 		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Up"));
 
-		SendMessage(itemCombo, CB_SETCURSEL, item->id, 0);
-		SetWindowText(amountEdit, std::to_wstring(item->amount).c_str());
+		SendMessage(itemCombo, CB_SETCURSEL, item->itemId(), 0);
+		SetWindowText(amountEdit, std::to_wstring(item->amount()).c_str());
 		SendMessage(firepowerCombo, CB_SETCURSEL, item->firePower(), 0);
 		SendMessage(firingSpeedCombo, CB_SETCURSEL, item->firingSpeed(), 0);
 		SendMessage(reloadSpeedCombo, CB_SETCURSEL, item->reloadSpeed(), 0);
 		SendMessage(capacityCombo, CB_SETCURSEL, item->capacity(), 0);
 		SetWindowText(ammoEdit, std::to_wstring(item->ammo()).c_str());
-		SetWindowText(posXEdit, std::to_wstring(item->posX).c_str());
-		SetWindowText(posYEdit, std::to_wstring(item->posY).c_str());
-		SendMessage(rotationCombo, CB_SETCURSEL, item->rotation, 0);
+		SetWindowText(posXEdit, std::to_wstring(item->posX()).c_str());
+		SetWindowText(posYEdit, std::to_wstring(item->posY()).c_str());
+		SendMessage(rotationCombo, CB_SETCURSEL, item->rotation(), 0);
 		break;
 	}
 	case WM_COMMAND: {
@@ -335,16 +335,16 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			targetItem->id = id;
-			targetItem->amount = amount;
+			targetItem->itemId(id);
+			targetItem->amount(amount);
 			targetItem->firePower(fp);
 			targetItem->firingSpeed(fs);
 			targetItem->reloadSpeed(rs);
 			targetItem->capacity(ca);
 			targetItem->ammo(ammo);
-			targetItem->posX = static_cast<std::uint8_t>(x);
-			targetItem->posY = static_cast<std::uint8_t>(y);
-			targetItem->rotation = static_cast<std::uint8_t>(rotation);
+			targetItem->posX(static_cast<std::uint8_t>(x));
+			targetItem->posY(static_cast<std::uint8_t>(y));
+			targetItem->rotation(static_cast<std::uint8_t>(rotation));
 			valid = 1;
 		}
 		case IDCANCEL:
@@ -392,16 +392,16 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		modelEdit = GetDlgItem(hDlg, ModelEdit);
 		ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
 
-		float *firepowerEntry = hacks->getFirepowerTableEntry(data->firepowerIndex);
+		float *firepowerEntry = hacks->getFirepowerTableEntry(data->firepowerIndex());
 		for (size_t i = 0; i < 7; ++i) {
 			SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
-			SetWindowText(capacityEdits[i], std::to_wstring(data->capacityValues[i]).c_str());
+			SetWindowText(capacityEdits[i], std::to_wstring(data->capacity(i)).c_str());
 		}
-		SetWindowText(modelEdit, std::to_wstring(data->model).c_str());
+		SetWindowText(modelEdit, std::to_wstring(data->model()).c_str());
 		for (const auto &ammoId : hacks->getAmmoItemIds())
 		{
 			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)hacks->getItemName(ammoId).c_str());
-			if (data->ammoItemId == ammoId) {
+			if (data->weaponAmmo() == ammoId) {
 				SendMessage(ammoCombo, CB_SETCURSEL, SendMessage(ammoCombo, CB_GETCOUNT, 0, 0) - 1, 0);
 			}
 		}
@@ -413,13 +413,13 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		{
 		case IDOK: {
 			Game *hacks = std::get<0>(*info);
-			Game::WeaponData *data = std::get<1>(*info), newData = *data;;
+			Game::WeaponData *data = std::get<1>(*info), newData = *data;
 			float newFirepower[7];
 
 			try {
 				for (size_t i = 0; i < 7; ++i) {
 					newFirepower[i] = std::stof(GetControlText(firePowerEdits[i]));
-					newData.capacityValues[i] = std::stoi(GetControlText(capacityEdits[i]));
+					newData.capacity(i, std::stoi(GetControlText(capacityEdits[i])));
 				}
 			}
 			catch (const std::invalid_argument&) {
@@ -427,7 +427,9 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 			}
 
-			try { newData.model = std::stoi(GetControlText(modelEdit)); }
+			try {
+				newData.model(std::stoi(GetControlText(modelEdit)));
+			}
 			catch (const std::invalid_argument&) {
 				ErrorBox(hDlg, TEXT("Invalid value in model"));
 				break;
@@ -438,7 +440,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				if (curSel != CB_ERR) {
 					String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
 					SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
-					newData.ammoItemId = static_cast<std::uint8_t>(hacks->getItemId(strAmmo));
+					newData.weaponAmmo(static_cast<std::uint8_t>(hacks->getItemId(strAmmo)));
 				}
 			}
 			catch (const std::out_of_range&) {
