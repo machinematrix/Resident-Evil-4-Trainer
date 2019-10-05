@@ -7,283 +7,283 @@
 #include <type_traits>
 #include <cstdint>
 
-namespace ItemIds {
-	enum : std::uint16_t
-	{
-		MagnumAmmo,
-		HandGrenade,
-		IncendiaryGrenade,
-		Matilda,
-		HandgunAmmo,
-		FirstAidSpray,
-		GreenHerb,
-		RifleAmmo,
-		ChickenEgg,
-		BrownChickenEgg,
-		GoldChickenEgg,
-		AAA,
-		PlagaSample,
-		KrauserKnife,
-		FlashGrenade,
-		SalazarFamilyInsignia,
-		Bowgun,
-		BowgunBolts,
-		GreenHerbX2,
-		GreenHerbX3,
-		MixedHerbsGR,
-		MixedHerbsGRY,
-		MixedHerbsGY,
-		RocketLauncherSpecial,
-		ShotgunShells,
-		RedHerb,
-		HandcannonAmmo,
-		HourglassWGoldDecor,
-		YellowHerb,
-		StoneTablet,
-		LionOrnament,
-		GoatOrnament,
-		TMPAmmo1,
-		Punisher,
-		PunisherWSilencer,
-		Handgun,
-		HandgunWSilencer,
-		Red9,
-		Red9WStock,
-		Blacktail,
-		BlacktailWSilencer,
-		BrokenButterfly,
-		Killer7,
-		Killer7WSilencer,
-		Shotgun,
-		Striker,
-		Rifle,
-		RifleSemiAuto,
-		TMP,
-		ActivationKeyBlue,
-		TMPWStock,
-		ActivationKeyRed,
-		ChicagoTypewriter1,
-		RocketLauncher,
-		MineThrower,
-		Handcannon,
-		CombatKnife,
-		SerpentOrnament,
-		MoonstoneRightHalf,
-		InsigniaKey,
-		RoundInsignia,
-		FalseEye,
-		CustomTMP,
-		SilencerHandgun,
-		Punisher2,
-		PRL412,
-		StockRed9,
-		StockTMP,
-		ScopeRifle,
-		ScopeSemiAutoRifle,
-		MineDarts,
-		Shotgun2,
-		CaptureLuisCera,
-		TargetPractice,
-		LuisMemo,
-		CastellanMemo,
-		FemaleIntruder,
-		ButlerMemo,
-		SampleRetrieved,
-		RitualPreparation,
-		LuisMemo2,
-		RifleSemiAutoWInfraredScope,
-		KrauserBow,
-		ChicagoTypewriter2,
-		TreasureMapCastle,
-		TreasureMapIsland,
-		VelvetBlue,
-		Spinel,
-		PearlPendant,
-		BrassPocketWatch,
-		ElegantHeaddress,
-		AntiquePipe,
-		GoldBangleWPearls,
-		AmberRing,
-		Beerstein,
-		GreenCatEye,
-		RedCatEye,
-		YellowCatEye,
-		BeersteinG,
-		BeersteinR,
-		BeersteinY,
-		BeersteinGR,
-		BeersteinGY,
-		BeersteinRY,
-		BeersteinGRY,
-		MoonstoneLeftHalf,
-		ChicagoTypewriterAmmo,
-		RifleWScope,
-		RifleSemiAutoWScope,
-		InfiniteLauncher,
-		KingGrail,
-		QueenGrail,
-		StaffOfRoyalty,
-		GoldBars,
-		Arrows,
-		BonusTime,
-		EmergencyLockCardKey,
-		BonusPoints,
-		GreenCatEye2,
-		Ruby,
-		TreasureBoxS,
-		TreasureBoxL,
-		BlueMoonstone,
-		KeyToTheMine,
-		AttachCaseS,
-		AttachCaseM,
-		AttachCaseL,
-		AttachCaseXL,
-		GoldenSword,
-		IronKey,
-		StoneOfSacrifice,
-		StorageRoomCardKey,
-		FreezerCardKey,
-		PieceOfTheHolyBeastPanther,
-		PieceOfTheHolyBeastSerpent,
-		PieceOfTheHolyBeastEagle,
-		JetSkiKey,
-		DirtyPearlPendant,
-		DirtyBrassPocketWatch,
-		OldKey,
-		CampKey,
-		Dynamite,
-		LiftActivationKey,
-		GoldBangle,
-		ElegantPerfumeBottle,
-		MirrorWPearlAndRubies,
-		WasteDisposalCardKey,
-		ElegantChessboard,
-		RiotGun,
-		BlackBass,
-		HourglassWGoldDecor2,
-		BlackBassL,
-		IlluminadosPendant,
-		RifleWInfraredScope,
-		Crown,
-		CrownJewel,
-		RoyalInsignia,
-		CrownWithJewels,
-		CrownWithInsignia,
-		SalazarFamilyCrown,
-		RifleAmmoInfrared,
-		Emerald,
-		BottleCaps,
-		GalleryKey,
-		EmblemRightHalf,
-		EmblemLeftHalf,
-		HexagonalEmblem,
-		CastleGateKey,
-		MixedHerbsRY,
-		TreasureMapVillage,
-		ScopeMineThrower,
-		MineThrowerPlusScope,
-		PlayingManual1,
-		InfoOnAshley,
-		PlayingManual2,
-		AlertOrder,
-		AboutTheBlueMedallions,
-		ChiefNote,
-		ClosureOfTheChurch,
-		AnonymousLetter,
-		PlayingManual3,
-		SeraAndTheThirdParty,
-		TwoRoutes,
-		VillageLastDefense,
-		ButterflyLamp,
-		GreenEye,
-		RedEye,
-		BlueEye,
-		ButterflyLampG,
-		ButterflyLampR,
-		ButterflyLampB,
-		ButterflyLampGR,
-		ButterflyLampGB,
-		ButterflyLampRB,
-		ButterflyLampRGB,
-		PrisonKey,
-		PlatinumSword,
-		InfraredScope,
-		ElegantMask,
-		GreenGem,
-		RedGem,
-		PurpleGem,
-		ElegantMaskG,
-		ElegantMaskR,
-		ElegantMaskP,
-		ElegantMaskGR,
-		ElegantMaskGP,
-		ElegantMaskRP,
-		ElegantMaskRGP,
-		GoldenLynx,
-		GreenStoneOfJudgement,
-		RedStoneOfFaith,
-		BlueStoneOfTreason,
-		GoldenLynxG,
-		GoldenLynxR,
-		GoldenLynxB,
-		GoldenLynxGR,
-		GoldenLynxGB,
-		GoldenLynxRB,
-		GoldenLynxGRB,
-		LeonWithRocketLauncher,
-		LeonWithShotgun,
-		LeonWithHandgun,
-		AshleyGraham,
-		LuisSera,
-		DonJose,
-		DonDiego,
-		DonEsteban,
-		DonManuel,
-		DrSalvador,
-		Merchant,
-		ZealotWithScythe,
-		ZealotWithShield,
-		ZealotWithBowgun,
-		LeaderZealot,
-		SoldierWithDynamite,
-		SoldierWithStunRod,
-		SoldierWithHammer,
-		Isabel,
-		Maria,
-		AdaWong,
-		BellaSisters,
-		DonPedro,
-		JJ,
-		LetterFromAda,
-		LuisMemo3,
-		PaperAirplane,
-		OurPlan,
-		LuisMemo4,
-		KrauserNote,
-		LuisMemo5,
-		OurMission,
-		AAA2,
-		AAA3,
-		TacticalVest,
-		AAA4,
-		Punisher3,
-		Handgun2,
-		Shotgun3,
-		MineThrower2,
-		Handcannon2,
-		MineThrowerPlusScope2,
-		MissionDirectives1,
-		MissionDirectives2,
-		MissionDirectives3,
-		MissionDirectives4,
-		MissionDirectives5,
-		Mission1TreasureMap,
-		Mission2TreasureMap,
-		Mission3TreasureMap,
-		Mission4TreasureMap,
-		Mission5TreasureMap,
-	};
-}
+
+//enum class ItemIds : std::uint16_t
+//{
+//	MagnumAmmo,
+//	HandGrenade,
+//	IncendiaryGrenade,
+//	Matilda,
+//	HandgunAmmo,
+//	FirstAidSpray,
+//	GreenHerb,
+//	RifleAmmo,
+//	ChickenEgg,
+//	BrownChickenEgg,
+//	GoldChickenEgg,
+//	AAA,
+//	PlagaSample,
+//	KrauserKnife,
+//	FlashGrenade,
+//	SalazarFamilyInsignia,
+//	Bowgun,
+//	BowgunBolts,
+//	GreenHerbX2,
+//	GreenHerbX3,
+//	MixedHerbsGR,
+//	MixedHerbsGRY,
+//	MixedHerbsGY,
+//	RocketLauncherSpecial,
+//	ShotgunShells,
+//	RedHerb,
+//	HandcannonAmmo,
+//	HourglassWGoldDecor,
+//	YellowHerb,
+//	StoneTablet,
+//	LionOrnament,
+//	GoatOrnament,
+//	TMPAmmo1,
+//	Punisher,
+//	PunisherWSilencer,
+//	Handgun,
+//	HandgunWSilencer,
+//	Red9,
+//	Red9WStock,
+//	Blacktail,
+//	BlacktailWSilencer,
+//	BrokenButterfly,
+//	Killer7,
+//	Killer7WSilencer,
+//	Shotgun,
+//	Striker,
+//	Rifle,
+//	RifleSemiAuto,
+//	TMP,
+//	ActivationKeyBlue,
+//	TMPWStock,
+//	ActivationKeyRed,
+//	ChicagoTypewriter1,
+//	RocketLauncher,
+//	MineThrower,
+//	Handcannon,
+//	CombatKnife,
+//	SerpentOrnament,
+//	MoonstoneRightHalf,
+//	InsigniaKey,
+//	RoundInsignia,
+//	FalseEye,
+//	CustomTMP,
+//	SilencerHandgun,
+//	Punisher2,
+//	PRL412,
+//	StockRed9,
+//	StockTMP,
+//	ScopeRifle,
+//	ScopeSemiAutoRifle,
+//	MineDarts,
+//	Shotgun2,
+//	CaptureLuisCera,
+//	TargetPractice,
+//	LuisMemo,
+//	CastellanMemo,
+//	FemaleIntruder,
+//	ButlerMemo,
+//	SampleRetrieved,
+//	RitualPreparation,
+//	LuisMemo2,
+//	RifleSemiAutoWInfraredScope,
+//	KrauserBow,
+//	ChicagoTypewriter2,
+//	TreasureMapCastle,
+//	TreasureMapIsland,
+//	VelvetBlue,
+//	Spinel,
+//	PearlPendant,
+//	BrassPocketWatch,
+//	ElegantHeaddress,
+//	AntiquePipe,
+//	GoldBangleWPearls,
+//	AmberRing,
+//	Beerstein,
+//	GreenCatEye,
+//	RedCatEye,
+//	YellowCatEye,
+//	BeersteinG,
+//	BeersteinR,
+//	BeersteinY,
+//	BeersteinGR,
+//	BeersteinGY,
+//	BeersteinRY,
+//	BeersteinGRY,
+//	MoonstoneLeftHalf,
+//	ChicagoTypewriterAmmo,
+//	RifleWScope,
+//	RifleSemiAutoWScope,
+//	InfiniteLauncher,
+//	KingGrail,
+//	QueenGrail,
+//	StaffOfRoyalty,
+//	GoldBars,
+//	Arrows,
+//	BonusTime,
+//	EmergencyLockCardKey,
+//	BonusPoints,
+//	GreenCatEye2,
+//	Ruby,
+//	TreasureBoxS,
+//	TreasureBoxL,
+//	BlueMoonstone,
+//	KeyToTheMine,
+//	AttachCaseS,
+//	AttachCaseM,
+//	AttachCaseL,
+//	AttachCaseXL,
+//	GoldenSword,
+//	IronKey,
+//	StoneOfSacrifice,
+//	StorageRoomCardKey,
+//	FreezerCardKey,
+//	PieceOfTheHolyBeastPanther,
+//	PieceOfTheHolyBeastSerpent,
+//	PieceOfTheHolyBeastEagle,
+//	JetSkiKey,
+//	DirtyPearlPendant,
+//	DirtyBrassPocketWatch,
+//	OldKey,
+//	CampKey,
+//	Dynamite,
+//	LiftActivationKey,
+//	GoldBangle,
+//	ElegantPerfumeBottle,
+//	MirrorWPearlAndRubies,
+//	WasteDisposalCardKey,
+//	ElegantChessboard,
+//	RiotGun,
+//	BlackBass,
+//	HourglassWGoldDecor2,
+//	BlackBassL,
+//	IlluminadosPendant,
+//	RifleWInfraredScope,
+//	Crown,
+//	CrownJewel,
+//	RoyalInsignia,
+//	CrownWithJewels,
+//	CrownWithInsignia,
+//	SalazarFamilyCrown,
+//	RifleAmmoInfrared,
+//	Emerald,
+//	BottleCaps,
+//	GalleryKey,
+//	EmblemRightHalf,
+//	EmblemLeftHalf,
+//	HexagonalEmblem,
+//	CastleGateKey,
+//	MixedHerbsRY,
+//	TreasureMapVillage,
+//	ScopeMineThrower,
+//	MineThrowerPlusScope,
+//	PlayingManual1,
+//	InfoOnAshley,
+//	PlayingManual2,
+//	AlertOrder,
+//	AboutTheBlueMedallions,
+//	ChiefNote,
+//	ClosureOfTheChurch,
+//	AnonymousLetter,
+//	PlayingManual3,
+//	SeraAndTheThirdParty,
+//	TwoRoutes,
+//	VillageLastDefense,
+//	ButterflyLamp,
+//	GreenEye,
+//	RedEye,
+//	BlueEye,
+//	ButterflyLampG,
+//	ButterflyLampR,
+//	ButterflyLampB,
+//	ButterflyLampGR,
+//	ButterflyLampGB,
+//	ButterflyLampRB,
+//	ButterflyLampRGB,
+//	PrisonKey,
+//	PlatinumSword,
+//	InfraredScope,
+//	ElegantMask,
+//	GreenGem,
+//	RedGem,
+//	PurpleGem,
+//	ElegantMaskG,
+//	ElegantMaskR,
+//	ElegantMaskP,
+//	ElegantMaskGR,
+//	ElegantMaskGP,
+//	ElegantMaskRP,
+//	ElegantMaskRGP,
+//	GoldenLynx,
+//	GreenStoneOfJudgement,
+//	RedStoneOfFaith,
+//	BlueStoneOfTreason,
+//	GoldenLynxG,
+//	GoldenLynxR,
+//	GoldenLynxB,
+//	GoldenLynxGR,
+//	GoldenLynxGB,
+//	GoldenLynxRB,
+//	GoldenLynxGRB,
+//	LeonWithRocketLauncher,
+//	LeonWithShotgun,
+//	LeonWithHandgun,
+//	AshleyGraham,
+//	LuisSera,
+//	DonJose,
+//	DonDiego,
+//	DonEsteban,
+//	DonManuel,
+//	DrSalvador,
+//	Merchant,
+//	ZealotWithScythe,
+//	ZealotWithShield,
+//	ZealotWithBowgun,
+//	LeaderZealot,
+//	SoldierWithDynamite,
+//	SoldierWithStunRod,
+//	SoldierWithHammer,
+//	Isabel,
+//	Maria,
+//	AdaWong,
+//	BellaSisters,
+//	DonPedro,
+//	JJ,
+//	LetterFromAda,
+//	LuisMemo3,
+//	PaperAirplane,
+//	OurPlan,
+//	LuisMemo4,
+//	KrauserNote,
+//	LuisMemo5,
+//	OurMission,
+//	AAA2,
+//	AAA3,
+//	TacticalVest,
+//	AAA4,
+//	Punisher3,
+//	Handgun2,
+//	Shotgun3,
+//	MineThrower2,
+//	Handcannon2,
+//	MineThrowerPlusScope2,
+//	MissionDirectives1,
+//	MissionDirectives2,
+//	MissionDirectives3,
+//	MissionDirectives4,
+//	MissionDirectives5,
+//	Mission1TreasureMap,
+//	Mission2TreasureMap,
+//	Mission3TreasureMap,
+//	Mission4TreasureMap,
+//	Mission5TreasureMap,
+//	Invalid = 0xFFFF
+//};
 
 namespace HealthBaseOffsets {
 	enum : std::uint32_t
@@ -338,19 +338,26 @@ namespace Characters {
 	};
 }
 
-void __cdecl myGetInventoryModelData(std::uint32_t id, Game::InventoryIconData *result)
+enum class GameState : std::uint32_t
+{
+	Playing = 0x3,
+	ChangingScene = 0x4,
+	Pause = 0x106
+};
+
+void __cdecl myGetInventoryModelData(ItemIds id, Game::InventoryIconData *result)
 {
 	static Game *game;
 
-	if (id != (~0u))
+	if (id != ItemIds::Invalid)
 	{
 		std::unique_lock<std::mutex> lck(game->doorVectorMutex);
-		auto amountIt = game->itemMaxAmount.find(id);
+		auto amountIt = game->itemStackCap.find(id);
 
 		game->getInventoryModelData(id, result);
 
-		if (amountIt != game->itemMaxAmount.end()) {
-			result->stackLimit = result->stackLimit & 0xFFFFFF00 | (amountIt->second & 0xFF);
+		if (amountIt != game->itemStackCap.end()) {
+			result->stackLimit(amountIt->second/*result->stackLimit() & 0xFFFFFF00 | (amountIt->second & 0xFF)*/);
 		}
 	}
 	else {
@@ -358,22 +365,22 @@ void __cdecl myGetInventoryModelData(std::uint32_t id, Game::InventoryIconData *
 	}
 }
 
-int __cdecl myDropRandomizer(std::uint32_t enemyId, std::uint32_t *outItemId, std::uint32_t *outItemCount, Game *unknownPassZero)
+int __cdecl myDropRandomizer(std::uint32_t enemyId, ItemIds *outItemId, std::uint32_t *outItemCount, Game *unknownPassZero)
 {
 	static Game *game;
 	bool result = false;
-	using namespace ItemIds;
+	//using namespace ItemIds;
 
 	if (outItemId && outItemCount)
 	{
-		std::vector<std::uint16_t> candidates = { TreasureBoxS, FlashGrenade, IncendiaryGrenade, HandGrenade };
+		std::vector<ItemIds> candidates = { ItemIds::TreasureBoxS, ItemIds::FlashGrenade, ItemIds::IncendiaryGrenade, ItemIds::HandGrenade };
 		static std::default_random_engine engine;
-		static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(ItemIds::MagnumAmmo, ItemIds::Mission5TreasureMap);
+		static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(/*ItemIds::MagnumAmmo*/0, /*ItemIds::Mission5TreasureMap*/300);
 		Game::InventoryIconData icon;
 
 		if (game->getHealth() <= game->getHealthLimit() / 2) {
-			candidates.push_back(GreenHerb);
-			candidates.push_back(FirstAidSpray);
+			candidates.push_back(ItemIds::GreenHerb);
+			candidates.push_back(ItemIds::FirstAidSpray);
 		}
 
 		for (Game::ItemData *item = game->begInventory(), *end = game->endInventory(); item != end; ++item)
@@ -394,7 +401,7 @@ int __cdecl myDropRandomizer(std::uint32_t enemyId, std::uint32_t *outItemId, st
 
 		*outItemId = candidates[randomizer(engine) % candidates.size()];
 		game->getInventoryModelData(*outItemId, &icon);
-		*outItemCount = randomizer(engine) % (/*game->getItemDimensions(*outItemId)*/icon.stackLimit) + 1;
+		*outItemCount = randomizer(engine) % icon.stackLimit() + 1;
 
 		result = true;
 	}
@@ -406,19 +413,19 @@ int __cdecl myDropRandomizer(std::uint32_t enemyId, std::uint32_t *outItemId, st
 }
 
 template<typename T>
-inline T Game::getValue(Pointer address) const
+T getValue(Pointer address)
 {
 	return *(T*)(address);
 }
 
 template<typename T>
-inline void Game::setValue(Pointer address, T value) const
+void setValue(Pointer address, T value)
 {
 	*(T*)(address) = value;
 }
 
 template<typename T, size_t sz>
-inline void Game::setValue(Pointer address, const T value[sz]) const
+void setValue(Pointer address, const T value[sz])
 {
 	for (size_t i = 0; i < sz; ++i) {
 		((T*)address)[i] = value[i];
@@ -426,20 +433,20 @@ inline void Game::setValue(Pointer address, const T value[sz]) const
 }
 
 template<typename T>
-inline Pointer Game::pointerPath(Pointer baseAddress, const T& offset)
+Pointer pointerPath(Pointer baseAddress, const T& offset)
 {
 	memcpy(&baseAddress, baseAddress + offset, sizeof(Pointer));
 	return baseAddress;
 }
 
 template<typename T, typename ...Args>
-Pointer Game::pointerPath(Pointer baseAddress, const T& offset, const Args& ...offsets)
+Pointer pointerPath(Pointer baseAddress, const T& offset, const Args& ...offsets)
 {
 	memcpy(&baseAddress, baseAddress + offset, sizeof(Pointer));
 	return pointerPath(baseAddress, offsets...);
 }
 
-Pointer Game::pointerPath(Pointer baseAddress, const std::vector<std::uint64_t>& offsets)
+Pointer pointerPath(Pointer baseAddress, const std::vector<std::uint64_t>& offsets)
 {
 	for (auto offset : offsets) {
 		memcpy(&baseAddress, baseAddress + offset, sizeof(Pointer));
@@ -482,8 +489,8 @@ void Game::setHooks()
 		mov[codePointer], eax
 		pop eax;
 	};
-	setValue<Game *>(&code.front() + 3, this);
-	setValue<void *>(&code.front() + 8, codePointer);
+	setValue<Game*>(&code.front() + 3, this);
+	setValue<void*>(&code.front() + 8, codePointer);
 	memcpy(refreshDoorsHookLocation, code.c_str(), code.size());
 
 	dropRandomizerOriginal = getValue<Pointer>(dropRandomizerHookLocation + 1);
@@ -528,6 +535,7 @@ Game::Game()
 	using std::cout;
 	using std::endl;
 #endif
+
 	healthBase = pointerPath(healthBase, 0x1, 0x0);
 	playerBase = getValue<Pointer>(playerBase + 1);
 	weaponDataIndex = getValue<Pointer>(weaponDataIndex + 1);
@@ -545,11 +553,8 @@ Game::Game()
 	loggerFunction += getValue<std::int32_t>(loggerFunction) + 4; //+4 because we already skipped the first byte
 	loggerFunction += 1; //skip 0xE9
 
-	//srcSchedulerCpp += 6;
-	//srcSchedulerCpp = getValue<const char *>((Pointer)srcSchedulerCpp);
-
 	myDropRandomizer(0, nullptr, nullptr, this);
-	myGetInventoryModelData(~0u, (InventoryIconData*)this);
+	myGetInventoryModelData(ItemIds::Invalid, (InventoryIconData*)this);
 	setHooks();
 
 	originalLoggerCallbackOffset = getValue<std::int32_t>(loggerFunction);
@@ -735,10 +740,10 @@ const std::vector<String>& Game::getCharacterCostumeNames(std::uint8_t id)
 	return costumes[id <= 5 ? id : 6];
 }
 
-Game::WeaponData* Game::getWeaponDataPtr(std::uint16_t id) const
+Game::WeaponData* Game::getWeaponDataPtr(ItemIds id) const
 {
 	WeaponData *result = nullptr, *iter = (WeaponData*)weaponDataIndex;
-	while (iter->id())
+	while (iter->id() != ItemIds::MagnumAmmo)
 	{
 		if (iter->id() == id) {
 			result = iter;
@@ -765,7 +770,7 @@ void Game::setWeaponDataPtr(WeaponData *target, const WeaponData &source, const 
 	VirtualProtect(target, sizeof(WeaponData), oldProtect, &oldProtect);
 }
 
-bool Game::isWeapon(std::uint16_t id) const
+bool Game::isWeapon(ItemIds id) const
 {
 	return getWeaponDataPtr(id) ? true : false;
 }
@@ -780,10 +785,20 @@ void Game::setFirepowerTableEntry(std::uint8_t i, const float newValues[7])
 	setValue<float, 7>(firePowerTable + i * 7 * sizeof(float), newValues);
 }
 
-const std::vector<std::uint16_t>& Game::getAmmoItemIds()
+const std::vector<ItemIds>& Game::getAmmoItemIds()
 {
-	using namespace ItemIds;
-	static const std::vector<std::uint16_t> ammoIds = { MagnumAmmo, HandgunAmmo, RifleAmmo, ShotgunShells, HandcannonAmmo, TMPAmmo1, Arrows, RifleAmmoInfrared, ChicagoTypewriterAmmo, MineDarts, BowgunBolts };
+	//using namespace ItemIds;
+	static const std::vector<ItemIds> ammoIds = { ItemIds::MagnumAmmo,
+														ItemIds::HandgunAmmo,
+														ItemIds::RifleAmmo,
+														ItemIds::ShotgunShells,
+														ItemIds::HandcannonAmmo,
+														ItemIds::TMPAmmo1,
+														ItemIds::Arrows,
+														ItemIds::RifleAmmoInfrared,
+														ItemIds::ChicagoTypewriterAmmo,
+														ItemIds::MineDarts,
+														ItemIds::BowgunBolts };
 	return ammoIds;
 }
 
@@ -844,7 +859,7 @@ void Game::setScene(std::uint32_t scene)
 	float origin[3] = {};
 	setValue<std::uint32_t>(healthBase + HealthBaseOffsets::Scene, scene);
 	setValue<float, 3>(healthBase + HealthBaseOffsets::SceneEntryX, origin);
-	setValue<std::uint32_t>(healthBase + HealthBaseOffsets::Status, 4);
+	setValue(healthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
 }
 
 std::uint32_t Game::getScene()
@@ -893,17 +908,17 @@ void Game::spawnPickup(std::uint32_t id, std::uint32_t amount)
 	spawnPickup(coords, id, amount);
 }
 
-Game::InventoryIconData Game::getItemDimensions(std::uint16_t id)
+Game::InventoryIconData Game::getItemDimensions(ItemIds id)
 {
 	InventoryIconData result = {};
 	myGetInventoryModelData(id, &result);
 	return result;
 }
 
-void Game::setMaxItemAmount(std::uint16_t id, std::uint32_t amount)
+void Game::setMaxItemAmount(ItemIds id, std::uint32_t amount)
 {
 	std::unique_lock<std::mutex> lck(doorVectorMutex);
-	itemMaxAmount[id] = amount;
+	itemStackCap[id] = amount;
 }
 
 void Game::toggleFastTmp(bool toggle)
@@ -951,20 +966,20 @@ void Game::openTypewriter(TypewriterMode mode)
 	setValue<std::uint8_t>(node + 4, 1);
 }
 
-std::ostream& operator<<(std::ostream &os, const Game::ItemData &data)
-{
-	os << "ID: " << data.itemId()
-		<< " | Amount: " << data.amount()
-		<< " | Valid: " << data.valid()
-		<< " | Fire Power: " << data.firePower()
-		<< " | Firing Speed: " << data.firingSpeed()
-		<< " | Reload Speed: " << data.reloadSpeed()
-		<< " | Capacity: " << data.capacity()
-		<< " | Ammo: " << data.ammo();
-	return os;
-}
+//std::ostream& operator<<(std::ostream &os, const Game::ItemData &data)
+//{
+//	os << "ID: " << data.itemId()
+//		<< " | Amount: " << data.amount()
+//		<< " | Valid: " << data.valid()
+//		<< " | Fire Power: " << data.firePower()
+//		<< " | Firing Speed: " << data.firingSpeed()
+//		<< " | Reload Speed: " << data.reloadSpeed()
+//		<< " | Capacity: " << data.capacity()
+//		<< " | Ammo: " << data.ammo();
+//	return os;
+//}
 
-const Bimap<std::uint16_t, String> Game::items = {
+const Bimap<ItemIds, String> Game::items = {
 	{ ItemIds::MagnumAmmo, TEXT("Magnum Ammo") },
 	{ ItemIds::HandGrenade, TEXT("Hand Grenade") },
 	{ ItemIds::IncendiaryGrenade, TEXT("Incendiary Grenade") },
@@ -1241,12 +1256,12 @@ const Bimap<std::uint16_t, String> Game::items = {
 
 //
 
-void Game::ItemData::itemId(std::uint16_t id)
+void Game::ItemData::itemId(ItemIds id)
 {
 	mId = id;
 }
 
-std::uint16_t Game::ItemData::itemId() const
+ItemIds Game::ItemData::itemId() const
 {
 	return mId;
 }
@@ -1361,7 +1376,7 @@ std::uint8_t Game::ItemData::inInventory() const
 	return mInInventory;
 }
 
-std::uint16_t Game::WeaponData::id() const
+ItemIds Game::WeaponData::id() const
 {
 	return mId;
 }
@@ -1386,12 +1401,12 @@ std::uint8_t Game::WeaponData::model() const
 	return mModel;
 }
 
-void Game::WeaponData::weaponAmmo(std::uint16_t id)
+void Game::WeaponData::weaponAmmo(ItemIds id)
 {
 	mAmmoItemId = id;
 }
 
-std::uint16_t Game::WeaponData::weaponAmmo() const
+ItemIds Game::WeaponData::weaponAmmo() const
 {
 	return mAmmoItemId;
 }
@@ -1404,4 +1419,14 @@ void Game::WeaponData::capacity(size_t position, std::uint16_t value)
 std::uint16_t Game::WeaponData::capacity(size_t position) const
 {
 	return mCapacityValues[position];
+}
+
+void Game::InventoryIconData::stackLimit(std::uint8_t value)
+{
+	mStackLimit = value;
+}
+
+std::uint8_t Game::InventoryIconData::stackLimit() const
+{
+	return mStackLimit;
 }

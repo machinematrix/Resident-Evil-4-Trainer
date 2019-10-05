@@ -179,7 +179,7 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 				break;
 			}
 
-			game->setMaxItemAmount(id, amount);
+			game->setMaxItemAmount(static_cast<ItemIds>(id), amount);
 		} //fall through
 		case IDCANCEL: {
 			game = nullptr;
@@ -191,7 +191,7 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			{
 				std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
 				if (id != CB_ERR) {
-					std::wstring strAmount = std::to_wstring(game->getItemDimensions(id).stackLimit);
+					std::wstring strAmount = std::to_wstring(game->getItemDimensions(static_cast<ItemIds>(id)).stackLimit());
 					String strAmount2(strAmount.begin(), strAmount.end());
 					SetWindowText(amountEdit, strAmount.c_str());
 				}
@@ -205,7 +205,7 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 				if (id != CB_ERR)
 				{
 					try {
-						game->setMaxItemAmount(id, std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
+						game->setMaxItemAmount(static_cast<ItemIds>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
 					}
 					catch (const std::invalid_argument &) {
 						ErrorBox(hDlg, TEXT("Invalid capacity"));
@@ -261,7 +261,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Left"));
 		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Up"));
 
-		SendMessage(itemCombo, CB_SETCURSEL, item->itemId(), 0);
+		SendMessage(itemCombo, CB_SETCURSEL, static_cast<WPARAM>(item->itemId()), 0);
 		SetWindowText(amountEdit, std::to_wstring(item->amount()).c_str());
 		SendMessage(firepowerCombo, CB_SETCURSEL, item->firePower(), 0);
 		SendMessage(firingSpeedCombo, CB_SETCURSEL, item->firingSpeed(), 0);
@@ -335,7 +335,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			targetItem->itemId(id);
+			targetItem->itemId(static_cast<ItemIds>(id));
 			targetItem->amount(amount);
 			targetItem->firePower(fp);
 			targetItem->firingSpeed(fs);
@@ -440,7 +440,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				if (curSel != CB_ERR) {
 					String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
 					SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
-					newData.weaponAmmo(static_cast<std::uint8_t>(hacks->getItemId(strAmmo)));
+					newData.weaponAmmo(hacks->getItemId(strAmmo));
 				}
 			}
 			catch (const std::out_of_range&) {

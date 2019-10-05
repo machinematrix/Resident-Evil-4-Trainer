@@ -13,23 +13,294 @@ typedef std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wch
 typedef std::basic_string<char, std::char_traits<char>, std::allocator<char>> String;
 #endif
 
+enum class ItemIds : std::uint16_t
+{
+	MagnumAmmo,
+	HandGrenade,
+	IncendiaryGrenade,
+	Matilda,
+	HandgunAmmo,
+	FirstAidSpray,
+	GreenHerb,
+	RifleAmmo,
+	ChickenEgg,
+	BrownChickenEgg,
+	GoldChickenEgg,
+	AAA,
+	PlagaSample,
+	KrauserKnife,
+	FlashGrenade,
+	SalazarFamilyInsignia,
+	Bowgun,
+	BowgunBolts,
+	GreenHerbX2,
+	GreenHerbX3,
+	MixedHerbsGR,
+	MixedHerbsGRY,
+	MixedHerbsGY,
+	RocketLauncherSpecial,
+	ShotgunShells,
+	RedHerb,
+	HandcannonAmmo,
+	HourglassWGoldDecor,
+	YellowHerb,
+	StoneTablet,
+	LionOrnament,
+	GoatOrnament,
+	TMPAmmo1,
+	Punisher,
+	PunisherWSilencer,
+	Handgun,
+	HandgunWSilencer,
+	Red9,
+	Red9WStock,
+	Blacktail,
+	BlacktailWSilencer,
+	BrokenButterfly,
+	Killer7,
+	Killer7WSilencer,
+	Shotgun,
+	Striker,
+	Rifle,
+	RifleSemiAuto,
+	TMP,
+	ActivationKeyBlue,
+	TMPWStock,
+	ActivationKeyRed,
+	ChicagoTypewriter1,
+	RocketLauncher,
+	MineThrower,
+	Handcannon,
+	CombatKnife,
+	SerpentOrnament,
+	MoonstoneRightHalf,
+	InsigniaKey,
+	RoundInsignia,
+	FalseEye,
+	CustomTMP,
+	SilencerHandgun,
+	Punisher2,
+	PRL412,
+	StockRed9,
+	StockTMP,
+	ScopeRifle,
+	ScopeSemiAutoRifle,
+	MineDarts,
+	Shotgun2,
+	CaptureLuisCera,
+	TargetPractice,
+	LuisMemo,
+	CastellanMemo,
+	FemaleIntruder,
+	ButlerMemo,
+	SampleRetrieved,
+	RitualPreparation,
+	LuisMemo2,
+	RifleSemiAutoWInfraredScope,
+	KrauserBow,
+	ChicagoTypewriter2,
+	TreasureMapCastle,
+	TreasureMapIsland,
+	VelvetBlue,
+	Spinel,
+	PearlPendant,
+	BrassPocketWatch,
+	ElegantHeaddress,
+	AntiquePipe,
+	GoldBangleWPearls,
+	AmberRing,
+	Beerstein,
+	GreenCatEye,
+	RedCatEye,
+	YellowCatEye,
+	BeersteinG,
+	BeersteinR,
+	BeersteinY,
+	BeersteinGR,
+	BeersteinGY,
+	BeersteinRY,
+	BeersteinGRY,
+	MoonstoneLeftHalf,
+	ChicagoTypewriterAmmo,
+	RifleWScope,
+	RifleSemiAutoWScope,
+	InfiniteLauncher,
+	KingGrail,
+	QueenGrail,
+	StaffOfRoyalty,
+	GoldBars,
+	Arrows,
+	BonusTime,
+	EmergencyLockCardKey,
+	BonusPoints,
+	GreenCatEye2,
+	Ruby,
+	TreasureBoxS,
+	TreasureBoxL,
+	BlueMoonstone,
+	KeyToTheMine,
+	AttachCaseS,
+	AttachCaseM,
+	AttachCaseL,
+	AttachCaseXL,
+	GoldenSword,
+	IronKey,
+	StoneOfSacrifice,
+	StorageRoomCardKey,
+	FreezerCardKey,
+	PieceOfTheHolyBeastPanther,
+	PieceOfTheHolyBeastSerpent,
+	PieceOfTheHolyBeastEagle,
+	JetSkiKey,
+	DirtyPearlPendant,
+	DirtyBrassPocketWatch,
+	OldKey,
+	CampKey,
+	Dynamite,
+	LiftActivationKey,
+	GoldBangle,
+	ElegantPerfumeBottle,
+	MirrorWPearlAndRubies,
+	WasteDisposalCardKey,
+	ElegantChessboard,
+	RiotGun,
+	BlackBass,
+	HourglassWGoldDecor2,
+	BlackBassL,
+	IlluminadosPendant,
+	RifleWInfraredScope,
+	Crown,
+	CrownJewel,
+	RoyalInsignia,
+	CrownWithJewels,
+	CrownWithInsignia,
+	SalazarFamilyCrown,
+	RifleAmmoInfrared,
+	Emerald,
+	BottleCaps,
+	GalleryKey,
+	EmblemRightHalf,
+	EmblemLeftHalf,
+	HexagonalEmblem,
+	CastleGateKey,
+	MixedHerbsRY,
+	TreasureMapVillage,
+	ScopeMineThrower,
+	MineThrowerPlusScope,
+	PlayingManual1,
+	InfoOnAshley,
+	PlayingManual2,
+	AlertOrder,
+	AboutTheBlueMedallions,
+	ChiefNote,
+	ClosureOfTheChurch,
+	AnonymousLetter,
+	PlayingManual3,
+	SeraAndTheThirdParty,
+	TwoRoutes,
+	VillageLastDefense,
+	ButterflyLamp,
+	GreenEye,
+	RedEye,
+	BlueEye,
+	ButterflyLampG,
+	ButterflyLampR,
+	ButterflyLampB,
+	ButterflyLampGR,
+	ButterflyLampGB,
+	ButterflyLampRB,
+	ButterflyLampRGB,
+	PrisonKey,
+	PlatinumSword,
+	InfraredScope,
+	ElegantMask,
+	GreenGem,
+	RedGem,
+	PurpleGem,
+	ElegantMaskG,
+	ElegantMaskR,
+	ElegantMaskP,
+	ElegantMaskGR,
+	ElegantMaskGP,
+	ElegantMaskRP,
+	ElegantMaskRGP,
+	GoldenLynx,
+	GreenStoneOfJudgement,
+	RedStoneOfFaith,
+	BlueStoneOfTreason,
+	GoldenLynxG,
+	GoldenLynxR,
+	GoldenLynxB,
+	GoldenLynxGR,
+	GoldenLynxGB,
+	GoldenLynxRB,
+	GoldenLynxGRB,
+	LeonWithRocketLauncher,
+	LeonWithShotgun,
+	LeonWithHandgun,
+	AshleyGraham,
+	LuisSera,
+	DonJose,
+	DonDiego,
+	DonEsteban,
+	DonManuel,
+	DrSalvador,
+	Merchant,
+	ZealotWithScythe,
+	ZealotWithShield,
+	ZealotWithBowgun,
+	LeaderZealot,
+	SoldierWithDynamite,
+	SoldierWithStunRod,
+	SoldierWithHammer,
+	Isabel,
+	Maria,
+	AdaWong,
+	BellaSisters,
+	DonPedro,
+	JJ,
+	LetterFromAda,
+	LuisMemo3,
+	PaperAirplane,
+	OurPlan,
+	LuisMemo4,
+	KrauserNote,
+	LuisMemo5,
+	OurMission,
+	AAA2,
+	AAA3,
+	TacticalVest,
+	AAA4,
+	Punisher3,
+	Handgun2,
+	Shotgun3,
+	MineThrower2,
+	Handcannon2,
+	MineThrowerPlusScope2,
+	MissionDirectives1,
+	MissionDirectives2,
+	MissionDirectives3,
+	MissionDirectives4,
+	MissionDirectives5,
+	Mission1TreasureMap,
+	Mission2TreasureMap,
+	Mission3TreasureMap,
+	Mission4TreasureMap,
+	Mission5TreasureMap,
+	Invalid = 0xFFFF
+};
+
 class Game
 {
 public:
-	struct InventoryIconData
-	{
-		std::uint16_t unknown;
-		std::uint8_t itemType; //1 for guns, 2 for ammo, 3 for grenades, 6 for medicine
-		std::uint8_t unknown4;
-		std::uint8_t stackLimit;
-		std::uint8_t unknown5;
-		std::uint16_t unknown2;
-	};
+	class ItemData;
+	class WeaponData;
+	class InventoryIconData;
 private:
-	friend void __cdecl myGetInventoryModelData(std::uint32_t, Game::InventoryIconData*);
-	friend int __cdecl myDropRandomizer(std::uint32_t, std::uint32_t *, std::uint32_t *, Game *);
+	friend void __cdecl myGetInventoryModelData(ItemIds, Game::InventoryIconData*);
+	friend int __cdecl myDropRandomizer(std::uint32_t, ItemIds*, std::uint32_t*, Game*);
 
-	static const Bimap<std::uint16_t, String> items;
+	static const Bimap<ItemIds, String> items;
 	std::mutex doorVectorMutex;
 	bool sceneChanged = false;
 	Pointer healthBase;
@@ -38,7 +309,7 @@ private:
 	Pointer firePowerTable;
 	Pointer noclipAddress;
 	Pointer doorData;
-	Pointer doorList; //at deference, then at +0x10, first four bits are door index * 2
+	Pointer doorList; //at dereference, then at +0x10, first four bits are door index * 2
 	Pointer refreshDoorsHookLocation;
 	Pointer dropRandomizerHookLocation;
 	Pointer dropRandomizerOriginal = nullptr;
@@ -46,34 +317,25 @@ private:
 	Pointer getModelDataOriginal = nullptr;
 	Pointer tmpFireRate;
 	Pointer loggerFunction;
-	Pointer linkedList; //+0x34 next node, then do +0x14, that's second argument to SetPanel
+	Pointer linkedList;
 	Pointer typewriterProc;
 
 	std::int32_t originalLoggerCallbackOffset;
 	std::vector<void*> doors;
-	std::map<std::uint16_t, std::uint32_t> itemMaxAmount;
+	std::map<ItemIds, std::uint32_t> itemStackCap;
 	
 	void(__cdecl *setScenePtr)(void*); //first parameter is a pointer to a 312 byte (0x138) structure
 	void(__cdecl *sceAtCreateItemAt)(float coords[3], uint32_t itemId, uint32_t amount, uint32_t /*3 for treasures*/, uint32_t, uint32_t, uint32_t);
-	void(__cdecl *getInventoryModelData)(std::uint32_t id, InventoryIconData *result);
+	void(__cdecl *getInventoryModelData)(ItemIds id, InventoryIconData *result);
 	void(__stdcall *SaveProcedure)(void *saveStuff);
-	std::uint32_t(__cdecl *readMinimumHeader)(void *sceneHandle, void *unkwnown);
-	void(__cdecl *SetPanel)(void *node, void *functionAddress, std::uint32_t param, void *memoryPool, std::uint32_t flags, std::uint32_t flags2, std::uint32_t one, const char *string, std::uint32_t xAF);
-
-	template <typename T> T getValue(Pointer address) const;
-	template <typename T> void setValue(Pointer address, T value) const;
-	template <typename T, size_t sz> void setValue(Pointer address, const T value[sz]) const;
-	template <typename T> Pointer pointerPath(Pointer baseAddress, const T& offset);
-	template <typename T, typename ...Args> Pointer pointerPath(Pointer baseAddress, const T &offset, const Args& ...offsets);
-	Pointer pointerPath(Pointer baseAddress, const std::vector<std::uint64_t> &offsets);
+	std::uint32_t(__cdecl *readMinimumHeader)(void *sceneHandle, void *unknown);
+	
 	Pointer getFirstValidDoor();
 	void setHooks();
 	void removeHooks();
 public:
 	enum class Difficulty : std::uint32_t { Amateur, Easy = 3, Normal = 5, Professional = 6 };
 	enum class TypewriterMode : std::uint32_t { Load, Save };
-	class ItemData;
-	class WeaponData;
 	Game();
 	~Game();
 	bool good();
@@ -100,12 +362,12 @@ public:
 	std::uint8_t getCostume();
 	const std::vector<String>& getCharacterCostumeNames(std::uint8_t id);
 
-	WeaponData* getWeaponDataPtr(std::uint16_t id) const;
+	WeaponData* getWeaponDataPtr(ItemIds id) const;
 	void setWeaponDataPtr(WeaponData *target, const WeaponData &source, const float(&newFirepower)[7]);
-	bool isWeapon(std::uint16_t id) const;
+	bool isWeapon(ItemIds id) const;
 	float* getFirepowerTableEntry(std::uint8_t i) const;
 	void setFirepowerTableEntry(std::uint8_t i, const float newValues[7]);
-	static const std::vector<std::uint16_t>& getAmmoItemIds();
+	static const std::vector<ItemIds>& getAmmoItemIds();
 
 	void setMoney(std::uint32_t value);
 	std::uint32_t getMoney();
@@ -127,8 +389,8 @@ public:
 	void spawnPickup(float coords[3], std::uint32_t id, std::uint32_t amount);
 	void spawnPickup(std::uint32_t id, std::uint32_t amount);
 
-	InventoryIconData getItemDimensions(std::uint16_t id);
-	void setMaxItemAmount(std::uint16_t id, std::uint32_t amount);
+	InventoryIconData getItemDimensions(ItemIds id);
+	void setMaxItemAmount(ItemIds id, std::uint32_t amount);
 
 	void toggleFastTmp(bool toggle);
 	bool isFastTmpEnabled();
@@ -143,7 +405,7 @@ public:
 
 class Game::ItemData //Must be 14 bytes
 {
-	std::uint16_t mId;
+	ItemIds mId;
 	std::uint16_t mAmount; //not ammo
 	std::uint16_t mIsValid; //if this is 0, the item will not be in the inventory.
 	std::uint16_t mFirePower: 4;
@@ -162,8 +424,8 @@ class Game::ItemData //Must be 14 bytes
 	ItemData& operator=(const ItemData&) = delete;
 	ItemData& operator=(ItemData&&) = delete;
 public:
-	void itemId(std::uint16_t id);
-	std::uint16_t itemId() const;
+	void itemId(ItemIds id);
+	ItemIds itemId() const;
 
 	void amount(std::uint16_t amount);
 	std::uint16_t amount() const;
@@ -171,20 +433,20 @@ public:
 	void valid(bool valid);
 	bool valid() const;
 
-	void firingSpeed(std::uint16_t level);// { FS = level; }
-	std::uint16_t firingSpeed() const;// { return FS; }
+	void firingSpeed(std::uint16_t level);
+	std::uint16_t firingSpeed() const;
 
-	void firePower(std::uint16_t level);// { FP = level; }
-	std::uint16_t firePower() const;// { return FP; }
+	void firePower(std::uint16_t level);
+	std::uint16_t firePower() const;
 
-	void capacity(std::uint16_t level);// { CA = level; }
-	std::uint16_t capacity() const;// { return CA; }
+	void capacity(std::uint16_t level);
+	std::uint16_t capacity() const;
 
-	void reloadSpeed(std::uint16_t level);// { RS = level; }
-	std::uint16_t reloadSpeed() const;// { return RS; }
+	void reloadSpeed(std::uint16_t level);
+	std::uint16_t reloadSpeed() const;
 
-	void ammo(std::uint16_t count);// { mAmmo = count << 3; }
-	std::uint16_t ammo() const;// { return mAmmo >> 3; }
+	void ammo(std::uint16_t count);
+	std::uint16_t ammo() const;
 
 	void posX(std::uint8_t pos);
 	std::uint8_t posX() const;
@@ -204,17 +466,17 @@ class Game::WeaponData
 public:
 	static constexpr size_t capacitySlotCount = 7;
 private:
-	std::uint16_t mId; //Weapon ID
+	ItemIds mId; //Weapon ID
 	std::uint8_t mUnknown;
 	std::uint8_t mFirepowerIndex;
 	std::uint8_t mModel;
 	std::uint8_t mUnknown2;
-	std::uint16_t mAmmoItemId; //-1 on rocket launcher
+	ItemIds mAmmoItemId; //-1 on rocket launcher
 	std::uint16_t mCapacityValues[capacitySlotCount]; //0x8000 (a.k.a 32768) for infinite ammo
 
 public:
 
-	std::uint16_t id() const;
+	ItemIds id() const;
 
 	void firepowerIndex(std::uint8_t position);
 	std::uint8_t firepowerIndex() const;
@@ -222,13 +484,28 @@ public:
 	void model(std::uint8_t value);
 	std::uint8_t model() const;
 
-	void weaponAmmo(std::uint16_t id);
-	std::uint16_t weaponAmmo() const;
+	void weaponAmmo(ItemIds id);
+	ItemIds weaponAmmo() const;
 
 	void capacity(size_t position, std::uint16_t value);
 	std::uint16_t capacity(size_t position) const;
 };
 
-std::ostream& operator<<(std::ostream &os, const Game::ItemData &data);
+class Game::InventoryIconData
+{
+	friend void __cdecl myGetInventoryModelData(ItemIds, Game::InventoryIconData*);
+	enum class ItemType : std::uint8_t { Gun = 1, Ammo, Grenade, Medicine = 6, WeaponAttachment = 9, File, AttacheCase };
+	std::uint16_t mUnknown;
+	ItemType mItemType; //1 for guns, 2 for ammo, 3 for grenades, 6 for medicine
+	std::uint8_t mUnknown2;
+	std::uint8_t mStackLimit;
+	std::uint8_t mUnknown3;
+	std::uint16_t mUnknown4;
+public:
+	void stackLimit(std::uint8_t value);
+	std::uint8_t stackLimit() const;
+};
+
+//std::ostream& operator<<(std::ostream &os, const Game::ItemData &data);
 
 #endif

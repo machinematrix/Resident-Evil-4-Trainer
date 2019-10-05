@@ -12,7 +12,8 @@ void InventoryListView::refresh(const Game &hacks)
 	{
 		try {
 			Game::ItemData *ptr = (Game::ItemData*)std::stoi(getItemText(listItem, Address), nullptr, 16); //throws
-			if (ptr->valid()) ++listItem;
+			if (ptr->valid())
+				++listItem;
 			else {
 				eraseItem(listItem);
 				--itemCnt;
@@ -42,11 +43,11 @@ void InventoryListView::refresh(const Game &hacks)
 				item = itemCount() - 1;
 			}
 
-			setItemText(item, Id, std::to_wstring(first->itemId()));
+			setItemText(item, Id, std::to_wstring(static_cast<std::uint16_t>(first->itemId())));
 			try { setItemText(item, Name, hacks.getItemName(first->itemId())); }
 			catch (const std::out_of_range&) {
 				String msg(TEXT("Name not found for ID "));
-				msg += std::to_wstring(first->itemId());
+				msg += std::to_wstring(static_cast<std::uint32_t>(first->itemId()));
 				ErrorBox(GetParent(getWindowHandle()), msg.c_str());
 			}
 			setItemText(item, Amount, std::to_wstring(first->amount()));
