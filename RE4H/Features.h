@@ -13,7 +13,7 @@ typedef std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wch
 typedef std::basic_string<char, std::char_traits<char>, std::allocator<char>> String;
 #endif
 
-enum class ItemIds : std::uint16_t
+enum class ItemId : std::uint16_t
 {
 	MagnumAmmo,
 	HandGrenade,
@@ -297,10 +297,10 @@ public:
 	class WeaponData;
 	class InventoryIconData;
 private:
-	friend void __cdecl myGetInventoryModelData(ItemIds, Game::InventoryIconData*);
-	friend int __cdecl myDropRandomizer(std::uint32_t, ItemIds*, std::uint32_t*, Game*);
+	friend void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
+	friend int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
 
-	static const Bimap<ItemIds, String> items;
+	static const Bimap<ItemId, String> items;
 	std::mutex doorVectorMutex;
 	bool sceneChanged = false;
 	Pointer healthBase;
@@ -317,17 +317,19 @@ private:
 	Pointer getModelDataOriginal = nullptr;
 	Pointer tmpFireRate;
 	Pointer loggerFunction;
+	Pointer loggerFunction2;
 	Pointer linkedList;
 	Pointer typewriterProc;
+	Pointer merchantProc;
 
-	std::int32_t originalLoggerCallbackOffset;
+	std::int32_t originalLoggerCallbackOffset, originalLogger2CallbackOffset;
 	std::vector<void*> doors;
-	std::map<ItemIds, std::uint32_t> itemStackCap;
+	std::map<ItemId, std::uint32_t> itemStackCap;
 	
 	void(__cdecl *setScenePtr)(void*); //first parameter is a pointer to a 312 byte (0x138) structure
-	void(__cdecl *sceAtCreateItemAt)(float coords[3], uint32_t itemId, uint32_t amount, uint32_t /*3 for treasures*/, uint32_t, uint32_t, uint32_t);
-	void(__cdecl *getInventoryModelData)(ItemIds id, InventoryIconData *result);
-	void(__stdcall *SaveProcedure)(void *saveStuff);
+	void(__cdecl *sceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
+	void(__cdecl *getInventoryModelData)(ItemId id, InventoryIconData *result);
+	//void(__stdcall *SaveProcedure)(void *saveStuff);
 	std::uint32_t(__cdecl *readMinimumHeader)(void *sceneHandle, void *unknown);
 	
 	Pointer getFirstValidDoor();
@@ -362,12 +364,12 @@ public:
 	std::uint8_t getCostume();
 	const std::vector<String>& getCharacterCostumeNames(std::uint8_t id);
 
-	WeaponData* getWeaponDataPtr(ItemIds id) const;
+	WeaponData* getWeaponDataPtr(ItemId id) const;
 	void setWeaponDataPtr(WeaponData *target, const WeaponData &source, const float(&newFirepower)[7]);
-	bool isWeapon(ItemIds id) const;
+	bool isWeapon(ItemId id) const;
 	float* getFirepowerTableEntry(std::uint8_t i) const;
-	void setFirepowerTableEntry(std::uint8_t i, const float newValues[7]);
-	static const std::vector<ItemIds>& getAmmoItemIds();
+	void setFirepowerTableEntry(std::uint8_t i, const float (&newValues)[7]);
+	static const std::vector<ItemId>& getAmmoItemIds();
 
 	void setMoney(std::uint32_t value);
 	std::uint32_t getMoney();
@@ -389,8 +391,8 @@ public:
 	void spawnPickup(float coords[3], std::uint32_t id, std::uint32_t amount);
 	void spawnPickup(std::uint32_t id, std::uint32_t amount);
 
-	InventoryIconData getItemDimensions(ItemIds id);
-	void setMaxItemAmount(ItemIds id, std::uint32_t amount);
+	InventoryIconData getItemDimensions(ItemId id);
+	void setMaxItemAmount(ItemId id, std::uint32_t amount);
 
 	void toggleFastTmp(bool toggle);
 	bool isFastTmpEnabled();
@@ -398,14 +400,15 @@ public:
 	void loadSceneFile(const std::string &sceneName);
 
 	//returns old callback
-	auto setLoggerCallback(void (__cdecl *callback)(const char*, ...)) -> void(__cdecl*)(const char *, ...);
+	void setLoggerCallback(void(__cdecl *callback)(const char*, ...));// -> void(__cdecl*)(const char *, ...);
 
 	void openTypewriter(TypewriterMode mode);
+	void openMerchant();
 };
 
 class Game::ItemData //Must be 14 bytes
 {
-	ItemIds mId;
+	ItemId mId;
 	std::uint16_t mAmount; //not ammo
 	std::uint16_t mIsValid; //if this is 0, the item will not be in the inventory.
 	std::uint16_t mFirePower: 4;
@@ -424,8 +427,8 @@ class Game::ItemData //Must be 14 bytes
 	ItemData& operator=(const ItemData&) = delete;
 	ItemData& operator=(ItemData&&) = delete;
 public:
-	void itemId(ItemIds id);
-	ItemIds itemId() const;
+	void itemId(ItemId id);
+	ItemId itemId() const;
 
 	void amount(std::uint16_t amount);
 	std::uint16_t amount() const;
@@ -466,17 +469,17 @@ class Game::WeaponData
 public:
 	static constexpr size_t capacitySlotCount = 7;
 private:
-	ItemIds mId; //Weapon ID
+	ItemId mId; //Weapon ID
 	std::uint8_t mUnknown;
 	std::uint8_t mFirepowerIndex;
 	std::uint8_t mModel;
-	std::uint8_t mUnknown2;
-	ItemIds mAmmoItemId; //-1 on rocket launcher
+	std::uint8_t mAttachmentCount;
+	ItemId mAmmoItemId; //-1 on rocket launcher
 	std::uint16_t mCapacityValues[capacitySlotCount]; //0x8000 (a.k.a 32768) for infinite ammo
 
 public:
 
-	ItemIds id() const;
+	ItemId id() const;
 
 	void firepowerIndex(std::uint8_t position);
 	std::uint8_t firepowerIndex() const;
@@ -484,8 +487,8 @@ public:
 	void model(std::uint8_t value);
 	std::uint8_t model() const;
 
-	void weaponAmmo(ItemIds id);
-	ItemIds weaponAmmo() const;
+	void weaponAmmo(ItemId id);
+	ItemId weaponAmmo() const;
 
 	void capacity(size_t position, std::uint16_t value);
 	std::uint16_t capacity(size_t position) const;
@@ -493,10 +496,10 @@ public:
 
 class Game::InventoryIconData
 {
-	friend void __cdecl myGetInventoryModelData(ItemIds, Game::InventoryIconData*);
+	friend void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	enum class ItemType : std::uint8_t { Gun = 1, Ammo, Grenade, Medicine = 6, WeaponAttachment = 9, File, AttacheCase };
 	std::uint16_t mUnknown;
-	ItemType mItemType; //1 for guns, 2 for ammo, 3 for grenades, 6 for medicine
+	ItemType mItemType;
 	std::uint8_t mUnknown2;
 	std::uint8_t mStackLimit;
 	std::uint8_t mUnknown3;
@@ -505,7 +508,5 @@ public:
 	void stackLimit(std::uint8_t value);
 	std::uint8_t stackLimit() const;
 };
-
-//std::ostream& operator<<(std::ostream &os, const Game::ItemData &data);
 
 #endif

@@ -528,7 +528,8 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 		break;
 	}
 	case SaveButton: {
-		wndInfo.cheats.openTypewriter(Game::TypewriterMode::Save);
+		//wndInfo.cheats.openTypewriter(Game::TypewriterMode::Save);
+		wndInfo.cheats.openMerchant();
 		break;
 	}
 	case KeyBindings: {

@@ -7,284 +7,6 @@
 #include <type_traits>
 #include <cstdint>
 
-
-//enum class ItemIds : std::uint16_t
-//{
-//	MagnumAmmo,
-//	HandGrenade,
-//	IncendiaryGrenade,
-//	Matilda,
-//	HandgunAmmo,
-//	FirstAidSpray,
-//	GreenHerb,
-//	RifleAmmo,
-//	ChickenEgg,
-//	BrownChickenEgg,
-//	GoldChickenEgg,
-//	AAA,
-//	PlagaSample,
-//	KrauserKnife,
-//	FlashGrenade,
-//	SalazarFamilyInsignia,
-//	Bowgun,
-//	BowgunBolts,
-//	GreenHerbX2,
-//	GreenHerbX3,
-//	MixedHerbsGR,
-//	MixedHerbsGRY,
-//	MixedHerbsGY,
-//	RocketLauncherSpecial,
-//	ShotgunShells,
-//	RedHerb,
-//	HandcannonAmmo,
-//	HourglassWGoldDecor,
-//	YellowHerb,
-//	StoneTablet,
-//	LionOrnament,
-//	GoatOrnament,
-//	TMPAmmo1,
-//	Punisher,
-//	PunisherWSilencer,
-//	Handgun,
-//	HandgunWSilencer,
-//	Red9,
-//	Red9WStock,
-//	Blacktail,
-//	BlacktailWSilencer,
-//	BrokenButterfly,
-//	Killer7,
-//	Killer7WSilencer,
-//	Shotgun,
-//	Striker,
-//	Rifle,
-//	RifleSemiAuto,
-//	TMP,
-//	ActivationKeyBlue,
-//	TMPWStock,
-//	ActivationKeyRed,
-//	ChicagoTypewriter1,
-//	RocketLauncher,
-//	MineThrower,
-//	Handcannon,
-//	CombatKnife,
-//	SerpentOrnament,
-//	MoonstoneRightHalf,
-//	InsigniaKey,
-//	RoundInsignia,
-//	FalseEye,
-//	CustomTMP,
-//	SilencerHandgun,
-//	Punisher2,
-//	PRL412,
-//	StockRed9,
-//	StockTMP,
-//	ScopeRifle,
-//	ScopeSemiAutoRifle,
-//	MineDarts,
-//	Shotgun2,
-//	CaptureLuisCera,
-//	TargetPractice,
-//	LuisMemo,
-//	CastellanMemo,
-//	FemaleIntruder,
-//	ButlerMemo,
-//	SampleRetrieved,
-//	RitualPreparation,
-//	LuisMemo2,
-//	RifleSemiAutoWInfraredScope,
-//	KrauserBow,
-//	ChicagoTypewriter2,
-//	TreasureMapCastle,
-//	TreasureMapIsland,
-//	VelvetBlue,
-//	Spinel,
-//	PearlPendant,
-//	BrassPocketWatch,
-//	ElegantHeaddress,
-//	AntiquePipe,
-//	GoldBangleWPearls,
-//	AmberRing,
-//	Beerstein,
-//	GreenCatEye,
-//	RedCatEye,
-//	YellowCatEye,
-//	BeersteinG,
-//	BeersteinR,
-//	BeersteinY,
-//	BeersteinGR,
-//	BeersteinGY,
-//	BeersteinRY,
-//	BeersteinGRY,
-//	MoonstoneLeftHalf,
-//	ChicagoTypewriterAmmo,
-//	RifleWScope,
-//	RifleSemiAutoWScope,
-//	InfiniteLauncher,
-//	KingGrail,
-//	QueenGrail,
-//	StaffOfRoyalty,
-//	GoldBars,
-//	Arrows,
-//	BonusTime,
-//	EmergencyLockCardKey,
-//	BonusPoints,
-//	GreenCatEye2,
-//	Ruby,
-//	TreasureBoxS,
-//	TreasureBoxL,
-//	BlueMoonstone,
-//	KeyToTheMine,
-//	AttachCaseS,
-//	AttachCaseM,
-//	AttachCaseL,
-//	AttachCaseXL,
-//	GoldenSword,
-//	IronKey,
-//	StoneOfSacrifice,
-//	StorageRoomCardKey,
-//	FreezerCardKey,
-//	PieceOfTheHolyBeastPanther,
-//	PieceOfTheHolyBeastSerpent,
-//	PieceOfTheHolyBeastEagle,
-//	JetSkiKey,
-//	DirtyPearlPendant,
-//	DirtyBrassPocketWatch,
-//	OldKey,
-//	CampKey,
-//	Dynamite,
-//	LiftActivationKey,
-//	GoldBangle,
-//	ElegantPerfumeBottle,
-//	MirrorWPearlAndRubies,
-//	WasteDisposalCardKey,
-//	ElegantChessboard,
-//	RiotGun,
-//	BlackBass,
-//	HourglassWGoldDecor2,
-//	BlackBassL,
-//	IlluminadosPendant,
-//	RifleWInfraredScope,
-//	Crown,
-//	CrownJewel,
-//	RoyalInsignia,
-//	CrownWithJewels,
-//	CrownWithInsignia,
-//	SalazarFamilyCrown,
-//	RifleAmmoInfrared,
-//	Emerald,
-//	BottleCaps,
-//	GalleryKey,
-//	EmblemRightHalf,
-//	EmblemLeftHalf,
-//	HexagonalEmblem,
-//	CastleGateKey,
-//	MixedHerbsRY,
-//	TreasureMapVillage,
-//	ScopeMineThrower,
-//	MineThrowerPlusScope,
-//	PlayingManual1,
-//	InfoOnAshley,
-//	PlayingManual2,
-//	AlertOrder,
-//	AboutTheBlueMedallions,
-//	ChiefNote,
-//	ClosureOfTheChurch,
-//	AnonymousLetter,
-//	PlayingManual3,
-//	SeraAndTheThirdParty,
-//	TwoRoutes,
-//	VillageLastDefense,
-//	ButterflyLamp,
-//	GreenEye,
-//	RedEye,
-//	BlueEye,
-//	ButterflyLampG,
-//	ButterflyLampR,
-//	ButterflyLampB,
-//	ButterflyLampGR,
-//	ButterflyLampGB,
-//	ButterflyLampRB,
-//	ButterflyLampRGB,
-//	PrisonKey,
-//	PlatinumSword,
-//	InfraredScope,
-//	ElegantMask,
-//	GreenGem,
-//	RedGem,
-//	PurpleGem,
-//	ElegantMaskG,
-//	ElegantMaskR,
-//	ElegantMaskP,
-//	ElegantMaskGR,
-//	ElegantMaskGP,
-//	ElegantMaskRP,
-//	ElegantMaskRGP,
-//	GoldenLynx,
-//	GreenStoneOfJudgement,
-//	RedStoneOfFaith,
-//	BlueStoneOfTreason,
-//	GoldenLynxG,
-//	GoldenLynxR,
-//	GoldenLynxB,
-//	GoldenLynxGR,
-//	GoldenLynxGB,
-//	GoldenLynxRB,
-//	GoldenLynxGRB,
-//	LeonWithRocketLauncher,
-//	LeonWithShotgun,
-//	LeonWithHandgun,
-//	AshleyGraham,
-//	LuisSera,
-//	DonJose,
-//	DonDiego,
-//	DonEsteban,
-//	DonManuel,
-//	DrSalvador,
-//	Merchant,
-//	ZealotWithScythe,
-//	ZealotWithShield,
-//	ZealotWithBowgun,
-//	LeaderZealot,
-//	SoldierWithDynamite,
-//	SoldierWithStunRod,
-//	SoldierWithHammer,
-//	Isabel,
-//	Maria,
-//	AdaWong,
-//	BellaSisters,
-//	DonPedro,
-//	JJ,
-//	LetterFromAda,
-//	LuisMemo3,
-//	PaperAirplane,
-//	OurPlan,
-//	LuisMemo4,
-//	KrauserNote,
-//	LuisMemo5,
-//	OurMission,
-//	AAA2,
-//	AAA3,
-//	TacticalVest,
-//	AAA4,
-//	Punisher3,
-//	Handgun2,
-//	Shotgun3,
-//	MineThrower2,
-//	Handcannon2,
-//	MineThrowerPlusScope2,
-//	MissionDirectives1,
-//	MissionDirectives2,
-//	MissionDirectives3,
-//	MissionDirectives4,
-//	MissionDirectives5,
-//	Mission1TreasureMap,
-//	Mission2TreasureMap,
-//	Mission3TreasureMap,
-//	Mission4TreasureMap,
-//	Mission5TreasureMap,
-//	Invalid = 0xFFFF
-//};
-
 namespace HealthBaseOffsets {
 	enum : std::uint32_t
 	{
@@ -345,11 +67,11 @@ enum class GameState : std::uint32_t
 	Pause = 0x106
 };
 
-void __cdecl myGetInventoryModelData(ItemIds id, Game::InventoryIconData *result)
+void __cdecl myGetInventoryModelData(ItemId id, Game::InventoryIconData *result)
 {
 	static Game *game;
 
-	if (id != ItemIds::Invalid)
+	if (id != ItemId::Invalid)
 	{
 		std::unique_lock<std::mutex> lck(game->doorVectorMutex);
 		auto amountIt = game->itemStackCap.find(id);
@@ -365,7 +87,7 @@ void __cdecl myGetInventoryModelData(ItemIds id, Game::InventoryIconData *result
 	}
 }
 
-int __cdecl myDropRandomizer(std::uint32_t enemyId, ItemIds *outItemId, std::uint32_t *outItemCount, Game *unknownPassZero)
+int __cdecl myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std::uint32_t *outItemCount, Game *unknownPassZero)
 {
 	static Game *game;
 	bool result = false;
@@ -373,14 +95,14 @@ int __cdecl myDropRandomizer(std::uint32_t enemyId, ItemIds *outItemId, std::uin
 
 	if (outItemId && outItemCount)
 	{
-		std::vector<ItemIds> candidates = { ItemIds::TreasureBoxS, ItemIds::FlashGrenade, ItemIds::IncendiaryGrenade, ItemIds::HandGrenade };
+		std::vector<ItemId> candidates = { ItemId::TreasureBoxS, ItemId::FlashGrenade, ItemId::IncendiaryGrenade, ItemId::HandGrenade };
 		static std::default_random_engine engine;
 		static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(/*ItemIds::MagnumAmmo*/0, /*ItemIds::Mission5TreasureMap*/300);
 		Game::InventoryIconData icon;
 
 		if (game->getHealth() <= game->getHealthLimit() / 2) {
-			candidates.push_back(ItemIds::GreenHerb);
-			candidates.push_back(ItemIds::FirstAidSpray);
+			candidates.push_back(ItemId::GreenHerb);
+			candidates.push_back(ItemId::FirstAidSpray);
 		}
 
 		for (Game::ItemData *item = game->begInventory(), *end = game->endInventory(); item != end; ++item)
@@ -425,7 +147,7 @@ void setValue(Pointer address, T value)
 }
 
 template<typename T, size_t sz>
-void setValue(Pointer address, const T value[sz])
+void setValue(Pointer address, const T (&value)[sz])
 {
 	for (size_t i = 0; i < sz; ++i) {
 		((T*)address)[i] = value[i];
@@ -526,9 +248,11 @@ Game::Game()
 	tmpFireRate(patternScan("D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41")),
 	readMinimumHeader((decltype(readMinimumHeader))patternScan("55  8B EC  53  8B 1D ????????  56  68 ????????")),
 	loggerFunction(patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10")),
+	loggerFunction2(patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3")),
 	linkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
-	SaveProcedure((decltype(SaveProcedure))patternScan("55  8B EC  56 8B 75 08  8B 46 3C  6A FF")),
-	typewriterProc(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000"))
+	//SaveProcedure((decltype(SaveProcedure))patternScan("55  8B EC  56 8B 75 08  8B 46 3C  6A FF")),
+	typewriterProc(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
+	merchantProc(patternScan("55  8B EC  83 EC 7C  A1 ????????  33 C5  89 45 FC  53  56  33 DB"))
 	//SetPanel((decltype(SetPanel))patternScan("55 8B EC  8B 45 0C  8B 4D 10  8B 55 14  53  56  8B 75 08"))
 {
 #ifndef NDEBUG
@@ -553,11 +277,16 @@ Game::Game()
 	loggerFunction += getValue<std::int32_t>(loggerFunction) + 4; //+4 because we already skipped the first byte
 	loggerFunction += 1; //skip 0xE9
 
+	loggerFunction2 += 11;
+	loggerFunction2 += getValue<std::int32_t>(loggerFunction2) + 4;
+	loggerFunction2 += 1;
+
 	myDropRandomizer(0, nullptr, nullptr, this);
-	myGetInventoryModelData(ItemIds::Invalid, (InventoryIconData*)this);
+	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
 	setHooks();
 
 	originalLoggerCallbackOffset = getValue<std::int32_t>(loggerFunction);
+	originalLogger2CallbackOffset = getValue<std::int32_t>(loggerFunction2);
 #ifndef NDEBUG
 	cout << "Health Base: " << (void*)healthBase << endl;
 	cout << "Player Base: " << (void*)playerBase << endl;
@@ -575,6 +304,7 @@ Game::Game()
 Game::~Game()
 {
 	setValue<std::int32_t>(loggerFunction, originalLoggerCallbackOffset);
+	setValue<std::int32_t>(loggerFunction2, originalLogger2CallbackOffset);
 	removeHooks();
 }
 
@@ -596,8 +326,9 @@ bool Game::good()
 		&& tmpFireRate
 		&& linkedList
 		&& readMinimumHeader
-		&& SaveProcedure
 		&& typewriterProc
+		&& loggerFunction
+		&& loggerFunction2
 		;
 }
 
@@ -650,7 +381,7 @@ Game::ItemData* Game::addItem() const
 	{
 		if (!result->valid())
 		{ //if we find a free slot
-			result->itemId(ItemIds::MagnumAmmo);
+			result->itemId(ItemId::MagnumAmmo);
 			result->amount(1);
 			result->valid(1);
 			result->firePower(0);
@@ -740,10 +471,10 @@ const std::vector<String>& Game::getCharacterCostumeNames(std::uint8_t id)
 	return costumes[id <= 5 ? id : 6];
 }
 
-Game::WeaponData* Game::getWeaponDataPtr(ItemIds id) const
+Game::WeaponData* Game::getWeaponDataPtr(ItemId id) const
 {
 	WeaponData *result = nullptr, *iter = (WeaponData*)weaponDataIndex;
-	while (iter->id() != ItemIds::MagnumAmmo)
+	while (iter->id() != ItemId::MagnumAmmo)
 	{
 		if (iter->id() == id) {
 			result = iter;
@@ -770,7 +501,7 @@ void Game::setWeaponDataPtr(WeaponData *target, const WeaponData &source, const 
 	VirtualProtect(target, sizeof(WeaponData), oldProtect, &oldProtect);
 }
 
-bool Game::isWeapon(ItemIds id) const
+bool Game::isWeapon(ItemId id) const
 {
 	return getWeaponDataPtr(id) ? true : false;
 }
@@ -780,25 +511,24 @@ float* Game::getFirepowerTableEntry(std::uint8_t i) const
 	return (float*)(firePowerTable + i * 7 * sizeof(float));
 }
 
-void Game::setFirepowerTableEntry(std::uint8_t i, const float newValues[7])
+void Game::setFirepowerTableEntry(std::uint8_t i, const float (&newValues)[7])
 {
-	setValue<float, 7>(firePowerTable + i * 7 * sizeof(float), newValues);
+	setValue/*<float, 7>*/(firePowerTable + i * 7 * sizeof(float), newValues);
 }
 
-const std::vector<ItemIds>& Game::getAmmoItemIds()
+const std::vector<ItemId>& Game::getAmmoItemIds()
 {
-	//using namespace ItemIds;
-	static const std::vector<ItemIds> ammoIds = { ItemIds::MagnumAmmo,
-														ItemIds::HandgunAmmo,
-														ItemIds::RifleAmmo,
-														ItemIds::ShotgunShells,
-														ItemIds::HandcannonAmmo,
-														ItemIds::TMPAmmo1,
-														ItemIds::Arrows,
-														ItemIds::RifleAmmoInfrared,
-														ItemIds::ChicagoTypewriterAmmo,
-														ItemIds::MineDarts,
-														ItemIds::BowgunBolts };
+	static const std::vector<ItemId> ammoIds = {		ItemId::MagnumAmmo,
+														ItemId::HandgunAmmo,
+														ItemId::RifleAmmo,
+														ItemId::ShotgunShells,
+														ItemId::HandcannonAmmo,
+														ItemId::TMPAmmo1,
+														ItemId::Arrows,
+														ItemId::RifleAmmoInfrared,
+														ItemId::ChicagoTypewriterAmmo,
+														ItemId::MineDarts,
+														ItemId::BowgunBolts };
 	return ammoIds;
 }
 
@@ -858,7 +588,7 @@ void Game::setScene(std::uint32_t scene)
 {
 	float origin[3] = {};
 	setValue<std::uint32_t>(healthBase + HealthBaseOffsets::Scene, scene);
-	setValue<float, 3>(healthBase + HealthBaseOffsets::SceneEntryX, origin);
+	setValue/*<float, 3>*/(healthBase + HealthBaseOffsets::SceneEntryX, origin);
 	setValue(healthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
 }
 
@@ -908,14 +638,14 @@ void Game::spawnPickup(std::uint32_t id, std::uint32_t amount)
 	spawnPickup(coords, id, amount);
 }
 
-Game::InventoryIconData Game::getItemDimensions(ItemIds id)
+Game::InventoryIconData Game::getItemDimensions(ItemId id)
 {
 	InventoryIconData result = {};
 	myGetInventoryModelData(id, &result);
 	return result;
 }
 
-void Game::setMaxItemAmount(ItemIds id, std::uint32_t amount)
+void Game::setMaxItemAmount(ItemId id, std::uint32_t amount)
 {
 	std::unique_lock<std::mutex> lck(doorVectorMutex);
 	itemStackCap[id] = amount;
@@ -946,13 +676,12 @@ void Game::loadSceneFile(const std::string &sceneName)
 	}
 }
 
-auto Game::setLoggerCallback(void (__cdecl *callback)(const char*, ...)) -> void(__cdecl *)(const char *, ...)
+void Game::setLoggerCallback(void (__cdecl *callback)(const char*, ...))
 {
-	void(__cdecl *result)(const char *, ...) = (decltype(result))(loggerFunction + 4 + getValue<std::int32_t>(loggerFunction));
+	//void(__cdecl *result)(const char *, ...) = (decltype(result))(loggerFunction + 4 + getValue<std::int32_t>(loggerFunction));
 
 	setValue<std::int32_t>(loggerFunction, (Pointer)callback - loggerFunction - 4);
-
-	return result;
+	setValue<std::int32_t>(loggerFunction2, (Pointer)callback - loggerFunction2 - 4);
 }
 
 void Game::openTypewriter(TypewriterMode mode)
@@ -966,302 +695,300 @@ void Game::openTypewriter(TypewriterMode mode)
 	setValue<std::uint8_t>(node + 4, 1);
 }
 
-//std::ostream& operator<<(std::ostream &os, const Game::ItemData &data)
-//{
-//	os << "ID: " << data.itemId()
-//		<< " | Amount: " << data.amount()
-//		<< " | Valid: " << data.valid()
-//		<< " | Fire Power: " << data.firePower()
-//		<< " | Firing Speed: " << data.firingSpeed()
-//		<< " | Reload Speed: " << data.reloadSpeed()
-//		<< " | Capacity: " << data.capacity()
-//		<< " | Ammo: " << data.ammo();
-//	return os;
-//}
+void Game::openMerchant()
+{
+	//Pointer ptr = getValue<Pointer>(healthBase);
+	Pointer node = getValue<Pointer>(linkedList + 0x34);
+	node = getValue<Pointer>(node + 0x14);
+	node += 0x18;
 
-const Bimap<ItemIds, String> Game::items = {
-	{ ItemIds::MagnumAmmo, TEXT("Magnum Ammo") },
-	{ ItemIds::HandGrenade, TEXT("Hand Grenade") },
-	{ ItemIds::IncendiaryGrenade, TEXT("Incendiary Grenade") },
-	{ ItemIds::Matilda, TEXT("Matilda") },
-	{ ItemIds::HandgunAmmo, TEXT("Handgun Ammo") },
-	{ ItemIds::FirstAidSpray, TEXT("First Aid Spray") },
-	{ ItemIds::GreenHerb, TEXT("Green Herb") },
-	{ ItemIds::RifleAmmo, TEXT("Rifle Ammo") },
-	{ ItemIds::ChickenEgg, TEXT("Chicken Egg") },
-	{ ItemIds::BrownChickenEgg, TEXT("Brown Chicken Egg") },
-	{ ItemIds::GoldChickenEgg, TEXT("Gold Chicken Egg") },
-	{ ItemIds::AAA, TEXT("aaa") },
-	{ ItemIds::PlagaSample, TEXT("Plaga Sample") },
-	{ ItemIds::KrauserKnife, TEXT("Krauser Knife") },
-	{ ItemIds::FlashGrenade, TEXT("Flash Grenade") },
-	{ ItemIds::SalazarFamilyInsignia, TEXT("Salazar Family Insignia") },
-	{ ItemIds::Bowgun, TEXT("Bowgun") },
-	{ ItemIds::BowgunBolts, TEXT("Bowgun Bolts") },
-	{ ItemIds::GreenHerbX2, TEXT("Green Herb (X2)") },
-	{ ItemIds::GreenHerbX3, TEXT("Green Herb (X3)") },
-	{ ItemIds::MixedHerbsGR, TEXT("Mixed Herbs (G+R)") },
-	{ ItemIds::MixedHerbsGRY, TEXT("Mixed Herbs (G+R+Y)") },
-	{ ItemIds::MixedHerbsGY, TEXT("Mixed Herbs (G+Y)") },
-	{ ItemIds::RocketLauncherSpecial, TEXT("Rocket Launcher (Special)") },
-	{ ItemIds::ShotgunShells, TEXT("Shotgun Shells") },
-	{ ItemIds::RedHerb, TEXT("Red Herb") },
-	{ ItemIds::HandcannonAmmo, TEXT("Handcannon Ammo") },
-	{ ItemIds::HourglassWGoldDecor, TEXT("Hourglass w/ gold decor") },
-	{ ItemIds::YellowHerb, TEXT("Yellow Herb") },
-	{ ItemIds::StoneTablet, TEXT("Stone Tablet") },
-	{ ItemIds::LionOrnament, TEXT("Lion Ornament") },
-	{ ItemIds::GoatOrnament, TEXT("Goat Ornament") },
-	{ ItemIds::TMPAmmo1, TEXT("TMP Ammo") },
-	{ ItemIds::Punisher, TEXT("Punisher") },
-	{ ItemIds::PunisherWSilencer, TEXT("Punisher w/ Silencer") },
-	{ ItemIds::Handgun, TEXT("Handgun") },
-	{ ItemIds::HandgunWSilencer, TEXT("Handgun w/ Silencer") },
-	{ ItemIds::Red9, TEXT("Red9") },
-	{ ItemIds::Red9WStock, TEXT("Red9 w/ Stock") },
-	{ ItemIds::Blacktail, TEXT("Blacktail") },
-	{ ItemIds::BlacktailWSilencer, TEXT("Blacktail w/ Silencer") },
-	{ ItemIds::BrokenButterfly, TEXT("Broken Butterfly") },
-	{ ItemIds::Killer7, TEXT("Killer7") },
-	{ ItemIds::Killer7WSilencer, TEXT("Killer7 w/ Silencer") },
-	{ ItemIds::Shotgun, TEXT("Shotgun") },
-	{ ItemIds::Striker, TEXT("Striker") },
-	{ ItemIds::Rifle, TEXT("Rifle") },
-	{ ItemIds::RifleSemiAuto, TEXT("Rifle (semi-auto)") },
-	{ ItemIds::TMP, TEXT("TMP") },
-	{ ItemIds::ActivationKeyBlue, TEXT("Activation Key (Blue)") },
-	{ ItemIds::TMPWStock, TEXT("TMP w/ Stock") },
-	{ ItemIds::ActivationKeyRed, TEXT("Activation Key (Red)") },
-	{ ItemIds::ChicagoTypewriter1, TEXT("Chicago Typewriter") },
-	{ ItemIds::RocketLauncher, TEXT("Rocket Launcher") },
-	{ ItemIds::MineThrower, TEXT("Mine Thrower") },
-	{ ItemIds::Handcannon, TEXT("Handcannon") },
-	{ ItemIds::CombatKnife, TEXT("Combat Knife") },
-	{ ItemIds::SerpentOrnament, TEXT("Serpent Ornament") },
-	{ ItemIds::MoonstoneRightHalf, TEXT("Moonstone (Right half)") },
-	{ ItemIds::InsigniaKey, TEXT("Insignia Key") },
-	{ ItemIds::RoundInsignia, TEXT("Round Insignia") },
-	{ ItemIds::FalseEye, TEXT("False Eye") },
-	{ ItemIds::CustomTMP, TEXT("Custom TMP") },
-	{ ItemIds::SilencerHandgun, TEXT("Silencer (Handgun)") },
-	{ ItemIds::Punisher2, TEXT("Punisher") },
-	{ ItemIds::PRL412, TEXT("P.R.L. 412") },
-	{ ItemIds::StockRed9, TEXT("Stock (Red9)") },
-	{ ItemIds::StockTMP, TEXT("Stock (TMP)") },
-	{ ItemIds::ScopeRifle, TEXT("Scope (Rifle)") },
-	{ ItemIds::ScopeSemiAutoRifle, TEXT("Scope (semi-auto Rifle)") },
-	{ ItemIds::MineDarts, TEXT("Mine-Darts") },
-	{ ItemIds::Shotgun2, TEXT("Ada's Shotgun") },
-	{ ItemIds::CaptureLuisCera, TEXT("Capture Luis Sera") },
-	{ ItemIds::TargetPractice, TEXT("Target Practice") },
-	{ ItemIds::LuisMemo, TEXT("LuisMemo") },
-	{ ItemIds::CastellanMemo, TEXT("Castellan Memo") },
-	{ ItemIds::FemaleIntruder, TEXT("Female Intruder") },
-	{ ItemIds::ButlerMemo, TEXT("Butler's Memo") },
-	{ ItemIds::SampleRetrieved, TEXT("Sample Retrieved") },
-	{ ItemIds::RitualPreparation, TEXT("Ritual Preparation") },
-	{ ItemIds::LuisMemo2, TEXT("Luis Memo 2") },
-	{ ItemIds::RifleSemiAutoWInfraredScope, TEXT("Rifle (semi-auto) w/ Infrared Scope") },
-	{ ItemIds::KrauserBow, TEXT("Krauser's Bow") },
-	{ ItemIds::ChicagoTypewriter2, TEXT("Chicago Typewriter") },
-	{ ItemIds::TreasureMapCastle, TEXT("Treasure Map (Castle)") },
-	{ ItemIds::TreasureMapIsland, TEXT("Treasure Map (Island)") },
-	{ ItemIds::VelvetBlue, TEXT("Velvet Blue") },
-	{ ItemIds::Spinel, TEXT("Spinel") },
-	{ ItemIds::PearlPendant, TEXT("Pearl Pendant") },
-	{ ItemIds::BrassPocketWatch, TEXT("Brass Pocket Watch") },
-	{ ItemIds::ElegantHeaddress, TEXT("Elegant Headdress") },
-	{ ItemIds::AntiquePipe, TEXT("Antique Pipe") },
-	{ ItemIds::GoldBangleWPearls, TEXT("Gold Bangle w/ Pearls") },
-	{ ItemIds::AmberRing, TEXT("Amber Ring") },
-	{ ItemIds::Beerstein, TEXT("Beerstein") },
-	{ ItemIds::GreenCatEye, TEXT("Green Catseye") },
-	{ ItemIds::RedCatEye, TEXT("Red Catseye") },
-	{ ItemIds::YellowCatEye, TEXT("Yellow Catseye") },
-	{ ItemIds::BeersteinG, TEXT("Beerstein w/ (G)") },
-	{ ItemIds::BeersteinR, TEXT("Beerstein w/ (R)") },
-	{ ItemIds::BeersteinY, TEXT("Beerstein w/ (Y)") },
-	{ ItemIds::BeersteinGR, TEXT("Beerstein w/ (G,R)") },
-	{ ItemIds::BeersteinGY, TEXT("Beerstein w/ (G,Y)") },
-	{ ItemIds::BeersteinRY, TEXT("Beerstein w/ (R,Y)") },
-	{ ItemIds::BeersteinGRY, TEXT("Beerstein w/ (G,R,Y)") },
-	{ ItemIds::MoonstoneLeftHalf, TEXT("Moonstone (Left Half)") },
-	{ ItemIds::ChicagoTypewriterAmmo, TEXT("Chicago Typewriter Ammo") },
-	{ ItemIds::RifleWScope, TEXT("Rifle + Scope") },
-	{ ItemIds::RifleSemiAutoWScope, TEXT("Rifle (semi-auto) w/ Scope") },
-	{ ItemIds::InfiniteLauncher, TEXT("Infinite Launcher") },
-	{ ItemIds::KingGrail, TEXT("King's Grail") },
-	{ ItemIds::QueenGrail, TEXT("Queen's Grail") },
-	{ ItemIds::StaffOfRoyalty, TEXT("Staff of Royalty") },
-	{ ItemIds::GoldBars, TEXT("Gold Bars") },
-	{ ItemIds::Arrows, TEXT("Arrows") },
-	{ ItemIds::BonusTime, TEXT("Bonus Time") },
-	{ ItemIds::EmergencyLockCardKey, TEXT("Emergency Lock Card Key") },
-	{ ItemIds::BonusPoints, TEXT("Bonus Points") },
-	{ ItemIds::GreenCatEye2, TEXT("Green Catseye") },
-	{ ItemIds::Ruby, TEXT("Ruby") },
-	{ ItemIds::TreasureBoxS, TEXT("Treasure Box S") },
-	{ ItemIds::TreasureBoxL, TEXT("Treasure Box L") },
-	{ ItemIds::BlueMoonstone, TEXT("Blue Moonstone") },
-	{ ItemIds::KeyToTheMine, TEXT("Key To The Mine") },
-	{ ItemIds::AttachCaseS, TEXT("Attach Case S") },
-	{ ItemIds::AttachCaseM, TEXT("Attach Case M") },
-	{ ItemIds::AttachCaseL, TEXT("Attach Case L") },
-	{ ItemIds::AttachCaseXL, TEXT("Attach Case XL") },
-	{ ItemIds::GoldenSword, TEXT("Golden Sword") },
-	{ ItemIds::IronKey, TEXT("Iron Key") },
-	{ ItemIds::StoneOfSacrifice, TEXT("Stone Of Sacrifice") },
-	{ ItemIds::StorageRoomCardKey, TEXT("Storage Room Card Key") },
-	{ ItemIds::FreezerCardKey, TEXT("Freezer Card Key") },
-	{ ItemIds::PieceOfTheHolyBeastPanther, TEXT("Piece Of The Holy Beast, Panther") },
-	{ ItemIds::PieceOfTheHolyBeastSerpent, TEXT("Piece Of The Holy Beast, Serpent") },
-	{ ItemIds::PieceOfTheHolyBeastEagle, TEXT("Piece Of The Holy Beast, Eagle") },
-	{ ItemIds::JetSkiKey, TEXT("Jet-ski Key") },
-	{ ItemIds::DirtyPearlPendant, TEXT("Dirty Pearl Pendant") },
-	{ ItemIds::DirtyBrassPocketWatch, TEXT("Dirty Brass Pocket Watch") },
-	{ ItemIds::OldKey, TEXT("Old Key") },
-	{ ItemIds::CampKey, TEXT("Camp Key") },
-	{ ItemIds::Dynamite, TEXT("Dynamite") },
-	{ ItemIds::LiftActivationKey, TEXT("Lift Activation Key") },
-	{ ItemIds::GoldBangle, TEXT("Gold Bangle") },
-	{ ItemIds::ElegantPerfumeBottle, TEXT("Elegant Perfume Bottle") },
-	{ ItemIds::MirrorWPearlAndRubies, TEXT("Mirror w/ Pearls & Rubies") },
-	{ ItemIds::WasteDisposalCardKey, TEXT("Waste Disposal Card Key") },
-	{ ItemIds::ElegantChessboard, TEXT("Elegant Chessboard") },
-	{ ItemIds::RiotGun, TEXT("Riot Gun") },
-	{ ItemIds::BlackBass, TEXT("Black Bass") },
-	{ ItemIds::HourglassWGoldDecor2, TEXT("Hourglass w/ gold decor") },
-	{ ItemIds::BlackBassL, TEXT("Black Bass L") },
-	{ ItemIds::IlluminadosPendant, TEXT("Illuminados Pendant") },
-	{ ItemIds::RifleWInfraredScope, TEXT("Rifle w/ Infrared Scope") },
-	{ ItemIds::Crown, TEXT("Crown") },
-	{ ItemIds::CrownJewel, TEXT("Crown Jewel") },
-	{ ItemIds::RoyalInsignia, TEXT("Royal Insignia") },
-	{ ItemIds::CrownWithJewels, TEXT("Crown with Jewels") },
-	{ ItemIds::CrownWithInsignia, TEXT("Crown with an insignia") },
-	{ ItemIds::SalazarFamilyCrown, TEXT("Salazar Family Crown") },
-	{ ItemIds::RifleAmmoInfrared, TEXT("Rifle Ammo (Infrared)") },
-	{ ItemIds::Emerald, TEXT("Emerald") },
-	{ ItemIds::BottleCaps, TEXT("Bottle Caps") },
-	{ ItemIds::GalleryKey, TEXT("Gallery Key") },
-	{ ItemIds::EmblemRightHalf, TEXT("Emblem (Right Half)") },
-	{ ItemIds::EmblemLeftHalf, TEXT("Emblem Left Half") },
-	{ ItemIds::HexagonalEmblem, TEXT("Hexagonal Emblem") },
-	{ ItemIds::CastleGateKey, TEXT("Castle Gate Key") },
-	{ ItemIds::MixedHerbsRY, TEXT("Mixed Herbs (R+Y)") },
-	{ ItemIds::TreasureMapVillage, TEXT("Treasure Map (Village)") },
-	{ ItemIds::ScopeMineThrower, TEXT("Scope (Mine Thrower)") },
-	{ ItemIds::MineThrowerPlusScope, TEXT("Mine Thrower + Scope") },
-	{ ItemIds::PlayingManual1, TEXT("Playing Manual 1") },
-	{ ItemIds::InfoOnAshley, TEXT("Info on Ashley") },
-	{ ItemIds::PlayingManual2, TEXT("Playing Manual 2") },
-	{ ItemIds::AlertOrder, TEXT("Alert Order") },
-	{ ItemIds::AboutTheBlueMedallions, TEXT("About the Blue Medallions") },
-	{ ItemIds::ChiefNote, TEXT("Chief's Note") },
-	{ ItemIds::ClosureOfTheChurch, TEXT("Closure of the Church") },
-	{ ItemIds::AnonymousLetter, TEXT("Anonymous Letter") },
-	{ ItemIds::PlayingManual3, TEXT("Playing Manual 3") },
-	{ ItemIds::SeraAndTheThirdParty, TEXT("Sera and the 3rd Party") },
-	{ ItemIds::TwoRoutes, TEXT("Two Routes") },
-	{ ItemIds::VillageLastDefense, TEXT("Village's Last Defense") },
-	{ ItemIds::ButterflyLamp, TEXT("Butterfly Lamp") },
-	{ ItemIds::GreenEye, TEXT("Green Eye") },
-	{ ItemIds::RedEye, TEXT("Red Eye") },
-	{ ItemIds::BlueEye, TEXT("Blue Eye") },
-	{ ItemIds::ButterflyLampG, TEXT("Butterfly Lamp w/ G") },
-	{ ItemIds::ButterflyLampR, TEXT("Butterfly Lamp w/ R") },
-	{ ItemIds::ButterflyLampB, TEXT("Butterfly Lamp w/ B") },
-	{ ItemIds::ButterflyLampGR, TEXT("Butterfly Lamp w/ (G,R)") },
-	{ ItemIds::ButterflyLampGB, TEXT("Butterfly Lamp w/ (G,B)") },
-	{ ItemIds::ButterflyLampRB, TEXT("Butterfly Lamp w/ (R,B)") },
-	{ ItemIds::ButterflyLampRGB, TEXT("Butterfly Lamp w/ (R,G,B)") },
-	{ ItemIds::PrisonKey, TEXT("Prison Key") },
-	{ ItemIds::PlatinumSword, TEXT("Platinum Sword") },
-	{ ItemIds::InfraredScope, TEXT("Infrared Scope") },
-	{ ItemIds::ElegantMask, TEXT("Elegant Mask") },
-	{ ItemIds::GreenGem, TEXT("Green Gem") },
-	{ ItemIds::RedGem, TEXT("Red Gem") },
-	{ ItemIds::PurpleGem, TEXT("Purple Gem") },
-	{ ItemIds::ElegantMaskG, TEXT("Elegant Mask w/ (G)") },
-	{ ItemIds::ElegantMaskR, TEXT("Elegant Mask w/ (R)") },
-	{ ItemIds::ElegantMaskP, TEXT("Elegant Mask w/ (P)") },
-	{ ItemIds::ElegantMaskGR, TEXT("Elegant Mask w/ (G,R)") },
-	{ ItemIds::ElegantMaskGP, TEXT("Elegant Mask w/ (G,P)") },
-	{ ItemIds::ElegantMaskRP, TEXT("Elegant Mask w/ (R,P)") },
-	{ ItemIds::ElegantMaskRGP, TEXT("Elegant Mask w/ (R,G,P)") },
-	{ ItemIds::GoldenLynx, TEXT("Golden Lynx") },
-	{ ItemIds::GreenStoneOfJudgement, TEXT("Green Stone of Judgement") },
-	{ ItemIds::RedStoneOfFaith, TEXT("Red Stone of Faith") },
-	{ ItemIds::BlueStoneOfTreason, TEXT("Blue Stone of Treason") },
-	{ ItemIds::GoldenLynxG, TEXT("Golden Lynx w/ (G)") },
-	{ ItemIds::GoldenLynxR, TEXT("Golden Lynx w/ (R)") },
-	{ ItemIds::GoldenLynxB, TEXT("Golden Lynx w/ (B)") },
-	{ ItemIds::GoldenLynxGR, TEXT("Golden Lynx w/ (G,R)") },
-	{ ItemIds::GoldenLynxGB, TEXT("Golden Lynx w/ (G,B)") },
-	{ ItemIds::GoldenLynxRB, TEXT("Golden Lynx w/ (R,B)") },
-	{ ItemIds::GoldenLynxGRB, TEXT("Golden Lynx w/ (G,R,B)") },
-	{ ItemIds::LeonWithRocketLauncher, TEXT("Leon w/ rocket launcher") },
-	{ ItemIds::LeonWithShotgun, TEXT("Leon w/ shotgun") },
-	{ ItemIds::LeonWithHandgun, TEXT("Leon w/ handgun") },
-	{ ItemIds::AshleyGraham, TEXT("Ashley Graham") },
-	{ ItemIds::LuisSera, TEXT("Luis Sera") },
-	{ ItemIds::DonJose, TEXT("Don Jose") },
-	{ ItemIds::DonDiego, TEXT("Don Diego") },
-	{ ItemIds::DonEsteban, TEXT("Don Esteban") },
-	{ ItemIds::DonManuel, TEXT("Don Manuel") },
-	{ ItemIds::DrSalvador, TEXT("Dr. Salvador") },
-	{ ItemIds::Merchant, TEXT("Merchant") },
-	{ ItemIds::ZealotWithScythe, TEXT("Zealot w/ scythe") },
-	{ ItemIds::ZealotWithShield, TEXT("Zealot w/ shield") },
-	{ ItemIds::ZealotWithBowgun, TEXT("Zealot w/ bowgun") },
-	{ ItemIds::LeaderZealot, TEXT("Leader Zealot") },
-	{ ItemIds::SoldierWithDynamite, TEXT("Soldier w/ dynamite") },
-	{ ItemIds::SoldierWithStunRod, TEXT("Soldier w/ stun-rod") },
-	{ ItemIds::SoldierWithHammer, TEXT("Soldier w/ Hammer") },
-	{ ItemIds::Isabel, TEXT("Isabel") },
-	{ ItemIds::Maria, TEXT("Maria") },
-	{ ItemIds::AdaWong, TEXT("Ada Wong") },
-	{ ItemIds::BellaSisters, TEXT("Bella Sisters") },
-	{ ItemIds::DonPedro, TEXT("Don Pedro") },
-	{ ItemIds::JJ, TEXT("J.J") },
-	{ ItemIds::LetterFromAda, TEXT("Letter from Ada") },
-	{ ItemIds::LuisMemo3, TEXT("Luis Memo 3") },
-	{ ItemIds::PaperAirplane, TEXT("Paper Airplane") },
-	{ ItemIds::OurPlan, TEXT("Our Plan") },
-	{ ItemIds::LuisMemo4, TEXT("Luis Memo 4") },
-	{ ItemIds::KrauserNote, TEXT("Krauser's Note") },
-	{ ItemIds::LuisMemo5, TEXT("Luis Memo 5") },
-	{ ItemIds::OurMission, TEXT("Our Mission") },
-	{ ItemIds::AAA2, TEXT("aaa") },
-	{ ItemIds::AAA3, TEXT("aaa") },
-	{ ItemIds::TacticalVest, TEXT("Tactical Vest") },
-	{ ItemIds::AAA4, TEXT("aaa") },
-	{ ItemIds::Punisher3, TEXT("Punisher") },
-	{ ItemIds::Handgun2, TEXT("Handgun") },
-	{ ItemIds::Shotgun3, TEXT("Shotgun") },
-	{ ItemIds::MineThrower2, TEXT("Mine Thrower") },
-	{ ItemIds::Handcannon2, TEXT("Handcannon") },
-	{ ItemIds::MineThrowerPlusScope2, TEXT("Mine Thrower + Scope") },
-	{ ItemIds::MissionDirectives1, TEXT("Mission Directives 1") },
-	{ ItemIds::MissionDirectives2, TEXT("Mission Directives 2") },
-	{ ItemIds::MissionDirectives3, TEXT("Mission Directives 3") },
-	{ ItemIds::MissionDirectives4, TEXT("Mission Directives 4") },
-	{ ItemIds::MissionDirectives5, TEXT("Mission Directives 5") },
-	{ ItemIds::Mission1TreasureMap, TEXT("Mission 1 Treasure Map") },
-	{ ItemIds::Mission2TreasureMap, TEXT("Mission 2 Treasure Map") },
-	{ ItemIds::Mission3TreasureMap, TEXT("Mission 3 Treasure Map") },
-	{ ItemIds::Mission4TreasureMap, TEXT("Mission 4 Treasure Map") },
-	{ ItemIds::Mission5TreasureMap, TEXT("Mission 5 Treasure Map") },
+	setValue<Pointer>(node + 0x33C, merchantProc);
+	setValue<std::uint8_t>(node + 4, 1);
+}
+
+const Bimap<ItemId, String> Game::items = {
+	{ ItemId::MagnumAmmo, TEXT("Magnum Ammo") },
+	{ ItemId::HandGrenade, TEXT("Hand Grenade") },
+	{ ItemId::IncendiaryGrenade, TEXT("Incendiary Grenade") },
+	{ ItemId::Matilda, TEXT("Matilda") },
+	{ ItemId::HandgunAmmo, TEXT("Handgun Ammo") },
+	{ ItemId::FirstAidSpray, TEXT("First Aid Spray") },
+	{ ItemId::GreenHerb, TEXT("Green Herb") },
+	{ ItemId::RifleAmmo, TEXT("Rifle Ammo") },
+	{ ItemId::ChickenEgg, TEXT("Chicken Egg") },
+	{ ItemId::BrownChickenEgg, TEXT("Brown Chicken Egg") },
+	{ ItemId::GoldChickenEgg, TEXT("Gold Chicken Egg") },
+	{ ItemId::AAA, TEXT("aaa") },
+	{ ItemId::PlagaSample, TEXT("Plaga Sample") },
+	{ ItemId::KrauserKnife, TEXT("Krauser Knife") },
+	{ ItemId::FlashGrenade, TEXT("Flash Grenade") },
+	{ ItemId::SalazarFamilyInsignia, TEXT("Salazar Family Insignia") },
+	{ ItemId::Bowgun, TEXT("Bowgun") },
+	{ ItemId::BowgunBolts, TEXT("Bowgun Bolts") },
+	{ ItemId::GreenHerbX2, TEXT("Green Herb (X2)") },
+	{ ItemId::GreenHerbX3, TEXT("Green Herb (X3)") },
+	{ ItemId::MixedHerbsGR, TEXT("Mixed Herbs (G+R)") },
+	{ ItemId::MixedHerbsGRY, TEXT("Mixed Herbs (G+R+Y)") },
+	{ ItemId::MixedHerbsGY, TEXT("Mixed Herbs (G+Y)") },
+	{ ItemId::RocketLauncherSpecial, TEXT("Rocket Launcher (Special)") },
+	{ ItemId::ShotgunShells, TEXT("Shotgun Shells") },
+	{ ItemId::RedHerb, TEXT("Red Herb") },
+	{ ItemId::HandcannonAmmo, TEXT("Handcannon Ammo") },
+	{ ItemId::HourglassWGoldDecor, TEXT("Hourglass w/ gold decor") },
+	{ ItemId::YellowHerb, TEXT("Yellow Herb") },
+	{ ItemId::StoneTablet, TEXT("Stone Tablet") },
+	{ ItemId::LionOrnament, TEXT("Lion Ornament") },
+	{ ItemId::GoatOrnament, TEXT("Goat Ornament") },
+	{ ItemId::TMPAmmo1, TEXT("TMP Ammo") },
+	{ ItemId::Punisher, TEXT("Punisher") },
+	{ ItemId::PunisherWSilencer, TEXT("Punisher w/ Silencer") },
+	{ ItemId::Handgun, TEXT("Handgun") },
+	{ ItemId::HandgunWSilencer, TEXT("Handgun w/ Silencer") },
+	{ ItemId::Red9, TEXT("Red9") },
+	{ ItemId::Red9WStock, TEXT("Red9 w/ Stock") },
+	{ ItemId::Blacktail, TEXT("Blacktail") },
+	{ ItemId::BlacktailWSilencer, TEXT("Blacktail w/ Silencer") },
+	{ ItemId::BrokenButterfly, TEXT("Broken Butterfly") },
+	{ ItemId::Killer7, TEXT("Killer7") },
+	{ ItemId::Killer7WSilencer, TEXT("Killer7 w/ Silencer") },
+	{ ItemId::Shotgun, TEXT("Shotgun") },
+	{ ItemId::Striker, TEXT("Striker") },
+	{ ItemId::Rifle, TEXT("Rifle") },
+	{ ItemId::RifleSemiAuto, TEXT("Rifle (semi-auto)") },
+	{ ItemId::TMP, TEXT("TMP") },
+	{ ItemId::ActivationKeyBlue, TEXT("Activation Key (Blue)") },
+	{ ItemId::TMPWStock, TEXT("TMP w/ Stock") },
+	{ ItemId::ActivationKeyRed, TEXT("Activation Key (Red)") },
+	{ ItemId::ChicagoTypewriter1, TEXT("Chicago Typewriter") },
+	{ ItemId::RocketLauncher, TEXT("Rocket Launcher") },
+	{ ItemId::MineThrower, TEXT("Mine Thrower") },
+	{ ItemId::Handcannon, TEXT("Handcannon") },
+	{ ItemId::CombatKnife, TEXT("Combat Knife") },
+	{ ItemId::SerpentOrnament, TEXT("Serpent Ornament") },
+	{ ItemId::MoonstoneRightHalf, TEXT("Moonstone (Right half)") },
+	{ ItemId::InsigniaKey, TEXT("Insignia Key") },
+	{ ItemId::RoundInsignia, TEXT("Round Insignia") },
+	{ ItemId::FalseEye, TEXT("False Eye") },
+	{ ItemId::CustomTMP, TEXT("Custom TMP") },
+	{ ItemId::SilencerHandgun, TEXT("Silencer (Handgun)") },
+	{ ItemId::Punisher2, TEXT("Punisher") },
+	{ ItemId::PRL412, TEXT("P.R.L. 412") },
+	{ ItemId::StockRed9, TEXT("Stock (Red9)") },
+	{ ItemId::StockTMP, TEXT("Stock (TMP)") },
+	{ ItemId::ScopeRifle, TEXT("Scope (Rifle)") },
+	{ ItemId::ScopeSemiAutoRifle, TEXT("Scope (semi-auto Rifle)") },
+	{ ItemId::MineDarts, TEXT("Mine-Darts") },
+	{ ItemId::Shotgun2, TEXT("Ada's Shotgun") },
+	{ ItemId::CaptureLuisCera, TEXT("Capture Luis Sera") },
+	{ ItemId::TargetPractice, TEXT("Target Practice") },
+	{ ItemId::LuisMemo, TEXT("LuisMemo") },
+	{ ItemId::CastellanMemo, TEXT("Castellan Memo") },
+	{ ItemId::FemaleIntruder, TEXT("Female Intruder") },
+	{ ItemId::ButlerMemo, TEXT("Butler's Memo") },
+	{ ItemId::SampleRetrieved, TEXT("Sample Retrieved") },
+	{ ItemId::RitualPreparation, TEXT("Ritual Preparation") },
+	{ ItemId::LuisMemo2, TEXT("Luis Memo 2") },
+	{ ItemId::RifleSemiAutoWInfraredScope, TEXT("Rifle (semi-auto) w/ Infrared Scope") },
+	{ ItemId::KrauserBow, TEXT("Krauser's Bow") },
+	{ ItemId::ChicagoTypewriter2, TEXT("Chicago Typewriter") },
+	{ ItemId::TreasureMapCastle, TEXT("Treasure Map (Castle)") },
+	{ ItemId::TreasureMapIsland, TEXT("Treasure Map (Island)") },
+	{ ItemId::VelvetBlue, TEXT("Velvet Blue") },
+	{ ItemId::Spinel, TEXT("Spinel") },
+	{ ItemId::PearlPendant, TEXT("Pearl Pendant") },
+	{ ItemId::BrassPocketWatch, TEXT("Brass Pocket Watch") },
+	{ ItemId::ElegantHeaddress, TEXT("Elegant Headdress") },
+	{ ItemId::AntiquePipe, TEXT("Antique Pipe") },
+	{ ItemId::GoldBangleWPearls, TEXT("Gold Bangle w/ Pearls") },
+	{ ItemId::AmberRing, TEXT("Amber Ring") },
+	{ ItemId::Beerstein, TEXT("Beerstein") },
+	{ ItemId::GreenCatEye, TEXT("Green Catseye") },
+	{ ItemId::RedCatEye, TEXT("Red Catseye") },
+	{ ItemId::YellowCatEye, TEXT("Yellow Catseye") },
+	{ ItemId::BeersteinG, TEXT("Beerstein w/ (G)") },
+	{ ItemId::BeersteinR, TEXT("Beerstein w/ (R)") },
+	{ ItemId::BeersteinY, TEXT("Beerstein w/ (Y)") },
+	{ ItemId::BeersteinGR, TEXT("Beerstein w/ (G,R)") },
+	{ ItemId::BeersteinGY, TEXT("Beerstein w/ (G,Y)") },
+	{ ItemId::BeersteinRY, TEXT("Beerstein w/ (R,Y)") },
+	{ ItemId::BeersteinGRY, TEXT("Beerstein w/ (G,R,Y)") },
+	{ ItemId::MoonstoneLeftHalf, TEXT("Moonstone (Left Half)") },
+	{ ItemId::ChicagoTypewriterAmmo, TEXT("Chicago Typewriter Ammo") },
+	{ ItemId::RifleWScope, TEXT("Rifle + Scope") },
+	{ ItemId::RifleSemiAutoWScope, TEXT("Rifle (semi-auto) w/ Scope") },
+	{ ItemId::InfiniteLauncher, TEXT("Infinite Launcher") },
+	{ ItemId::KingGrail, TEXT("King's Grail") },
+	{ ItemId::QueenGrail, TEXT("Queen's Grail") },
+	{ ItemId::StaffOfRoyalty, TEXT("Staff of Royalty") },
+	{ ItemId::GoldBars, TEXT("Gold Bars") },
+	{ ItemId::Arrows, TEXT("Arrows") },
+	{ ItemId::BonusTime, TEXT("Bonus Time") },
+	{ ItemId::EmergencyLockCardKey, TEXT("Emergency Lock Card Key") },
+	{ ItemId::BonusPoints, TEXT("Bonus Points") },
+	{ ItemId::GreenCatEye2, TEXT("Green Catseye") },
+	{ ItemId::Ruby, TEXT("Ruby") },
+	{ ItemId::TreasureBoxS, TEXT("Treasure Box S") },
+	{ ItemId::TreasureBoxL, TEXT("Treasure Box L") },
+	{ ItemId::BlueMoonstone, TEXT("Blue Moonstone") },
+	{ ItemId::KeyToTheMine, TEXT("Key To The Mine") },
+	{ ItemId::AttachCaseS, TEXT("Attach Case S") },
+	{ ItemId::AttachCaseM, TEXT("Attach Case M") },
+	{ ItemId::AttachCaseL, TEXT("Attach Case L") },
+	{ ItemId::AttachCaseXL, TEXT("Attach Case XL") },
+	{ ItemId::GoldenSword, TEXT("Golden Sword") },
+	{ ItemId::IronKey, TEXT("Iron Key") },
+	{ ItemId::StoneOfSacrifice, TEXT("Stone Of Sacrifice") },
+	{ ItemId::StorageRoomCardKey, TEXT("Storage Room Card Key") },
+	{ ItemId::FreezerCardKey, TEXT("Freezer Card Key") },
+	{ ItemId::PieceOfTheHolyBeastPanther, TEXT("Piece Of The Holy Beast, Panther") },
+	{ ItemId::PieceOfTheHolyBeastSerpent, TEXT("Piece Of The Holy Beast, Serpent") },
+	{ ItemId::PieceOfTheHolyBeastEagle, TEXT("Piece Of The Holy Beast, Eagle") },
+	{ ItemId::JetSkiKey, TEXT("Jet-ski Key") },
+	{ ItemId::DirtyPearlPendant, TEXT("Dirty Pearl Pendant") },
+	{ ItemId::DirtyBrassPocketWatch, TEXT("Dirty Brass Pocket Watch") },
+	{ ItemId::OldKey, TEXT("Old Key") },
+	{ ItemId::CampKey, TEXT("Camp Key") },
+	{ ItemId::Dynamite, TEXT("Dynamite") },
+	{ ItemId::LiftActivationKey, TEXT("Lift Activation Key") },
+	{ ItemId::GoldBangle, TEXT("Gold Bangle") },
+	{ ItemId::ElegantPerfumeBottle, TEXT("Elegant Perfume Bottle") },
+	{ ItemId::MirrorWPearlAndRubies, TEXT("Mirror w/ Pearls & Rubies") },
+	{ ItemId::WasteDisposalCardKey, TEXT("Waste Disposal Card Key") },
+	{ ItemId::ElegantChessboard, TEXT("Elegant Chessboard") },
+	{ ItemId::RiotGun, TEXT("Riot Gun") },
+	{ ItemId::BlackBass, TEXT("Black Bass") },
+	{ ItemId::HourglassWGoldDecor2, TEXT("Hourglass w/ gold decor") },
+	{ ItemId::BlackBassL, TEXT("Black Bass L") },
+	{ ItemId::IlluminadosPendant, TEXT("Illuminados Pendant") },
+	{ ItemId::RifleWInfraredScope, TEXT("Rifle w/ Infrared Scope") },
+	{ ItemId::Crown, TEXT("Crown") },
+	{ ItemId::CrownJewel, TEXT("Crown Jewel") },
+	{ ItemId::RoyalInsignia, TEXT("Royal Insignia") },
+	{ ItemId::CrownWithJewels, TEXT("Crown with Jewels") },
+	{ ItemId::CrownWithInsignia, TEXT("Crown with an insignia") },
+	{ ItemId::SalazarFamilyCrown, TEXT("Salazar Family Crown") },
+	{ ItemId::RifleAmmoInfrared, TEXT("Rifle Ammo (Infrared)") },
+	{ ItemId::Emerald, TEXT("Emerald") },
+	{ ItemId::BottleCaps, TEXT("Bottle Caps") },
+	{ ItemId::GalleryKey, TEXT("Gallery Key") },
+	{ ItemId::EmblemRightHalf, TEXT("Emblem (Right Half)") },
+	{ ItemId::EmblemLeftHalf, TEXT("Emblem Left Half") },
+	{ ItemId::HexagonalEmblem, TEXT("Hexagonal Emblem") },
+	{ ItemId::CastleGateKey, TEXT("Castle Gate Key") },
+	{ ItemId::MixedHerbsRY, TEXT("Mixed Herbs (R+Y)") },
+	{ ItemId::TreasureMapVillage, TEXT("Treasure Map (Village)") },
+	{ ItemId::ScopeMineThrower, TEXT("Scope (Mine Thrower)") },
+	{ ItemId::MineThrowerPlusScope, TEXT("Mine Thrower + Scope") },
+	{ ItemId::PlayingManual1, TEXT("Playing Manual 1") },
+	{ ItemId::InfoOnAshley, TEXT("Info on Ashley") },
+	{ ItemId::PlayingManual2, TEXT("Playing Manual 2") },
+	{ ItemId::AlertOrder, TEXT("Alert Order") },
+	{ ItemId::AboutTheBlueMedallions, TEXT("About the Blue Medallions") },
+	{ ItemId::ChiefNote, TEXT("Chief's Note") },
+	{ ItemId::ClosureOfTheChurch, TEXT("Closure of the Church") },
+	{ ItemId::AnonymousLetter, TEXT("Anonymous Letter") },
+	{ ItemId::PlayingManual3, TEXT("Playing Manual 3") },
+	{ ItemId::SeraAndTheThirdParty, TEXT("Sera and the 3rd Party") },
+	{ ItemId::TwoRoutes, TEXT("Two Routes") },
+	{ ItemId::VillageLastDefense, TEXT("Village's Last Defense") },
+	{ ItemId::ButterflyLamp, TEXT("Butterfly Lamp") },
+	{ ItemId::GreenEye, TEXT("Green Eye") },
+	{ ItemId::RedEye, TEXT("Red Eye") },
+	{ ItemId::BlueEye, TEXT("Blue Eye") },
+	{ ItemId::ButterflyLampG, TEXT("Butterfly Lamp w/ G") },
+	{ ItemId::ButterflyLampR, TEXT("Butterfly Lamp w/ R") },
+	{ ItemId::ButterflyLampB, TEXT("Butterfly Lamp w/ B") },
+	{ ItemId::ButterflyLampGR, TEXT("Butterfly Lamp w/ (G,R)") },
+	{ ItemId::ButterflyLampGB, TEXT("Butterfly Lamp w/ (G,B)") },
+	{ ItemId::ButterflyLampRB, TEXT("Butterfly Lamp w/ (R,B)") },
+	{ ItemId::ButterflyLampRGB, TEXT("Butterfly Lamp w/ (R,G,B)") },
+	{ ItemId::PrisonKey, TEXT("Prison Key") },
+	{ ItemId::PlatinumSword, TEXT("Platinum Sword") },
+	{ ItemId::InfraredScope, TEXT("Infrared Scope") },
+	{ ItemId::ElegantMask, TEXT("Elegant Mask") },
+	{ ItemId::GreenGem, TEXT("Green Gem") },
+	{ ItemId::RedGem, TEXT("Red Gem") },
+	{ ItemId::PurpleGem, TEXT("Purple Gem") },
+	{ ItemId::ElegantMaskG, TEXT("Elegant Mask w/ (G)") },
+	{ ItemId::ElegantMaskR, TEXT("Elegant Mask w/ (R)") },
+	{ ItemId::ElegantMaskP, TEXT("Elegant Mask w/ (P)") },
+	{ ItemId::ElegantMaskGR, TEXT("Elegant Mask w/ (G,R)") },
+	{ ItemId::ElegantMaskGP, TEXT("Elegant Mask w/ (G,P)") },
+	{ ItemId::ElegantMaskRP, TEXT("Elegant Mask w/ (R,P)") },
+	{ ItemId::ElegantMaskRGP, TEXT("Elegant Mask w/ (R,G,P)") },
+	{ ItemId::GoldenLynx, TEXT("Golden Lynx") },
+	{ ItemId::GreenStoneOfJudgement, TEXT("Green Stone of Judgement") },
+	{ ItemId::RedStoneOfFaith, TEXT("Red Stone of Faith") },
+	{ ItemId::BlueStoneOfTreason, TEXT("Blue Stone of Treason") },
+	{ ItemId::GoldenLynxG, TEXT("Golden Lynx w/ (G)") },
+	{ ItemId::GoldenLynxR, TEXT("Golden Lynx w/ (R)") },
+	{ ItemId::GoldenLynxB, TEXT("Golden Lynx w/ (B)") },
+	{ ItemId::GoldenLynxGR, TEXT("Golden Lynx w/ (G,R)") },
+	{ ItemId::GoldenLynxGB, TEXT("Golden Lynx w/ (G,B)") },
+	{ ItemId::GoldenLynxRB, TEXT("Golden Lynx w/ (R,B)") },
+	{ ItemId::GoldenLynxGRB, TEXT("Golden Lynx w/ (G,R,B)") },
+	{ ItemId::LeonWithRocketLauncher, TEXT("Leon w/ rocket launcher") },
+	{ ItemId::LeonWithShotgun, TEXT("Leon w/ shotgun") },
+	{ ItemId::LeonWithHandgun, TEXT("Leon w/ handgun") },
+	{ ItemId::AshleyGraham, TEXT("Ashley Graham") },
+	{ ItemId::LuisSera, TEXT("Luis Sera") },
+	{ ItemId::DonJose, TEXT("Don Jose") },
+	{ ItemId::DonDiego, TEXT("Don Diego") },
+	{ ItemId::DonEsteban, TEXT("Don Esteban") },
+	{ ItemId::DonManuel, TEXT("Don Manuel") },
+	{ ItemId::DrSalvador, TEXT("Dr. Salvador") },
+	{ ItemId::Merchant, TEXT("Merchant") },
+	{ ItemId::ZealotWithScythe, TEXT("Zealot w/ scythe") },
+	{ ItemId::ZealotWithShield, TEXT("Zealot w/ shield") },
+	{ ItemId::ZealotWithBowgun, TEXT("Zealot w/ bowgun") },
+	{ ItemId::LeaderZealot, TEXT("Leader Zealot") },
+	{ ItemId::SoldierWithDynamite, TEXT("Soldier w/ dynamite") },
+	{ ItemId::SoldierWithStunRod, TEXT("Soldier w/ stun-rod") },
+	{ ItemId::SoldierWithHammer, TEXT("Soldier w/ Hammer") },
+	{ ItemId::Isabel, TEXT("Isabel") },
+	{ ItemId::Maria, TEXT("Maria") },
+	{ ItemId::AdaWong, TEXT("Ada Wong") },
+	{ ItemId::BellaSisters, TEXT("Bella Sisters") },
+	{ ItemId::DonPedro, TEXT("Don Pedro") },
+	{ ItemId::JJ, TEXT("J.J") },
+	{ ItemId::LetterFromAda, TEXT("Letter from Ada") },
+	{ ItemId::LuisMemo3, TEXT("Luis Memo 3") },
+	{ ItemId::PaperAirplane, TEXT("Paper Airplane") },
+	{ ItemId::OurPlan, TEXT("Our Plan") },
+	{ ItemId::LuisMemo4, TEXT("Luis Memo 4") },
+	{ ItemId::KrauserNote, TEXT("Krauser's Note") },
+	{ ItemId::LuisMemo5, TEXT("Luis Memo 5") },
+	{ ItemId::OurMission, TEXT("Our Mission") },
+	{ ItemId::AAA2, TEXT("aaa") },
+	{ ItemId::AAA3, TEXT("aaa") },
+	{ ItemId::TacticalVest, TEXT("Tactical Vest") },
+	{ ItemId::AAA4, TEXT("aaa") },
+	{ ItemId::Punisher3, TEXT("Punisher") },
+	{ ItemId::Handgun2, TEXT("Handgun") },
+	{ ItemId::Shotgun3, TEXT("Shotgun") },
+	{ ItemId::MineThrower2, TEXT("Mine Thrower") },
+	{ ItemId::Handcannon2, TEXT("Handcannon") },
+	{ ItemId::MineThrowerPlusScope2, TEXT("Mine Thrower + Scope") },
+	{ ItemId::MissionDirectives1, TEXT("Mission Directives 1") },
+	{ ItemId::MissionDirectives2, TEXT("Mission Directives 2") },
+	{ ItemId::MissionDirectives3, TEXT("Mission Directives 3") },
+	{ ItemId::MissionDirectives4, TEXT("Mission Directives 4") },
+	{ ItemId::MissionDirectives5, TEXT("Mission Directives 5") },
+	{ ItemId::Mission1TreasureMap, TEXT("Mission 1 Treasure Map") },
+	{ ItemId::Mission2TreasureMap, TEXT("Mission 2 Treasure Map") },
+	{ ItemId::Mission3TreasureMap, TEXT("Mission 3 Treasure Map") },
+	{ ItemId::Mission4TreasureMap, TEXT("Mission 4 Treasure Map") },
+	{ ItemId::Mission5TreasureMap, TEXT("Mission 5 Treasure Map") },
 };
 
 //
 
-void Game::ItemData::itemId(ItemIds id)
+void Game::ItemData::itemId(ItemId id)
 {
 	mId = id;
 }
 
-ItemIds Game::ItemData::itemId() const
+ItemId Game::ItemData::itemId() const
 {
 	return mId;
 }
@@ -1376,7 +1103,7 @@ std::uint8_t Game::ItemData::inInventory() const
 	return mInInventory;
 }
 
-ItemIds Game::WeaponData::id() const
+ItemId Game::WeaponData::id() const
 {
 	return mId;
 }
@@ -1401,12 +1128,12 @@ std::uint8_t Game::WeaponData::model() const
 	return mModel;
 }
 
-void Game::WeaponData::weaponAmmo(ItemIds id)
+void Game::WeaponData::weaponAmmo(ItemId id)
 {
 	mAmmoItemId = id;
 }
 
-ItemIds Game::WeaponData::weaponAmmo() const
+ItemId Game::WeaponData::weaponAmmo() const
 {
 	return mAmmoItemId;
 }

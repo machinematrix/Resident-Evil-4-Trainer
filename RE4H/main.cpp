@@ -179,7 +179,7 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 				break;
 			}
 
-			game->setMaxItemAmount(static_cast<ItemIds>(id), amount);
+			game->setMaxItemAmount(static_cast<ItemId>(id), amount);
 		} //fall through
 		case IDCANCEL: {
 			game = nullptr;
@@ -191,7 +191,7 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			{
 				std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
 				if (id != CB_ERR) {
-					std::wstring strAmount = std::to_wstring(game->getItemDimensions(static_cast<ItemIds>(id)).stackLimit());
+					std::wstring strAmount = std::to_wstring(game->getItemDimensions(static_cast<ItemId>(id)).stackLimit());
 					String strAmount2(strAmount.begin(), strAmount.end());
 					SetWindowText(amountEdit, strAmount.c_str());
 				}
@@ -205,7 +205,7 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 				if (id != CB_ERR)
 				{
 					try {
-						game->setMaxItemAmount(static_cast<ItemIds>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
+						game->setMaxItemAmount(static_cast<ItemId>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
 					}
 					catch (const std::invalid_argument &) {
 						ErrorBox(hDlg, TEXT("Invalid capacity"));
@@ -335,7 +335,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			targetItem->itemId(static_cast<ItemIds>(id));
+			targetItem->itemId(static_cast<ItemId>(id));
 			targetItem->amount(amount);
 			targetItem->firePower(fp);
 			targetItem->firingSpeed(fs);
