@@ -3,6 +3,7 @@
 #define __BIMAP__
 #include <map>
 #include <functional>
+#include <stdexcept>
 
 template <typename KTY, typename ValTy>
 class Bimap
