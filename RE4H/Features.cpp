@@ -271,7 +271,8 @@ Game::Game()
 	dropRandomizerHookLocation += 5 + getValue<std::int32_t>(dropRandomizerHookLocation + 1);
 	tmpFireRate += 2;
 	tmpFireRate = getValue<Pointer>(tmpFireRate);
-	++linkedList = getValue<Pointer>(linkedList);
+	++linkedList; //skip BB
+	linkedList = getValue<Pointer>(linkedList);
 
 	loggerFunction += 1; //skip 0xE8
 	loggerFunction += getValue<std::int32_t>(loggerFunction) + 4; //+4 because we already skipped the first byte
