@@ -320,7 +320,7 @@ private:
 	Pointer loggerFunction2;
 	Pointer linkedList;
 	Pointer typewriterProc;
-	Pointer merchantProc;
+	//Pointer merchantProc;
 
 	std::int32_t originalLoggerCallbackOffset, originalLogger2CallbackOffset;
 	std::vector<void*> doors;
@@ -329,15 +329,15 @@ private:
 	void(__cdecl *setScenePtr)(void*); //first parameter is a pointer to a 312 byte (0x138) structure
 	void(__cdecl *sceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
 	void(__cdecl *getInventoryModelData)(ItemId id, InventoryIconData *result);
-	//void(__stdcall *SaveProcedure)(void *saveStuff);
 	std::uint32_t(__cdecl *readMinimumHeader)(void *sceneHandle, void *unknown);
+	void(__cdecl *openMerchantPtr)(std::int32_t, std::int32_t);
 	
 	Pointer getFirstValidDoor();
 	void setHooks();
 	void removeHooks();
 public:
-	enum class Difficulty : std::uint32_t { Amateur, Easy = 3, Normal = 5, Professional = 6 };
-	enum class TypewriterMode : std::uint32_t { Load, Save };
+	enum class Difficulty : std::uint32_t { AMATEUR, EASY = 3, NORMAL = 5, PROFESSIONAL = 6 };
+	enum class TypewriterMode : std::uint32_t { LOAD, SAVE };
 	Game();
 	~Game();
 	bool good();

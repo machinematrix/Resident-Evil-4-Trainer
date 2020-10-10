@@ -75,9 +75,8 @@ void loggerCallback(const char *msg, ...)
 
 LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam)
 {
-	if (!(lParam & 0x40000000)) {
+	if (!(lParam & 0x40000000))
 		PostMessage(mainWindowHandle, WM_KEYDOWN, wParam, lParam);
-	}
 
 	return CallNextHookEx(0, code, wParam, lParam);
 }
@@ -116,6 +115,7 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	wndInfo.difficultyText = CreateWindow(WC_STATIC, TEXT("Difficulty:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)DifficultyText, nullptr, nullptr);
 	wndInfo.maxAmountEditButton = CreateWindow(WC_BUTTON, TEXT("Edit Stack Limit"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)MaxAmountEditButton, nullptr, nullptr);
 	wndInfo.saveButton = CreateWindow(WC_BUTTON, TEXT("Save"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)SaveButton, nullptr, nullptr);
+	wndInfo.merchantButton = CreateWindow(WC_BUTTON, TEXT("Merchant"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)MerchantButton, nullptr, nullptr);
 
 	wndInfo.inventoryList->setExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES | LVS_EX_AUTOSIZECOLUMNS);
 	wndInfo.inventoryList->addColumn(TEXT("Address"), 75);
@@ -176,6 +176,9 @@ void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 
 	lastWnd = GetWindowRectInParent(wndInfo.maxAmountEditButton);
 	MoveWindow(wndInfo.saveButton, lastWnd.right + spacing, lastWnd.top, buttonWidth, buttonHeight, update);
+
+	lastWnd = GetWindowRectInParent(wndInfo.saveButton);
+	MoveWindow(wndInfo.merchantButton, lastWnd.right + spacing, lastWnd.top, buttonWidth, buttonHeight, update);
 
 	lastWnd = GetWindowRectInParent(wndInfo.addItem);
 	MoveWindow(wndInfo.healthText, lastWnd.left, lastWnd.bottom + spacing * 5, buttonWidth / 2, buttonHeight, update);
@@ -284,16 +287,16 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 
 		switch (currDiff) //update difficulty combo box
 		{
-		case Game::Difficulty::Amateur:
+		case Game::Difficulty::AMATEUR:
 			if (cbDifficulty != 0) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 0, 0);
 			break;
-		case Game::Difficulty::Easy:
+		case Game::Difficulty::EASY:
 			if (cbDifficulty != 1) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 1, 0);
 			break;
-		case Game::Difficulty::Normal:
+		case Game::Difficulty::NORMAL:
 			if (cbDifficulty != 2) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 2, 0);
 			break;
-		case Game::Difficulty::Professional:
+		case Game::Difficulty::PROFESSIONAL:
 			if (cbDifficulty != 3) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 3, 0);
 			break;
 		}
@@ -471,16 +474,16 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			switch (SendMessage(wndInfo.difficultyComboBox, CB_GETCURSEL, 0, 0))
 			{
 			case 0:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::Amateur);
+				wndInfo.cheats.setDifficulty(Game::Difficulty::AMATEUR);
 				break;
 			case 1:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::Easy);
+				wndInfo.cheats.setDifficulty(Game::Difficulty::EASY);
 				break;
 			case 2:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::Normal);
+				wndInfo.cheats.setDifficulty(Game::Difficulty::NORMAL);
 				break;
 			case 3:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::Professional);
+				wndInfo.cheats.setDifficulty(Game::Difficulty::PROFESSIONAL);
 				break;
 			default:
 				ErrorBox(hWnd, TEXT("Select a difficulty"));
@@ -515,21 +518,24 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 		break;
 	}
 	case DoorButton: {
-		//wndInfo.hacks.loadSceneFile(".\\BIO4\\St1\\r101.udas");
 		auto curSel = SendMessage(wndInfo.doorCombo, CB_GETCURSEL, 0, 0);
 		if (curSel != CB_ERR)
 		{
-			if (static_cast<size_t>(curSel) < wndInfo.cheats.getDoors().size()) {
+			if (static_cast<size_t>(curSel) < wndInfo.cheats.getDoors().size())
 				wndInfo.cheats.useDoor(wndInfo.cheats.getDoors()[curSel]);
-			}
-			else ErrorBox(hWnd, TEXT("Invalid door"));
+			else
+				ErrorBox(hWnd, TEXT("Invalid door"));
 		}
-		else ErrorBox(hWnd, TEXT("Select a door first"));
+		else
+			ErrorBox(hWnd, TEXT("Select a door first"));
 		break;
 	}
 	case SaveButton: {
-		wndInfo.cheats.openTypewriter(Game::TypewriterMode::Save);
-		//wndInfo.cheats.openMerchant();
+		wndInfo.cheats.openTypewriter(Game::TypewriterMode::SAVE);
+		break;
+	}
+	case MerchantButton: {
+		wndInfo.cheats.openMerchant();
 		break;
 	}
 	case KeyBindings: {
@@ -545,6 +551,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 void onWmNotify(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 {
 	const NMHDR &header = *(NMHDR *)lParam;
+
 	switch (header.idFrom)
 	{
 	case MenuIdentifiers::InventoryList: {
@@ -585,21 +592,24 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			bool toggle;
 			switch (i)
 			{
-			case KeyBindingsConfig::Noclip:
+			case KeyBindingsConfig::NOCLIP:
 				toggle = !wndInfo.cheats.isNoclipOn();
 				wndInfo.cheats.toggleNoclip(toggle);
 				SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, toggle, 0);
 				break;
-			case KeyBindingsConfig::Ashley:
+			case KeyBindingsConfig::ASHLEY:
 				toggle = !wndInfo.cheats.isAshleyPresent();
 				wndInfo.cheats.toggleAshley(toggle);
 				SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, toggle, 0);
 				break;
-			case KeyBindingsConfig::Heal:
+			case KeyBindingsConfig::HEAL:
 				wndInfo.cheats.setHealth(wndInfo.cheats.getHealthLimit());
 				break;
-			case KeyBindingsConfig::Save:
-				wndInfo.cheats.openTypewriter(Game::TypewriterMode::Save);
+			case KeyBindingsConfig::SAVE:
+				wndInfo.cheats.openTypewriter(Game::TypewriterMode::SAVE);
+				break;
+			case KeyBindingsConfig::MERCHANT:
+				wndInfo.cheats.openMerchant();
 				break;
 			}
 		}

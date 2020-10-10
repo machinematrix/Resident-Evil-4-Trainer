@@ -49,7 +49,8 @@ namespace MenuIdentifiers
 		Exit,
 		MaxAmountEditButton,
 		ToggleTMPFireRate,
-		SaveButton
+		SaveButton,
+		MerchantButton
 	};
 }
 
@@ -92,6 +93,7 @@ struct MainWindowInfo
 	HWND maxAmountEditButton;
 	HWND tmpCheckbox;
 	HWND saveButton;
+	HWND merchantButton;
 	HHOOK kbHook;
 	std::unique_ptr<InventoryListView> inventoryList;
 };

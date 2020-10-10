@@ -50,13 +50,15 @@
 #define IDC_ASHLEY_KEY                  1045
 #define IDC_HEAL_KEY                    1046
 #define IDC_SAVE_KEY                    1047
-#define IDC_NOCLIP                      1048
-#define IDC_ASHLEY                      1049
-#define ItemMaxAmountCombo              1050
-#define IDC_SAVE                        1051
-#define IDC_HEAL                        1052
-#define ItemMaxAmountEdit               1053
-
+#define IDC_MERCHANT_KEY                1048
+#define IDC_NOCLIP                      1049
+#define IDC_ASHLEY                      1050
+#define ItemMaxAmountCombo              1051
+#define IDC_SAVE_KEY2                   1052
+#define IDC_SAVE                        1053
+#define IDC_HEAL                        1054
+#define ItemMaxAmountEdit               1055
+#define IDC_MERCHANT                    1056
 
 // Next default values for new objects
 // 

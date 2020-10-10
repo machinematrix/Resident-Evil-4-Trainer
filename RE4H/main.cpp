@@ -180,7 +180,8 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			}
 
 			game->setMaxItemAmount(static_cast<ItemId>(id), amount);
-		} //fall through
+		}
+		[[fallthrough]];
 		case IDCANCEL: {
 			game = nullptr;
 			EndDialog(hDlg, 0);

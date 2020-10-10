@@ -252,7 +252,8 @@ Game::Game()
 	linkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
 	//SaveProcedure((decltype(SaveProcedure))patternScan("55  8B EC  56 8B 75 08  8B 46 3C  6A FF")),
 	typewriterProc(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
-	merchantProc(patternScan("55  8B EC  83 EC 7C  A1 ????????  33 C5  89 45 FC  53  56  33 DB"))
+	//merchantProc(patternScan("55  8B EC  83 EC 7C  A1 ????????  33 C5  89 45 FC  53  56  33 DB")),
+	openMerchantPtr(reinterpret_cast<decltype(openMerchantPtr)>(patternScan("55  8B EC  A1 ????????  B9 00000004")))
 	//SetPanel((decltype(SetPanel))patternScan("55 8B EC  8B 45 0C  8B 4D 10  8B 55 14  53  56  8B 75 08"))
 {
 #ifndef NDEBUG
@@ -698,13 +699,7 @@ void Game::openTypewriter(TypewriterMode mode)
 
 void Game::openMerchant()
 {
-	//Pointer ptr = getValue<Pointer>(healthBase);
-	Pointer node = getValue<Pointer>(linkedList + 0x34);
-	node = getValue<Pointer>(node + 0x14);
-	node += 0x18;
-
-	setValue<Pointer>(node + 0x33C, merchantProc);
-	setValue<std::uint8_t>(node + 4, 1);
+	openMerchantPtr(0x10, 0);
 }
 
 const Bimap<ItemId, String> Game::items = {
