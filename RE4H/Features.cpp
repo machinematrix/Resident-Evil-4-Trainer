@@ -80,13 +80,13 @@ enum class GameState : std::uint32_t
 template<typename T>
 T getValue(Pointer address)
 {
-	return *(T*)(address);
+	return *reinterpret_cast<T*>(address);
 }
 
 template<typename T>
 void setValue(Pointer address, T value)
 {
-	*(T*)(address) = value;
+	*reinterpret_cast<T*>(address) = value;
 }
 
 template<typename T, size_t sz>
