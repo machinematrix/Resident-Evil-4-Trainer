@@ -297,8 +297,8 @@ public:
 	class WeaponData;
 	class InventoryIconData;
 private:
-	friend void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
-	friend int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
+	//friend void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
+	//friend int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
 
 	static const Bimap<ItemId, String> items;
 	std::mutex doorVectorMutex;
@@ -315,6 +315,8 @@ private:
 	Pointer dropRandomizerOriginal = nullptr;
 	Pointer getModelDataHookLocation;
 	Pointer getModelDataOriginal = nullptr;
+	Pointer sceAtHookLocation;
+	Pointer sceAtOriginal = nullptr;
 	Pointer tmpFireRate;
 	Pointer loggerFunction;
 	Pointer loggerFunction2;
@@ -332,6 +334,9 @@ private:
 	std::uint32_t(__cdecl *readMinimumHeader)(void *sceneHandle, void *unknown);
 	void(__cdecl *openMerchantPtr)(std::int32_t, std::int32_t);
 	
+	static void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
+	static int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
+	static void __cdecl sceAtHook(std::uint32_t, std::uint32_t);
 	Pointer getFirstValidDoor();
 	void setHooks();
 	void removeHooks();
@@ -496,7 +501,6 @@ public:
 
 class Game::InventoryIconData
 {
-	friend void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	enum class ItemType : std::uint8_t { Gun = 1, Ammo, Grenade, Medicine = 6, WeaponAttachment = 9, File, AttacheCase };
 	std::uint16_t mUnknown;
 	ItemType mItemType;

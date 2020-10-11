@@ -67,73 +67,6 @@ enum class GameState : std::uint32_t
 	Pause = 0x106
 };
 
-void __cdecl myGetInventoryModelData(ItemId id, Game::InventoryIconData *result)
-{
-	static Game *game;
-
-	if (id != ItemId::Invalid)
-	{
-		std::unique_lock<std::mutex> lck(game->doorVectorMutex);
-		auto amountIt = game->itemStackCap.find(id);
-
-		game->getInventoryModelData(id, result);
-
-		if (amountIt != game->itemStackCap.end()) {
-			result->stackLimit(amountIt->second/*result->stackLimit() & 0xFFFFFF00 | (amountIt->second & 0xFF)*/);
-		}
-	}
-	else {
-		game = (Game *)result;
-	}
-}
-
-int __cdecl myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std::uint32_t *outItemCount, Game *unknownPassZero)
-{
-	static Game *game;
-	bool result = false;
-	//using namespace ItemIds;
-
-	if (outItemId && outItemCount)
-	{
-		std::vector<ItemId> candidates = { ItemId::TreasureBoxS, ItemId::FlashGrenade, ItemId::IncendiaryGrenade, ItemId::HandGrenade };
-		static std::default_random_engine engine;
-		static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(/*ItemIds::MagnumAmmo*/0, /*ItemIds::Mission5TreasureMap*/300);
-		Game::InventoryIconData icon;
-
-		if (game->getHealth() <= game->getHealthLimit() / 2) {
-			candidates.push_back(ItemId::GreenHerb);
-			candidates.push_back(ItemId::FirstAidSpray);
-		}
-
-		for (Game::ItemData *item = game->begInventory(), *end = game->endInventory(); item != end; ++item)
-		{
-			if (item->valid())
-			{
-				auto &ammoIds = Game::getAmmoItemIds();
-				Game::WeaponData *gun = game->getWeaponDataPtr(item->itemId());
-
-				if (gun && std::find(ammoIds.cbegin(), ammoIds.cend(), gun->weaponAmmo()) != ammoIds.end())
-				{
-					candidates.push_back(gun->weaponAmmo());
-					candidates.push_back(gun->weaponAmmo());
-					candidates.push_back(gun->weaponAmmo());
-				}
-			}
-		}
-
-		*outItemId = candidates[randomizer(engine) % candidates.size()];
-		game->getInventoryModelData(*outItemId, &icon);
-		*outItemCount = randomizer(engine) % icon.stackLimit() + 1;
-
-		result = true;
-	}
-	else {
-		game = unknownPassZero;
-	}
-
-	return result;
-}
-
 template<typename T>
 T getValue(Pointer address)
 {
@@ -176,6 +109,95 @@ Pointer pointerPath(Pointer baseAddress, const std::vector<std::uint64_t>& offse
 	return baseAddress;
 }
 
+template <typename PointerType>
+Pointer replaceFunction(Pointer where, PointerType *function)
+{
+	auto result = getValue<Pointer>(where + 1);
+
+	result += reinterpret_cast<std::int32_t>(where) + 5;
+	setValue(where + 1, reinterpret_cast<Pointer>(function) - where - 5);
+	 
+	return result;
+}
+
+void __cdecl Game::myGetInventoryModelData(ItemId id, Game::InventoryIconData *result)
+{
+	static Game *game;
+
+	if (id != ItemId::Invalid)
+	{
+		std::unique_lock<std::mutex> lck(game->doorVectorMutex);
+		auto amountIt = game->itemStackCap.find(id);
+
+		game->getInventoryModelData(id, result);
+
+		if (amountIt != game->itemStackCap.end()) {
+			result->stackLimit(amountIt->second/*result->stackLimit() & 0xFFFFFF00 | (amountIt->second & 0xFF)*/);
+		}
+	}
+	else
+		game = (Game*)result;
+}
+
+int __cdecl Game::myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std::uint32_t *outItemCount, Game *unknownPassZero)
+{
+	static Game *game;
+	bool result = false;
+	//using namespace ItemIds;
+
+	if (outItemId && outItemCount)
+	{
+		std::vector<ItemId> candidates = { ItemId::TreasureBoxS, ItemId::FlashGrenade, ItemId::IncendiaryGrenade, ItemId::HandGrenade };
+		static std::default_random_engine engine;
+		static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(/*ItemIds::MagnumAmmo*/0, /*ItemIds::Mission5TreasureMap*/300);
+		Game::InventoryIconData icon;
+
+		if (game->getHealth() <= game->getHealthLimit() / 2) {
+			candidates.push_back(ItemId::GreenHerb);
+			candidates.push_back(ItemId::FirstAidSpray);
+		}
+
+		for (Game::ItemData *item = game->begInventory(), *end = game->endInventory(); item != end; ++item)
+		{
+			if (item->valid())
+			{
+				auto &ammoIds = Game::getAmmoItemIds();
+				Game::WeaponData *gun = game->getWeaponDataPtr(item->itemId());
+
+				if (gun && std::find(ammoIds.cbegin(), ammoIds.cend(), gun->weaponAmmo()) != ammoIds.end())
+				{
+					candidates.push_back(gun->weaponAmmo());
+					candidates.push_back(gun->weaponAmmo());
+					candidates.push_back(gun->weaponAmmo());
+				}
+			}
+		}
+
+		*outItemId = candidates[randomizer(engine) % candidates.size()];
+		game->getInventoryModelData(*outItemId, &icon);
+		*outItemCount = randomizer(engine) % icon.stackLimit() + 1;
+
+		result = true;
+	}
+	else
+		game = unknownPassZero;
+
+	return result;
+}
+
+void __cdecl Game::sceAtHook(std::uint32_t arg1, std::uint32_t arg2)
+{
+	static Game *game;
+
+	if (arg1)
+	{
+		reinterpret_cast<decltype(sceAtHook)*>(game->sceAtOriginal)(arg1, arg2);
+		game->refreshDoorList();
+	}
+	else
+		game = reinterpret_cast<Game*>(arg2);
+}
+
 Pointer Game::getFirstValidDoor()
 {
 	Pointer result = nullptr;
@@ -202,33 +224,16 @@ Pointer Game::getFirstValidDoor()
 
 void Game::setHooks()
 {
-	std::string code("\x51\x53\xB9\x00\x00\x00\x00\xBB\x00\x00\x00\x00\xFF\xD3\x5B\x59\xC3", 17);
-	void *codePointer = (void *)1;
-	__asm
-	{
-		push eax
-		mov eax, Game::refreshDoorList
-		mov[codePointer], eax
-		pop eax;
-	};
-	setValue<Game*>(&code.front() + 3, this);
-	setValue<void*>(&code.front() + 8, codePointer);
-	memcpy(refreshDoorsHookLocation, code.c_str(), code.size());
-
-	dropRandomizerOriginal = getValue<Pointer>(dropRandomizerHookLocation + 1);
-	setValue<std::uint32_t>(dropRandomizerHookLocation + 1, (Pointer)myDropRandomizer - dropRandomizerHookLocation - 5); //IT SHOULD BE +5, NOT -5, BUT IT CALLS 10 BYTES AHEAD OTHERWISE. SOMETHING'S WRONG
-
-	getModelDataOriginal = getValue<Pointer>(getModelDataHookLocation + 1);
-	//getModelDataOriginal = getValue<Pointer>(getModelDataHookLocation + (int)getModelDataOriginal);
-	setValue<std::uint32_t>(getModelDataHookLocation + 1, (Pointer)::myGetInventoryModelData - getModelDataHookLocation - 5);
+	sceAtOriginal = replaceFunction(sceAtHookLocation, sceAtHook);
+	dropRandomizerOriginal = replaceFunction(dropRandomizerHookLocation, myDropRandomizer);
+	getModelDataOriginal = replaceFunction(getModelDataHookLocation, myGetInventoryModelData);
 }
 
 void Game::removeHooks()
 {
-	const char originalCode[] = "\xC3\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC";
-	memcpy(refreshDoorsHookLocation, originalCode, sizeof(originalCode) - 1);
-	setValue<Pointer>(dropRandomizerHookLocation + 1, dropRandomizerOriginal);
-	setValue<Pointer>(getModelDataHookLocation + 1, getModelDataOriginal);
+	replaceFunction(sceAtHookLocation, sceAtOriginal);
+	replaceFunction(dropRandomizerHookLocation, dropRandomizerOriginal);
+	replaceFunction(getModelDataHookLocation, getModelDataOriginal);
 }
 
 Game::Game()
@@ -245,6 +250,7 @@ Game::Game()
 	dropRandomizerHookLocation(patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC")),
 	getInventoryModelData((decltype(getInventoryModelData))patternScan("55  8B EC  0FB7 45 ??  3D 0F010000")),
 	getModelDataHookLocation(patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74")),
+	sceAtHookLocation(patternScan("E8 ????????  8B 0D ????????  A1 ????????  8D 14 09")),
 	tmpFireRate(patternScan("D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41")),
 	readMinimumHeader((decltype(readMinimumHeader))patternScan("55  8B EC  53  8B 1D ????????  56  68 ????????")),
 	loggerFunction(patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10")),
@@ -270,6 +276,7 @@ Game::Game()
 	refreshDoorsHookLocation += 6;
 	getModelDataHookLocation += 5 + getValue<std::int32_t>(getModelDataHookLocation + 1);
 	dropRandomizerHookLocation += 5 + getValue<std::int32_t>(dropRandomizerHookLocation + 1);
+	sceAtHookLocation += 5 + getValue<std::int32_t>(sceAtHookLocation + 1);
 	tmpFireRate += 2;
 	tmpFireRate = getValue<Pointer>(tmpFireRate);
 	++linkedList; //skip BB
@@ -285,6 +292,7 @@ Game::Game()
 
 	myDropRandomizer(0, nullptr, nullptr, this);
 	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
+	sceAtHook(0, reinterpret_cast<std::int32_t>(this));
 	setHooks();
 
 	originalLoggerCallbackOffset = getValue<std::int32_t>(loggerFunction);
