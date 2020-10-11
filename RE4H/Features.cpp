@@ -118,20 +118,19 @@ Pointer pointerPath(Pointer baseAddress, const std::vector<std::uint64_t>& offse
 	return baseAddress;
 }
 
-template <typename PointerType>
-Pointer replaceFunction(Pointer where, PointerType *function)
-{
-	auto result = getValue<Pointer>(where + 1);
-
-	result += reinterpret_cast<std::int32_t>(where) + 5;
-	setValue(where + 1, reinterpret_cast<Pointer>(function) - where - 5);
-	 
-	return result;
-}
-
 Pointer follow(Pointer instruction)
 {
 	return instruction + getValue<std::int32_t>(instruction + 1) + 5;
+}
+
+template <typename PointerType>
+Pointer replaceFunction(Pointer where, PointerType *function)
+{
+	auto result = follow(where);
+
+	setValue(where + 1, reinterpret_cast<Pointer>(function) - where - 5);
+	 
+	return result;
 }
 
 void __cdecl Game::myGetInventoryModelData(ItemId id, Game::InventoryIconData *result)
@@ -440,18 +439,22 @@ void Game::setCostume(std::uint8_t id)
 	switch (getCharacter())
 	{
 	case Leon: //Leon
-		if (id <= 4) setValue(healthBase + HealthBaseOffsets::Costume, id);
+		if (id <= 4)
+			setValue(healthBase + HealthBaseOffsets::Costume, id);
 		break;
 	case Ashley: //Ashley
-		if(id <= 2) setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
+		if(id <= 2)
+			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
 		break;
 	case Ada: //Ada
-		if (id <= 3 && id != 2) setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
+		if (id <= 3 && id != 2)
+			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
 		break;
 	case HUNK: //HUNK
 	case Krauser: //Krauser
 	case Wesker: //Wesker
-		if (!id) setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
+		if (!id)
+			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
 		break;
 	}
 }
