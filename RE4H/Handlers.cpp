@@ -273,31 +273,39 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 		if (cbChar != currChar) {
 			SendMessage(wndInfo.characterComboBox, CB_SETCURSEL, currChar, 0);
 			SendMessage(wndInfo.costumeComboBox, CB_RESETCONTENT, 0, 0);
-			for (const auto &costumeName : wndInfo.cheats.getCharacterCostumeNames(currChar)) {
+			for (const auto &costumeName : wndInfo.cheats.getCharacterCostumeNames(currChar))
 				SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.c_str());
-			}
+			wndInfo.cheats.setCostume(0);
+			currCostume = wndInfo.cheats.getCostume();
 		}
+
 		if (cbCostume != currCostume || cbChar != currChar) //If the character or the costume changed
 		{
 			if (currChar == 2 && currCostume == 3) {
-				if (cbCostume != 2) SendMessage(wndInfo.costumeComboBox, CB_SETCURSEL, 2, 0);
+				if (cbCostume != 2)
+					SendMessage(wndInfo.costumeComboBox, CB_SETCURSEL, 2, 0);
 			}
-			else SendMessage(wndInfo.costumeComboBox, CB_SETCURSEL, currCostume, 0);
+			else
+				SendMessage(wndInfo.costumeComboBox, CB_SETCURSEL, currCostume, 0);
 		}
 
 		switch (currDiff) //update difficulty combo box
 		{
 		case Game::Difficulty::AMATEUR:
-			if (cbDifficulty != 0) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 0, 0);
+			if (cbDifficulty != 0)
+				SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 0, 0);
 			break;
 		case Game::Difficulty::EASY:
-			if (cbDifficulty != 1) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 1, 0);
+			if (cbDifficulty != 1)
+				SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 1, 0);
 			break;
 		case Game::Difficulty::NORMAL:
-			if (cbDifficulty != 2) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 2, 0);
+			if (cbDifficulty != 2)
+				SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 2, 0);
 			break;
 		case Game::Difficulty::PROFESSIONAL:
-			if (cbDifficulty != 3) SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 3, 0);
+			if (cbDifficulty != 3)
+				SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 3, 0);
 			break;
 		}
 
