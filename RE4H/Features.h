@@ -310,7 +310,6 @@ private:
 	Pointer noclipAddress;
 	Pointer doorData;
 	Pointer doorList; //at dereference, then at +0x10, first four bits are door index * 2
-	Pointer refreshDoorsHookLocation;
 	Pointer dropRandomizerHookLocation;
 	Pointer dropRandomizerOriginal = nullptr;
 	Pointer getModelDataHookLocation;
@@ -322,9 +321,8 @@ private:
 	Pointer loggerFunction2;
 	Pointer linkedList;
 	Pointer typewriterProc;
-	//Pointer merchantProc;
 
-	std::int32_t originalLoggerCallbackOffset, originalLogger2CallbackOffset;
+	Pointer originalLogger, originalLogger2;
 	std::vector<void*> doors;
 	std::map<ItemId, std::uint32_t> itemStackCap;
 	
@@ -336,10 +334,8 @@ private:
 	
 	static void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	static int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
-	static std::uint32_t __cdecl sceAtHook(std::uint32_t, std::uint32_t);
+	static std::uint32_t __cdecl sceAtHook(void*, void*);
 	Pointer getFirstValidDoor();
-	void setHooks();
-	void removeHooks();
 public:
 	enum class Difficulty : std::uint32_t { AMATEUR, EASY = 3, NORMAL = 5, PROFESSIONAL = 6 };
 	enum class TypewriterMode : std::uint32_t { LOAD, SAVE };

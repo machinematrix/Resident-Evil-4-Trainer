@@ -8,7 +8,13 @@
 #include <cstdint>
 #include <winsqlite/winsqlite3.h>
 
-namespace HealthBaseOffsets {
+namespace
+{
+	void *cookie = reinterpret_cast<void*>(6);
+}
+
+namespace HealthBaseOffsets
+{
 	enum : std::uint32_t
 	{
 		Status = 0x20, //0x3: playing; 0x106: pause; 0x4: Changing scene
@@ -32,7 +38,8 @@ namespace HealthBaseOffsets {
 	};
 }
 
-namespace PlayerBaseOffsets {
+namespace PlayerBaseOffsets
+{
 	enum : std::uint32_t
 	{
 		EquippedItemId = 0xC,
@@ -42,14 +49,16 @@ namespace PlayerBaseOffsets {
 	};
 }
 
-namespace DoorListOffsets {
+namespace DoorListOffsets
+{
 	enum : std::uint32_t
 	{
 		Type = 0x35
 	};
 }
 
-namespace Characters {
+namespace Characters
+{
 	enum : std::uint32_t
 	{
 		Leon,
@@ -137,12 +146,11 @@ void __cdecl Game::myGetInventoryModelData(ItemId id, Game::InventoryIconData *r
 
 		game->getInventoryModelData(id, result);
 
-		if (amountIt != game->itemStackCap.end()) {
-			result->stackLimit(amountIt->second/*result->stackLimit() & 0xFFFFFF00 | (amountIt->second & 0xFF)*/);
-		}
+		if (amountIt != game->itemStackCap.end())
+			result->stackLimit(amountIt->second);
 	}
 	else
-		game = (Game*)result;
+		game = reinterpret_cast<Game*>(result);
 }
 
 int __cdecl Game::myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std::uint32_t *outItemCount, Game *unknownPassZero)
@@ -191,12 +199,12 @@ int __cdecl Game::myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std
 	return result;
 }
 
-std::uint32_t __cdecl Game::sceAtHook(std::uint32_t arg1, std::uint32_t arg2)
+std::uint32_t __cdecl Game::sceAtHook(void *arg1, void *arg2)
 {
 	static Game *game;
 	std::uint32_t result = 0;
 
-	if (arg2 != 6)
+	if (arg2 != cookie)
 	{
 		result = reinterpret_cast<decltype(sceAtHook)*>(game->sceAtOriginal)(arg1, arg2);
 		game->refreshDoorList();
@@ -231,20 +239,6 @@ Pointer Game::getFirstValidDoor()
 	return result;
 }
 
-void Game::setHooks()
-{
-	sceAtOriginal = replaceFunction(sceAtHookLocation, sceAtHook);
-	dropRandomizerOriginal = replaceFunction(dropRandomizerHookLocation, myDropRandomizer);
-	getModelDataOriginal = replaceFunction(getModelDataHookLocation, myGetInventoryModelData);
-}
-
-void Game::removeHooks()
-{
-	replaceFunction(sceAtHookLocation, sceAtOriginal);
-	replaceFunction(dropRandomizerHookLocation, dropRandomizerOriginal);
-	replaceFunction(getModelDataHookLocation, getModelDataOriginal);
-}
-
 Game::Game()
 	:healthBase(patternScan("A1 ????????  83 C0 60  6A 10  50  E8")),
 	playerBase(patternScan("B9 ????????  E8 ????????  8B 35 ????????  81")),
@@ -255,7 +249,6 @@ Game::Game()
 	setScenePtr((decltype(setScenePtr))patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????")),
 	sceAtCreateItemAt((decltype(sceAtCreateItemAt))patternScan("55  8B EC  83 EC 0C  57  6A 0D")),
 	doorList(patternScan("????????  53  05 8C000000  56  C6 45 CB 00")),
-	refreshDoorsHookLocation(patternScan("7D CC  5F  5E  5B  5D  C3")),
 	dropRandomizerHookLocation(patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC")),
 	getInventoryModelData((decltype(getInventoryModelData))patternScan("55  8B EC  0FB7 45 ??  3D 0F010000")),
 	getModelDataHookLocation(patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74")),
@@ -278,30 +271,25 @@ Game::Game()
 	firePowerTable = getValue<Pointer>(firePowerTable + 3);
 	doorData = getValue<Pointer>(doorData);
 	doorList = getValue<Pointer>(doorList);
-	refreshDoorsHookLocation += 6;
 	getModelDataHookLocation = follow(getModelDataHookLocation);
 	dropRandomizerHookLocation = follow(dropRandomizerHookLocation);
 	sceAtHookLocation = follow(sceAtHookLocation);
+	loggerFunction = follow(loggerFunction);
+	loggerFunction2 = follow(loggerFunction2 + 10);
 	tmpFireRate += 2;
 	tmpFireRate = getValue<Pointer>(tmpFireRate);
 	++linkedList; //skip BB
 	linkedList = getValue<Pointer>(linkedList);
 
-	loggerFunction += 1; //skip 0xE8
-	loggerFunction += getValue<std::int32_t>(loggerFunction) + 4;
-	loggerFunction += 1; //skip 0xE9
-
-	loggerFunction2 += 11;
-	loggerFunction2 += getValue<std::int32_t>(loggerFunction2) + 4;
-	loggerFunction2 += 1;
-
 	myDropRandomizer(0, nullptr, nullptr, this);
 	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
-	sceAtHook(reinterpret_cast<std::int32_t>(this), 6);
-	setHooks();
+	sceAtHook(this, cookie);
 
-	originalLoggerCallbackOffset = getValue<std::int32_t>(loggerFunction);
-	originalLogger2CallbackOffset = getValue<std::int32_t>(loggerFunction2);
+	getModelDataOriginal = replaceFunction(getModelDataHookLocation, myGetInventoryModelData);
+	dropRandomizerOriginal = replaceFunction(dropRandomizerHookLocation, myDropRandomizer);
+	sceAtOriginal = replaceFunction(sceAtHookLocation, sceAtHook);
+	originalLogger = replaceFunction(loggerFunction, loggerFunction);
+	originalLogger2 = replaceFunction(loggerFunction2, loggerFunction2);
 #ifndef NDEBUG
 	cout << "Health Base: " << (void*)healthBase << endl;
 	cout << "Player Base: " << (void*)playerBase << endl;
@@ -318,9 +306,11 @@ Game::Game()
 
 Game::~Game()
 {
-	setValue<std::int32_t>(loggerFunction, originalLoggerCallbackOffset);
-	setValue<std::int32_t>(loggerFunction2, originalLogger2CallbackOffset);
-	removeHooks();
+	replaceFunction(getModelDataHookLocation, getModelDataOriginal);
+	replaceFunction(dropRandomizerHookLocation, dropRandomizerOriginal);
+	replaceFunction(sceAtHookLocation, sceAtOriginal);
+	replaceFunction(loggerFunction, originalLogger);
+	replaceFunction(loggerFunction2, originalLogger2);
 }
 
 bool Game::good()
@@ -332,7 +322,6 @@ bool Game::good()
 		&& noclipAddress
 		&& doorData
 		&& doorList
-		&& refreshDoorsHookLocation
 		&& dropRandomizerHookLocation
 		&& getModelDataHookLocation
 		&& setScenePtr
@@ -574,7 +563,6 @@ void Game::refreshDoorList()
 	{
 		while (!((std::uint32_t)door & 1))
 		{
-			//if (getValue<std::uint32_t>(door + 0x50) == 0x01000000) { //if it's a door
 			if (getValue<std::uint8_t>(door + 0x35) == 1) { //if it's a door
 				doors.push_back(door);
 			}
@@ -693,10 +681,8 @@ void Game::loadSceneFile(const std::string &sceneName)
 
 void Game::setLoggerCallback(void (__cdecl *callback)(const char*, ...))
 {
-	//void(__cdecl *result)(const char *, ...) = (decltype(result))(loggerFunction + 4 + getValue<std::int32_t>(loggerFunction));
-
-	setValue<std::int32_t>(loggerFunction, (Pointer)callback - loggerFunction - 4);
-	setValue<std::int32_t>(loggerFunction2, (Pointer)callback - loggerFunction2 - 4);
+	replaceFunction(loggerFunction, callback);
+	replaceFunction(loggerFunction2, callback);
 }
 
 void Game::openTypewriter(TypewriterMode mode)
