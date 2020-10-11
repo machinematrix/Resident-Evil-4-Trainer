@@ -438,21 +438,21 @@ void Game::setCostume(std::uint8_t id)
 	using namespace Characters;
 	switch (getCharacter())
 	{
-	case Leon: //Leon
+	case Leon:
 		if (id <= 4)
 			setValue(healthBase + HealthBaseOffsets::Costume, id);
 		break;
-	case Ashley: //Ashley
+	case Ashley:
 		if(id <= 2)
 			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
 		break;
-	case Ada: //Ada
+	case Ada:
 		if (id <= 3 && id != 2)
 			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
 		break;
-	case HUNK: //HUNK
-	case Krauser: //Krauser
-	case Wesker: //Wesker
+	case HUNK:
+	case Krauser:
+	case Wesker:
 		if (!id)
 			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
 		break;
