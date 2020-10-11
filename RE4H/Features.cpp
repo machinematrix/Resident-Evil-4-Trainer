@@ -6,6 +6,7 @@
 #include <random>
 #include <type_traits>
 #include <cstdint>
+#include <winsqlite/winsqlite3.h>
 
 namespace HealthBaseOffsets {
 	enum : std::uint32_t
@@ -120,6 +121,11 @@ Pointer replaceFunction(Pointer where, PointerType *function)
 	return result;
 }
 
+Pointer follow(Pointer instruction)
+{
+	return instruction + getValue<std::int32_t>(instruction + 1) + 5;
+}
+
 void __cdecl Game::myGetInventoryModelData(ItemId id, Game::InventoryIconData *result)
 {
 	static Game *game;
@@ -143,7 +149,6 @@ int __cdecl Game::myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std
 {
 	static Game *game;
 	bool result = false;
-	//using namespace ItemIds;
 
 	if (outItemId && outItemCount)
 	{
@@ -169,6 +174,7 @@ int __cdecl Game::myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std
 					candidates.push_back(gun->weaponAmmo());
 					candidates.push_back(gun->weaponAmmo());
 					candidates.push_back(gun->weaponAmmo());
+					candidates.push_back(gun->weaponAmmo());
 				}
 			}
 		}
@@ -185,17 +191,20 @@ int __cdecl Game::myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std
 	return result;
 }
 
-void __cdecl Game::sceAtHook(std::uint32_t arg1, std::uint32_t arg2)
+std::uint32_t __cdecl Game::sceAtHook(std::uint32_t arg1, std::uint32_t arg2)
 {
 	static Game *game;
+	std::uint32_t result = 0;
 
-	if (arg1)
+	if (arg2 != 6)
 	{
-		reinterpret_cast<decltype(sceAtHook)*>(game->sceAtOriginal)(arg1, arg2);
+		result = reinterpret_cast<decltype(sceAtHook)*>(game->sceAtOriginal)(arg1, arg2);
 		game->refreshDoorList();
 	}
 	else
-		game = reinterpret_cast<Game*>(arg2);
+		game = reinterpret_cast<Game*>(arg1);
+
+	return result;
 }
 
 Pointer Game::getFirstValidDoor()
@@ -256,17 +265,13 @@ Game::Game()
 	loggerFunction(patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10")),
 	loggerFunction2(patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3")),
 	linkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
-	//SaveProcedure((decltype(SaveProcedure))patternScan("55  8B EC  56 8B 75 08  8B 46 3C  6A FF")),
 	typewriterProc(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
-	//merchantProc(patternScan("55  8B EC  83 EC 7C  A1 ????????  33 C5  89 45 FC  53  56  33 DB")),
 	openMerchantPtr(reinterpret_cast<decltype(openMerchantPtr)>(patternScan("55  8B EC  A1 ????????  B9 00000004")))
-	//SetPanel((decltype(SetPanel))patternScan("55 8B EC  8B 45 0C  8B 4D 10  8B 55 14  53  56  8B 75 08"))
 {
 #ifndef NDEBUG
 	using std::cout;
 	using std::endl;
 #endif
-
 	healthBase = pointerPath(healthBase, 0x1, 0x0);
 	playerBase = getValue<Pointer>(playerBase + 1);
 	weaponDataIndex = getValue<Pointer>(weaponDataIndex + 1);
@@ -274,16 +279,16 @@ Game::Game()
 	doorData = getValue<Pointer>(doorData);
 	doorList = getValue<Pointer>(doorList);
 	refreshDoorsHookLocation += 6;
-	getModelDataHookLocation += 5 + getValue<std::int32_t>(getModelDataHookLocation + 1);
-	dropRandomizerHookLocation += 5 + getValue<std::int32_t>(dropRandomizerHookLocation + 1);
-	sceAtHookLocation += 5 + getValue<std::int32_t>(sceAtHookLocation + 1);
+	getModelDataHookLocation = follow(getModelDataHookLocation);
+	dropRandomizerHookLocation = follow(dropRandomizerHookLocation);
+	sceAtHookLocation = follow(sceAtHookLocation);
 	tmpFireRate += 2;
 	tmpFireRate = getValue<Pointer>(tmpFireRate);
 	++linkedList; //skip BB
 	linkedList = getValue<Pointer>(linkedList);
 
 	loggerFunction += 1; //skip 0xE8
-	loggerFunction += getValue<std::int32_t>(loggerFunction) + 4; //+4 because we already skipped the first byte
+	loggerFunction += getValue<std::int32_t>(loggerFunction) + 4;
 	loggerFunction += 1; //skip 0xE9
 
 	loggerFunction2 += 11;
@@ -292,7 +297,7 @@ Game::Game()
 
 	myDropRandomizer(0, nullptr, nullptr, this);
 	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
-	sceAtHook(0, reinterpret_cast<std::int32_t>(this));
+	sceAtHook(reinterpret_cast<std::int32_t>(this), 6);
 	setHooks();
 
 	originalLoggerCallbackOffset = getValue<std::int32_t>(loggerFunction);

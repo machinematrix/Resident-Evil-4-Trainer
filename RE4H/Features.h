@@ -336,7 +336,7 @@ private:
 	
 	static void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	static int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
-	static void __cdecl sceAtHook(std::uint32_t, std::uint32_t);
+	static std::uint32_t __cdecl sceAtHook(std::uint32_t, std::uint32_t);
 	Pointer getFirstValidDoor();
 	void setHooks();
 	void removeHooks();
