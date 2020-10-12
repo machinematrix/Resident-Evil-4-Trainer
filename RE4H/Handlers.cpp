@@ -429,7 +429,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 		break;
 	}
 	case MaxAmountEditButton: {
-		DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemAmountDialog), hWnd, EditMaxAmountDlgProx, (LPARAM)& wndInfo.cheats);
+		DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemAmountDialog), hWnd, EditMaxAmountDlgProc, (LPARAM)& wndInfo.cheats);
 		break;
 	}
 	case EraseItem: {

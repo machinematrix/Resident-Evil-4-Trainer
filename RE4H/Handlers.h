@@ -7,7 +7,7 @@
 #include "KeyBindingsConfig.h"
 #include <cstdarg>
 
-BOOL CALLBACK EditMaxAmountDlgProx(HWND, UINT, WPARAM, LPARAM);
+BOOL CALLBACK EditMaxAmountDlgProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK ItemDlgProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK WeaponDlgProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK ConfigDlgProc(HWND, UINT, WPARAM, LPARAM);

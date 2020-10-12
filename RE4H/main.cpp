@@ -137,7 +137,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static Game *game;
 	static HWND itemCombo, amountEdit, enableCheck;
