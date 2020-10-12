@@ -312,11 +312,11 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 		if (focused != wndInfo.sceneEdit)
 		{
 			try {
-				if (strScene.empty() || scene != std::stoul(strScene, nullptr, 16)) {
+				if (strScene.empty() || scene != std::stoul(strScene, nullptr, 16))
 					SetWindowText(wndInfo.sceneEdit, toHexWstring(scene).c_str());
-				}
 			}
-			catch (const std::invalid_argument &) {}
+			catch (const std::invalid_argument&)
+			{}
 		}
 
 		if (wndInfo.cheats.doorListChanged())
@@ -324,7 +324,7 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 			std::uint32_t i = 0;
 			SendMessage(wndInfo.doorCombo, CB_RESETCONTENT, 0, 0);
 			for (const auto door : wndInfo.cheats.getDoors()) {
-				SendMessage(wndInfo.doorCombo, CB_ADDSTRING, 0, (LPARAM)std::to_wstring(/*(std::uint32_t)door*/i).c_str());
+				SendMessage(wndInfo.doorCombo, CB_ADDSTRING, 0, (LPARAM)std::to_wstring(i).c_str());
 				++i;
 			}
 		}
@@ -332,9 +332,8 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 		if (focused != wndInfo.healthEdit)
 		{
 			try {
-				if (strHealth.empty() || health != std::stoul(strHealth)) {
+				if (strHealth.empty() || health != std::stoul(strHealth))
 					SetWindowText(wndInfo.healthEdit, std::to_wstring(health).c_str());
-				}
 			}
 			catch (const std::invalid_argument &) {}
 		}
@@ -342,11 +341,11 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 		if (focused != wndInfo.healthLimitEdit)
 		{
 			try {
-				if (strHealthLimit.empty() || healthLimit != std::stoul(strHealthLimit)) {
+				if (strHealthLimit.empty() || healthLimit != std::stoul(strHealthLimit))
 					SetWindowText(wndInfo.healthLimitEdit, std::to_wstring(healthLimit).c_str());
-				}
 			}
-			catch (const std::invalid_argument &) {}
+			catch (const std::invalid_argument&)
+			{}
 		}
 
 		wndInfo.inventoryList->refresh(wndInfo.cheats);

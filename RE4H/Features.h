@@ -290,6 +290,8 @@ enum class ItemId : std::uint16_t
 	Invalid = 0xFFFF
 };
 
+struct sqlite3;
+
 class Game
 {
 public:
@@ -297,9 +299,6 @@ public:
 	class WeaponData;
 	class InventoryIconData;
 private:
-	//friend void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
-	//friend int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
-
 	static const Bimap<ItemId, String> items;
 	std::mutex doorVectorMutex;
 	bool sceneChanged = false;
@@ -321,10 +320,10 @@ private:
 	Pointer loggerFunction2;
 	Pointer linkedList;
 	Pointer typewriterProc;
-
-	Pointer originalLogger, originalLogger2;
+	Pointer originalLogger = nullptr, originalLogger2 = nullptr;
 	std::vector<void*> doors;
 	std::map<ItemId, std::uint32_t> itemStackCap;
+	sqlite3 *database = nullptr;
 	
 	void(__cdecl *setScenePtr)(void*); //first parameter is a pointer to a 312 byte (0x138) structure
 	void(__cdecl *sceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
@@ -394,6 +393,8 @@ public:
 
 	InventoryIconData getItemDimensions(ItemId id);
 	void setMaxItemAmount(ItemId id, std::uint32_t amount);
+	void toggleMaxItemAmountHook(bool toggle);
+	bool isMaxItemHookEnabled();
 
 	void toggleFastTmp(bool toggle);
 	bool isFastTmpEnabled();

@@ -259,10 +259,26 @@ Game::Game()
 	typewriterProc(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
 	openMerchantPtr(reinterpret_cast<decltype(openMerchantPtr)>(patternScan("55  8B EC  A1 ????????  B9 00000004")))
 {
-#ifndef NDEBUG
-	using std::cout;
-	using std::endl;
-#endif
+	if ((sqlite3_open("RE4H.db", &database) & 0xFF) == SQLITE_OK)
+	{
+		std::string_view sql("SELECT * FROM stack_limit");
+		sqlite3_stmt *statement = nullptr;
+
+		sqlite3_exec(database, "CREATE TABLE IF NOT EXISTS stack_limit(item_id INTEGER PRIMARY KEY, max_amount INTEGER)", nullptr, nullptr, nullptr);
+		
+		if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
+		{
+			while ((sqlite3_step(statement) & 0xFF) == SQLITE_ROW)
+			{
+				int itemId = sqlite3_column_int(statement, 0), limit = sqlite3_column_int(statement, 1);
+
+				itemStackCap[static_cast<ItemId>(itemId)] = limit;
+			}
+
+			sqlite3_finalize(statement);
+		}
+	}
+
 	healthBase = pointerPath(healthBase, 0x1, 0x0);
 	playerBase = getValue<Pointer>(playerBase + 1);
 	weaponDataIndex = getValue<Pointer>(weaponDataIndex + 1);
@@ -289,6 +305,8 @@ Game::Game()
 	originalLogger = replaceFunction(loggerFunction, loggerFunction);
 	originalLogger2 = replaceFunction(loggerFunction2, loggerFunction2);
 #ifndef NDEBUG
+	using std::cout;
+	using std::endl;
 	cout << "Health Base: " << (void*)healthBase << endl;
 	cout << "Player Base: " << (void*)playerBase << endl;
 	cout << "Weapon Data Index: " << (void*)weaponDataIndex << endl;
@@ -309,6 +327,7 @@ Game::~Game()
 	replaceFunction(sceAtHookLocation, sceAtOriginal);
 	replaceFunction(loggerFunction, originalLogger);
 	replaceFunction(loggerFunction2, originalLogger2);
+	sqlite3_close_v2(database);
 }
 
 bool Game::good()
@@ -401,13 +420,14 @@ Game::ItemData* Game::addItem() const
 const std::vector<String>& Game::getItemNames()
 {
 	static std::vector<String> itemNames;
+
 	if (itemNames.empty())
 	{
 		itemNames.reserve(items.size());
-		for (const auto &item : items) {
+		for (const auto &item : items)
 			itemNames.push_back(item.second);
-		}
 	}
+
 	return itemNames;
 }
 
@@ -423,9 +443,8 @@ void Game::toggleAshley(bool toggle)
 
 void Game::setCharacter(std::uint8_t id)
 {
-	if (id <= 5) { //Check validity
+	if (id <= 5) //Check validity
 		setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Character, id);
-	}
 }
 
 std::uint8_t Game::getCharacter()
@@ -474,6 +493,7 @@ const std::vector<String>& Game::getCharacterCostumeNames(std::uint8_t id)
 		{ TEXT("Normal") }, //Krauser
 		{ TEXT("Normal") } //Wesker
 	};
+
 	return costumes[id <= 5 ? id : 6];
 }
 
@@ -500,7 +520,6 @@ void Game::setWeaponDataPtr(WeaponData *target, const WeaponData &source, const 
 	for (size_t i = 0; i < WeaponData::capacitySlotCount; ++i) {
 		target->capacity(i, source.capacity(i));
 	}
-	//std::copy(std::begin(source.mCapacityValues), std::end(source.mCapacityValues), std::begin(target->mCapacityValues));
 	target->weaponAmmo(source.weaponAmmo());
 	target->model(source.model());
 
@@ -519,7 +538,7 @@ float* Game::getFirepowerTableEntry(std::uint8_t i) const
 
 void Game::setFirepowerTableEntry(std::uint8_t i, const float (&newValues)[7])
 {
-	setValue/*<float, 7>*/(firePowerTable + i * 7 * sizeof(float), newValues);
+	setValue(firePowerTable + i * 7 * sizeof(float), newValues);
 }
 
 const std::vector<ItemId>& Game::getAmmoItemIds()
@@ -620,7 +639,9 @@ Game::Difficulty Game::getDifficulty()
 void Game::toggleNoclip(bool toggle)
 {
 	DWORD oldProtect;
-	if (VirtualProtect(noclipAddress, 1, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+
+	if (VirtualProtect(noclipAddress, 1, PAGE_EXECUTE_READWRITE, &oldProtect))
+	{
 		setValue<std::uint8_t>(noclipAddress, toggle ? 0xC3 /*ret*/ : 0x55 /*push ebp*/);
 		VirtualProtect(noclipAddress, 1, oldProtect, &oldProtect);
 	}
@@ -633,7 +654,6 @@ bool Game::isNoclipOn()
 
 void Game::spawnPickup(float coords[3], std::uint32_t id, std::uint32_t amount)
 {
-	//sceCreateItemAt(coords, id, amount, -1, -1, 0, -1);
 	sceAtCreateItemAt(coords, id, amount, 3, -1, 0, -1);
 }
 
@@ -653,7 +673,32 @@ Game::InventoryIconData Game::getItemDimensions(ItemId id)
 void Game::setMaxItemAmount(ItemId id, std::uint32_t amount)
 {
 	std::unique_lock<std::mutex> lck(doorVectorMutex);
+	std::string_view sql("REPLACE INTO stack_limit(item_id, max_amount) VALUES (?, ?)");
+	sqlite3_stmt *statement = nullptr;
+
 	itemStackCap[id] = amount;
+	lck.unlock();
+
+	if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
+	{
+		sqlite3_bind_int(statement, 1, static_cast<int>(id));
+		sqlite3_bind_int(statement, 2, amount);
+		sqlite3_step(statement);
+		sqlite3_finalize(statement);
+	}
+}
+
+void Game::toggleMaxItemAmountHook(bool toggle)
+{
+	if (toggle)
+		replaceFunction(getModelDataHookLocation, myGetInventoryModelData);
+	else
+		replaceFunction(getModelDataHookLocation, getModelDataOriginal);
+}
+
+bool Game::isMaxItemHookEnabled()
+{
+	return follow(getModelDataHookLocation) != getModelDataOriginal;
 }
 
 void Game::toggleFastTmp(bool toggle)
@@ -977,8 +1022,6 @@ const Bimap<ItemId, String> Game::items = {
 	{ ItemId::Mission4TreasureMap, TEXT("Mission 4 Treasure Map") },
 	{ ItemId::Mission5TreasureMap, TEXT("Mission 5 Treasure Map") },
 };
-
-//
 
 void Game::ItemData::itemId(ItemId id)
 {

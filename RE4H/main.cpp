@@ -140,48 +140,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static Game *game;
-	static HWND itemCombo, amountEdit;
+	static HWND itemCombo, amountEdit, enableCheck;
 	static int itemComboIdentifier;
 
 	switch (message)
 	{
 	case WM_INITDIALOG: {
-		game = (Game *)lParam;
+		game = reinterpret_cast<Game*>(lParam);
 		itemCombo = GetDlgItem(hDlg, ItemMaxAmountCombo);
 		amountEdit = GetDlgItem(hDlg, ItemMaxAmountEdit);
+		enableCheck = GetDlgItem(hDlg, IDC_ENABLESTACKS);
 		itemComboIdentifier = GetDlgCtrlID(itemCombo);
 
-		for (const auto &name : game->getItemNames()) {
+		for (const auto &name : game->getItemNames())
 			SendMessage(itemCombo, CB_ADDSTRING, 0, (LPARAM)name.c_str());
-		}
-
+		SendMessage(enableCheck, BM_SETCHECK, static_cast<WPARAM>(game->isMaxItemHookEnabled()), 0);
 		break;
 	}
 
 	case WM_COMMAND: {
 		switch (LOWORD(wParam))
 		{
-		case IDOK: {
-			std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
-			String strAmount = GetControlText(amountEdit);
-			std::uint32_t amount;
-
-			if (id == CB_ERR) {
-				ErrorBox(hDlg, TEXT("Select an item first"));
-				break;
-			}
-
-			try {
-				amount = std::stoul(strAmount);
-			}
-			catch (const std::invalid_argument &) {
-				ErrorBox(hDlg, TEXT("Invalid amount"));
-				break;
-			}
-
-			game->setMaxItemAmount(static_cast<ItemId>(id), amount);
-		}
-		[[fallthrough]];
 		case IDCANCEL: {
 			game = nullptr;
 			EndDialog(hDlg, 0);
@@ -199,23 +178,23 @@ BOOL CALLBACK EditMaxAmountDlgProx(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			}
 			break;
 		}
-		case ItemMaxAmountEdit: {
-			if (HIWORD(wParam) == EN_CHANGE) //if text in edit control changed...
+		case IDC_SETAMOUNT: {
+			std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
+
+			if (id != CB_ERR)
 			{
-				std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
-				if (id != CB_ERR)
-				{
-					try {
-						game->setMaxItemAmount(static_cast<ItemId>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
-					}
-					catch (const std::invalid_argument &) {
-						ErrorBox(hDlg, TEXT("Invalid capacity"));
-						//SetWindowText(amountEdit, TEXT(""));
-					}
+				try {
+					game->setMaxItemAmount(static_cast<ItemId>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
+				}
+				catch (const std::invalid_argument &) {
+					ErrorBox(hDlg, TEXT("Invalid capacity"));
 				}
 			}
 			break;
 		}
+		case IDC_ENABLESTACKS:
+			game->toggleMaxItemAmountHook(SendMessage(enableCheck, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
+			break;
 		}
 
 		break;
@@ -348,6 +327,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			targetItem->rotation(static_cast<std::uint8_t>(rotation));
 			valid = 1;
 		}
+		[[fallthrough]];
 		case IDCANCEL:
 			info = nullptr;
 			EndDialog(hDlg, valid);
