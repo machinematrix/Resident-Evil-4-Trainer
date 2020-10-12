@@ -6,7 +6,7 @@
 *recorrer items, si alguno ya no es valido borrarlo. Luego recorrer inventario del juego y agregar items nuevos si los hay, o modificar los que ya estan
 *Tengo solo lista e inventario del juego.
 */
-void InventoryListView::refresh(const Game &hacks)
+void InventoryListView::refresh(const Game &game)
 {
 	for (unsigned listItem = 0, itemCnt = itemCount(); listItem < itemCnt;) //erase items that are no longer in the inventory
 	{
@@ -28,7 +28,7 @@ void InventoryListView::refresh(const Game &hacks)
 		}
 	}
 
-	for (Game::ItemData *first = hacks.begInventory(), *last = hacks.endInventory(); first != last; ++first)
+	for (Game::ItemData *first = game.begInventory(), *last = game.endInventory(); first != last; ++first)
 	{
 		if (first->valid()) //there are no more invalid items in the list, so this is ok.
 		{
@@ -44,19 +44,18 @@ void InventoryListView::refresh(const Game &hacks)
 			}
 
 			setItemText(item, Id, std::to_wstring(static_cast<std::uint16_t>(first->itemId())));
-			try { setItemText(item, Name, hacks.getItemName(first->itemId())); }
+			try { setItemText(item, Name, game.getItemName(first->itemId())); }
 			catch (const std::out_of_range&) {
 				String msg(TEXT("Name not found for ID "));
 				msg += std::to_wstring(static_cast<std::uint32_t>(first->itemId()));
 				ErrorBox(GetParent(getWindowHandle()), msg.c_str());
 			}
 			setItemText(item, Amount, std::to_wstring(first->amount()));
-			setItemText(item, Valid, std::to_wstring(first->valid()));
+			setItemText(item, Inventory, std::to_wstring(first->inventory()));
 			setItemText(item, FirePower, std::to_wstring(first->firePower()));
 			setItemText(item, FiringSpeed, std::to_wstring(first->firingSpeed()));
 			setItemText(item, ReloadSpeed, std::to_wstring(first->reloadSpeed()));
 			setItemText(item, Capacity, std::to_wstring(first->capacity()));
-			setItemText(item, Ammo, std::to_wstring(first->ammo()));
 		}
 	}
 }

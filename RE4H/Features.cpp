@@ -404,6 +404,7 @@ Game::ItemData* Game::addItem() const
 		{ //if we find a free slot
 			result->itemId(ItemId::MagnumAmmo);
 			result->amount(1);
+			result->inventory(0);
 			result->valid(1);
 			result->firePower(0);
 			result->firingSpeed(0);
@@ -1051,6 +1052,16 @@ void Game::ItemData::valid(bool valid)
 bool Game::ItemData::valid() const
 {
 	return mIsValid ? true : false;
+}
+
+void Game::ItemData::inventory(std::uint8_t inventory)
+{
+	mInventory = inventory;
+}
+
+std::uint8_t Game::ItemData::inventory() const
+{
+	return mInventory;
 }
 
 void Game::ItemData::firingSpeed(std::uint16_t level)

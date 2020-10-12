@@ -206,7 +206,7 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static DialogInfo *info;
-	static HWND itemCombo, amountEdit, firepowerCombo, firingSpeedCombo, reloadSpeedCombo, capacityCombo, ammoEdit, posXEdit, posYEdit, rotationCombo;
+	static HWND itemCombo, inventoryCombo, amountEdit, firepowerCombo, firingSpeedCombo, reloadSpeedCombo, capacityCombo, ammoEdit, posXEdit, posYEdit, rotationCombo;
 
 	switch (message)
 	{
@@ -215,6 +215,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		auto item = std::get<1>(*info);
 
 		itemCombo = GetDlgItem(hDlg, ItemCombo);
+		inventoryCombo = GetDlgItem(hDlg, InventoryCombo);
 		amountEdit = GetDlgItem(hDlg, AmountEdit);
 		firepowerCombo = GetDlgItem(hDlg, FirepowerCombo);
 		firingSpeedCombo = GetDlgItem(hDlg, FiringSpeedCombo);
@@ -225,10 +226,14 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		posYEdit = GetDlgItem(hDlg, PositionYEdit);
 		rotationCombo = GetDlgItem(hDlg, RotationCombo);
 		
-		for (const auto &name : std::get<0>(*info)->getItemNames()) {
-			SendMessage(itemCombo, CB_ADDSTRING, 0, (LPARAM)name.c_str());
-		}
-		for (unsigned i = 0; i < 7; ++i) {
+		for (const auto &name : std::get<0>(*info)->getItemNames())
+			SendMessage(itemCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(name.c_str()));
+
+		for (int i = 0; i < 2; ++i)
+			SendMessage(inventoryCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::to_wstring(i).c_str()));
+
+		for (unsigned i = 0; i < 7; ++i)
+		{
 			TCHAR str[2] = { (TCHAR)(TEXT('0') + i), 0};
 			SendMessage(firepowerCombo, CB_ADDSTRING, 0, (LPARAM)str);
 			SendMessage(firingSpeedCombo, CB_ADDSTRING, 0, (LPARAM)str);
@@ -242,6 +247,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Up"));
 
 		SendMessage(itemCombo, CB_SETCURSEL, static_cast<WPARAM>(item->itemId()), 0);
+		SendMessage(inventoryCombo, CB_SETCURSEL, static_cast<WPARAM>(item->inventory()), 0);
 		SetWindowText(amountEdit, std::to_wstring(item->amount()).c_str());
 		SendMessage(firepowerCombo, CB_SETCURSEL, item->firePower(), 0);
 		SendMessage(firingSpeedCombo, CB_SETCURSEL, item->firingSpeed(), 0);
@@ -259,16 +265,23 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case IDOK: {
 			Game::ItemData *targetItem = std::get<1>(*info);
-			std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
+			std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, inventory = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
 
 			if (id == CB_ERR) { //ID
 				ErrorBox(hDlg, TEXT("Select an item"));
 				break;
 			}
 
-			try { amount = std::stoi(GetControlText(amountEdit)); } //AMOUNT
+			try {
+				amount = std::stoi(GetControlText(amountEdit)); //AMOUNT
+			}
 			catch (const std::invalid_argument&) {
 				ErrorBox(hDlg, TEXT("Invalid amount"));
+				break;
+			}
+
+			if ((inventory = ComboBox_GetCurSel(inventoryCombo)) == CB_ERR) {
+				ErrorBox(hDlg, TEXT("Select an inventory"));
 				break;
 			}
 
@@ -292,19 +305,25 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			try { ammo = std::stoi(GetControlText(ammoEdit)); } //AMMO
+			try {
+				ammo = std::stoi(GetControlText(ammoEdit)); //AMMO
+			}
 			catch (const std::invalid_argument&) {
 				ErrorBox(hDlg, TEXT("Invalid ammo amount"));
 				break;
 			}
 
-			try { x = std::stoi(GetControlText(posXEdit)); } //X
+			try {
+				x = std::stoi(GetControlText(posXEdit)); //X
+			}
 			catch (const std::invalid_argument&) {
 				ErrorBox(hDlg, TEXT("Invalid horizontal position"));
 				break;
 			}
 
-			try { y = std::stoi(GetControlText(posYEdit)); } //Y
+			try {
+				y = std::stoi(GetControlText(posYEdit)); //Y
+			} 
 			catch (const std::invalid_argument&) {
 				ErrorBox(hDlg, TEXT("Invalid vertical position"));
 				break;
@@ -317,6 +336,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 			targetItem->itemId(static_cast<ItemId>(id));
 			targetItem->amount(amount);
+			targetItem->inventory(inventory);
 			targetItem->firePower(fp);
 			targetItem->firingSpeed(fs);
 			targetItem->reloadSpeed(rs);

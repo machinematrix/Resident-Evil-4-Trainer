@@ -122,12 +122,11 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	wndInfo.inventoryList->addColumn(TEXT("ID"), 50);
 	wndInfo.inventoryList->addColumn(TEXT("Name"), 200);
 	wndInfo.inventoryList->addColumn(TEXT("Amount"), 50);
-	wndInfo.inventoryList->addColumn(TEXT("Valid"), 50);
+	wndInfo.inventoryList->addColumn(TEXT("Inventory"), 75);
 	wndInfo.inventoryList->addColumn(TEXT("FP"), 50);
 	wndInfo.inventoryList->addColumn(TEXT("FS"), 50);
 	wndInfo.inventoryList->addColumn(TEXT("RS"), 50);
 	wndInfo.inventoryList->addColumn(TEXT("CA"), 50);
-	wndInfo.inventoryList->addColumn(TEXT("Ammo"), 50);
 	SendMessage(wndInfo.healthEdit, EM_SETCUEBANNER, FALSE, (LPARAM)TEXT("Health"));
 	SendMessage(wndInfo.healthLimitEdit, EM_SETCUEBANNER, FALSE, (LPARAM)TEXT("Health Limit"));
 	SendMessage(wndInfo.sceneEdit, EM_SETCUEBANNER, FALSE, (LPARAM)TEXT("Scene"));

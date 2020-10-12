@@ -412,7 +412,8 @@ class Game::ItemData //Must be 14 bytes
 {
 	ItemId mId;
 	std::uint16_t mAmount; //not ammo
-	std::uint16_t mIsValid; //if this is 0, the item will not be in the inventory.
+	bool mIsValid; //if this is 0, the item will not be in the inventory.
+	std::uint8_t mInventory; //0: Leon's inventory | 1: Ashley's inventory
 	std::uint16_t mFirePower: 4;
 	std::uint16_t mFiringSpeed: 4;
 	std::uint16_t mReloadSpeed: 4;
@@ -437,6 +438,9 @@ public:
 
 	void valid(bool valid);
 	bool valid() const;
+
+	void inventory(std::uint8_t inventory);
+	std::uint8_t inventory() const;
 
 	void firingSpeed(std::uint16_t level);
 	std::uint16_t firingSpeed() const;
