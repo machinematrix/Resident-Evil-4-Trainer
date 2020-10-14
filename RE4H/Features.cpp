@@ -309,16 +309,16 @@ Game::Game()
 #ifndef NDEBUG
 	using std::cout;
 	using std::endl;
-	cout << "Health Base: " << (void*)healthBase << endl;
-	cout << "Player Base: " << (void*)playerBase << endl;
-	cout << "Weapon Data Index: " << (void*)weaponDataIndex << endl;
-	cout << "Fire power table: " << (void*)firePowerTable << endl;
-	cout << "Noclip code: " << (void*)noclipAddress << endl;
-	cout << "Door data: " << (void*)doorData << endl;
-	cout << "Door List: " << (void *)doorList << endl;
-	cout << "Set Scene: " << (void*)setScenePtr << endl;
-	cout << "SceCreateItemAt: " << (void*)sceAtCreateItemAt << endl;
-	cout << "Logger Function Jump: " << (void*)loggerFunction << endl;
+	cout << "Health Base: " << (void*)mHealthBase << endl;
+	cout << "Player Base: " << (void*)mPlayerBase << endl;
+	cout << "Weapon Data Index: " << (void*)mWeaponDataIndex << endl;
+	cout << "Fire power table: " << (void*)mFirePowerTable << endl;
+	cout << "Noclip code: " << (void*)mNoclipAddress << endl;
+	cout << "Door data: " << (void*)mDoorData << endl;
+	cout << "Door List: " << (void *)mDoorList << endl;
+	cout << "Set Scene: " << (void*)mSetScene << endl;
+	cout << "SceCreateItemAt: " << (void*)mSceAtCreateItemAt << endl;
+	cout << "Logger Function Jump: " << (void*)mLoggerFunction << endl;
 #endif
 }
 
