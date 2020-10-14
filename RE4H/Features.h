@@ -290,8 +290,6 @@ enum class ItemId : std::uint16_t
 	Invalid = 0xFFFF
 };
 
-struct sqlite3;
-
 class Game
 {
 public:
@@ -299,37 +297,36 @@ public:
 	class WeaponData;
 	class InventoryIconData;
 private:
-	static const Bimap<ItemId, String> items;
-	std::mutex doorVectorMutex;
-	bool sceneChanged = false;
-	Pointer healthBase;
-	Pointer playerBase;
-	Pointer weaponDataIndex;
-	Pointer firePowerTable;
-	Pointer noclipAddress;
-	Pointer doorData;
-	Pointer doorList; //at dereference, then at +0x10, first four bits are door index * 2
-	Pointer dropRandomizerHookLocation;
-	Pointer dropRandomizerOriginal = nullptr;
-	Pointer getModelDataHookLocation;
-	Pointer getModelDataOriginal = nullptr;
-	Pointer sceAtHookLocation;
-	Pointer sceAtOriginal = nullptr;
-	Pointer tmpFireRate;
-	Pointer loggerFunction;
-	Pointer loggerFunction2;
-	Pointer linkedList;
-	Pointer typewriterProc;
-	Pointer originalLogger = nullptr, originalLogger2 = nullptr;
-	std::vector<void*> doors;
-	std::map<ItemId, std::uint32_t> itemStackCap;
-	sqlite3 *database = nullptr;
+	static const Bimap<ItemId, String> mItems;
+	std::mutex mDoorVectorMutex;
+	bool mSceneChanged = false;
+	Pointer mHealthBase;
+	Pointer mPlayerBase;
+	Pointer mWeaponDataIndex;
+	Pointer mFirePowerTable;
+	Pointer mNoclipAddress;
+	Pointer mDoorData;
+	Pointer mDoorList; //at dereference, then at +0x10, first four bits are door index * 2
+	Pointer mDropRandomizerHookLocation;
+	Pointer mDropRandomizerOriginal = nullptr;
+	Pointer mGetModelDataHookLocation;
+	Pointer mGetModelDataOriginal = nullptr;
+	Pointer mSceAtHookLocation;
+	Pointer mSceAtOriginal = nullptr;
+	Pointer mTmpFireRate;
+	Pointer mLoggerFunction;
+	Pointer mLoggerFunction2;
+	Pointer mLinkedList;
+	Pointer mTypewriterProcedure;
+	Pointer mOriginalLogger = nullptr, mOriginalLogger2 = nullptr;
+	std::vector<void*> mDoors;
+	std::map<ItemId, std::uint32_t> mItemStackCap;
 	
-	void(__cdecl *setScenePtr)(void*); //first parameter is a pointer to a 312 byte (0x138) structure
-	void(__cdecl *sceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
-	void(__cdecl *getInventoryModelData)(ItemId id, InventoryIconData *result);
-	std::uint32_t(__cdecl *readMinimumHeader)(void *sceneHandle, void *unknown);
-	void(__cdecl *openMerchantPtr)(std::int32_t, std::int32_t);
+	void(__cdecl *mSetScene)(void*); //first parameter is a pointer to a 312 byte (0x138) structure
+	void(__cdecl *mSceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
+	void(__cdecl *mGetInventoryModelData)(ItemId id, InventoryIconData *result);
+	std::uint32_t(__cdecl *mReadMinimumHeader)(void *sceneHandle, void *unknown);
+	void(__cdecl *mOpenMerchant)(std::int32_t, std::int32_t);
 	
 	static void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	static int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
@@ -347,8 +344,8 @@ public:
 	void setHealthLimit(std::uint16_t limit);
 	std::uint16_t getHealthLimit();
 
-	decltype(items)::ValueType getItemName(const decltype(items)::KeyType &id) const; //throws out_of_range
-	decltype(items)::KeyType getItemId(const decltype(items)::ValueType &id) const; //throws out_of_range
+	decltype(mItems)::ValueType getItemName(const decltype(mItems)::KeyType &id) const; //throws out_of_range
+	decltype(mItems)::KeyType getItemId(const decltype(mItems)::ValueType &id) const; //throws out_of_range
 	ItemData* begInventory() const;
 	ItemData* endInventory() const;
 	ItemData* addItem() const;

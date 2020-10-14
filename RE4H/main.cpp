@@ -265,7 +265,8 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case IDOK: {
 			Game::ItemData *targetItem = std::get<1>(*info);
-			std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, inventory = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
+			std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
+			std::uint8_t inventory = 0;
 
 			if (id == CB_ERR) { //ID
 				ErrorBox(hDlg, TEXT("Select an item"));

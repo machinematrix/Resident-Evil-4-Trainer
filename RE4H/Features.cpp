@@ -139,12 +139,12 @@ void __cdecl Game::myGetInventoryModelData(ItemId id, Game::InventoryIconData *r
 
 	if (id != ItemId::Invalid)
 	{
-		std::unique_lock<std::mutex> lck(game->doorVectorMutex);
-		auto amountIt = game->itemStackCap.find(id);
+		std::unique_lock<std::mutex> lck(game->mDoorVectorMutex);
+		auto amountIt = game->mItemStackCap.find(id);
 
-		game->getInventoryModelData(id, result);
+		game->mGetInventoryModelData(id, result);
 
-		if (amountIt != game->itemStackCap.end())
+		if (amountIt != game->mItemStackCap.end())
 			result->stackLimit(amountIt->second);
 	}
 	else
@@ -186,7 +186,7 @@ int __cdecl Game::myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std
 		}
 
 		*outItemId = candidates[randomizer(engine) % candidates.size()];
-		game->getInventoryModelData(*outItemId, &icon);
+		game->mGetInventoryModelData(*outItemId, &icon);
 		*outItemCount = randomizer(engine) % icon.stackLimit() + 1;
 
 		result = true;
@@ -204,7 +204,7 @@ std::uint32_t __cdecl Game::sceAtHook(void *arg1, void *arg2)
 
 	if (arg2 != cookie)
 	{
-		result = reinterpret_cast<decltype(sceAtHook)*>(game->sceAtOriginal)(arg1, arg2);
+		result = reinterpret_cast<decltype(sceAtHook)*>(game->mSceAtOriginal)(arg1, arg2);
 		game->refreshDoorList();
 	}
 	else
@@ -217,7 +217,7 @@ Pointer Game::getFirstValidDoor()
 {
 	Pointer result = nullptr;
 
-	if (result = getValue<Pointer>(doorList))
+	if (result = getValue<Pointer>(mDoorList))
 	{
 		result = getValue<Pointer>(result + 4);
 
@@ -238,27 +238,29 @@ Pointer Game::getFirstValidDoor()
 }
 
 Game::Game()
-	:healthBase(patternScan("A1 ????????  83 C0 60  6A 10  50  E8")),
-	playerBase(patternScan("B9 ????????  E8 ????????  8B 35 ????????  81")),
-	weaponDataIndex(patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40")),
-	firePowerTable(patternScan("D9 04 8D ????????  D9 5D 08")),
-	noclipAddress(patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57")),
-	doorData(patternScan("????????  6A 0B  75 ??  6A 3A")),
-	setScenePtr((decltype(setScenePtr))patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????")),
-	sceAtCreateItemAt((decltype(sceAtCreateItemAt))patternScan("55  8B EC  83 EC 0C  57  6A 0D")),
-	doorList(patternScan("????????  53  05 8C000000  56  C6 45 CB 00")),
-	dropRandomizerHookLocation(patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC")),
-	getInventoryModelData((decltype(getInventoryModelData))patternScan("55  8B EC  0FB7 45 ??  3D 0F010000")),
-	getModelDataHookLocation(patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74")),
-	sceAtHookLocation(patternScan("E8 ????????  8B 0D ????????  A1 ????????  8D 14 09")),
-	tmpFireRate(patternScan("D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41")),
-	readMinimumHeader((decltype(readMinimumHeader))patternScan("55  8B EC  53  8B 1D ????????  56  68 ????????")),
-	loggerFunction(patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10")),
-	loggerFunction2(patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3")),
-	linkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
-	typewriterProc(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
-	openMerchantPtr(reinterpret_cast<decltype(openMerchantPtr)>(patternScan("55  8B EC  A1 ????????  B9 00000004")))
+	:mHealthBase(patternScan("A1 ????????  83 C0 60  6A 10  50  E8")),
+	mPlayerBase(patternScan("B9 ????????  E8 ????????  8B 35 ????????  81")),
+	mWeaponDataIndex(patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40")),
+	mFirePowerTable(patternScan("D9 04 8D ????????  D9 5D 08")),
+	mNoclipAddress(patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57")),
+	mDoorData(patternScan("????????  6A 0B  75 ??  6A 3A")),
+	mSetScene((decltype(mSetScene))patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????")),
+	mSceAtCreateItemAt((decltype(mSceAtCreateItemAt))patternScan("55  8B EC  83 EC 0C  57  6A 0D")),
+	mDoorList(patternScan("????????  53  05 8C000000  56  C6 45 CB 00")),
+	mDropRandomizerHookLocation(patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC")),
+	mGetInventoryModelData((decltype(mGetInventoryModelData))patternScan("55  8B EC  0FB7 45 ??  3D 0F010000")),
+	mGetModelDataHookLocation(patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74")),
+	mSceAtHookLocation(patternScan("E8 ????????  8B 0D ????????  A1 ????????  8D 14 09")),
+	mTmpFireRate(patternScan("D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41")),
+	mReadMinimumHeader((decltype(mReadMinimumHeader))patternScan("55  8B EC  53  8B 1D ????????  56  68 ????????")),
+	mLoggerFunction(patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10")),
+	mLoggerFunction2(patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3")),
+	mLinkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
+	mTypewriterProcedure(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
+	mOpenMerchant(reinterpret_cast<decltype(mOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004")))
 {
+	sqlite3 *database = nullptr;
+
 	if ((sqlite3_open("RE4H.db", &database) & 0xFF) == SQLITE_OK)
 	{
 		std::string_view sql("SELECT * FROM stack_limit");
@@ -272,36 +274,38 @@ Game::Game()
 			{
 				int itemId = sqlite3_column_int(statement, 0), limit = sqlite3_column_int(statement, 1);
 
-				itemStackCap[static_cast<ItemId>(itemId)] = limit;
+				mItemStackCap[static_cast<ItemId>(itemId)] = limit;
 			}
 
 			sqlite3_finalize(statement);
 		}
 	}
 
-	healthBase = pointerPath(healthBase, 0x1, 0x0);
-	playerBase = getValue<Pointer>(playerBase + 1);
-	weaponDataIndex = getValue<Pointer>(weaponDataIndex + 1);
-	firePowerTable = getValue<Pointer>(firePowerTable + 3);
-	doorData = getValue<Pointer>(doorData);
-	doorList = getValue<Pointer>(doorList);
-	getModelDataHookLocation = follow(getModelDataHookLocation);
-	dropRandomizerHookLocation = follow(dropRandomizerHookLocation);
-	sceAtHookLocation = follow(sceAtHookLocation);
-	loggerFunction = follow(loggerFunction);
-	loggerFunction2 = follow(loggerFunction2 + 10);
-	tmpFireRate = getValue<Pointer>(tmpFireRate + 2);
-	linkedList = getValue<Pointer>(linkedList + 1);
+	sqlite3_close_v2(database);
+
+	mHealthBase = pointerPath(mHealthBase, 0x1, 0x0);
+	mPlayerBase = getValue<Pointer>(mPlayerBase + 1);
+	mWeaponDataIndex = getValue<Pointer>(mWeaponDataIndex + 1);
+	mFirePowerTable = getValue<Pointer>(mFirePowerTable + 3);
+	mDoorData = getValue<Pointer>(mDoorData);
+	mDoorList = getValue<Pointer>(mDoorList);
+	mGetModelDataHookLocation = follow(mGetModelDataHookLocation);
+	mDropRandomizerHookLocation = follow(mDropRandomizerHookLocation);
+	mSceAtHookLocation = follow(mSceAtHookLocation);
+	mLoggerFunction = follow(mLoggerFunction);
+	mLoggerFunction2 = follow(mLoggerFunction2 + 10);
+	mTmpFireRate = getValue<Pointer>(mTmpFireRate + 2);
+	mLinkedList = getValue<Pointer>(mLinkedList + 1);
 
 	myDropRandomizer(0, nullptr, nullptr, this);
 	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
 	sceAtHook(this, cookie);
 
-	getModelDataOriginal = replaceFunction(getModelDataHookLocation, myGetInventoryModelData);
-	dropRandomizerOriginal = replaceFunction(dropRandomizerHookLocation, myDropRandomizer);
-	sceAtOriginal = replaceFunction(sceAtHookLocation, sceAtHook);
-	originalLogger = replaceFunction(loggerFunction, loggerFunction);
-	originalLogger2 = replaceFunction(loggerFunction2, loggerFunction2);
+	mGetModelDataOriginal = replaceFunction(mGetModelDataHookLocation, myGetInventoryModelData);
+	mDropRandomizerOriginal = replaceFunction(mDropRandomizerHookLocation, myDropRandomizer);
+	mSceAtOriginal = replaceFunction(mSceAtHookLocation, sceAtHook);
+	mOriginalLogger = replaceFunction(mLoggerFunction, mLoggerFunction);
+	mOriginalLogger2 = replaceFunction(mLoggerFunction2, mLoggerFunction2);
 #ifndef NDEBUG
 	using std::cout;
 	using std::endl;
@@ -320,81 +324,80 @@ Game::Game()
 
 Game::~Game()
 {
-	replaceFunction(getModelDataHookLocation, getModelDataOriginal);
-	replaceFunction(dropRandomizerHookLocation, dropRandomizerOriginal);
-	replaceFunction(sceAtHookLocation, sceAtOriginal);
-	replaceFunction(loggerFunction, originalLogger);
-	replaceFunction(loggerFunction2, originalLogger2);
-	sqlite3_close_v2(database);
+	replaceFunction(mGetModelDataHookLocation, mGetModelDataOriginal);
+	replaceFunction(mDropRandomizerHookLocation, mDropRandomizerOriginal);
+	replaceFunction(mSceAtHookLocation, mSceAtOriginal);
+	replaceFunction(mLoggerFunction, mOriginalLogger);
+	replaceFunction(mLoggerFunction2, mOriginalLogger2);
 }
 
 bool Game::good()
 {
-	return healthBase
-		&& playerBase
-		&& weaponDataIndex
-		&& firePowerTable
-		&& noclipAddress
-		&& doorData
-		&& doorList
-		&& dropRandomizerHookLocation
-		&& getModelDataHookLocation
-		&& setScenePtr
-		&& sceAtCreateItemAt
-		&& getInventoryModelData
-		&& tmpFireRate
-		&& linkedList
-		&& readMinimumHeader
-		&& typewriterProc
-		&& loggerFunction
-		&& loggerFunction2
+	return mHealthBase
+		&& mPlayerBase
+		&& mWeaponDataIndex
+		&& mFirePowerTable
+		&& mNoclipAddress
+		&& mDoorData
+		&& mDoorList
+		&& mDropRandomizerHookLocation
+		&& mGetModelDataHookLocation
+		&& mSetScene
+		&& mSceAtCreateItemAt
+		&& mGetInventoryModelData
+		&& mTmpFireRate
+		&& mLinkedList
+		&& mReadMinimumHeader
+		&& mTypewriterProcedure
+		&& mLoggerFunction
+		&& mLoggerFunction2
 		;
 }
 
 void Game::setHealth(std::uint16_t health)
 {
-	setValue(healthBase + HealthBaseOffsets::Health, health);
+	setValue(mHealthBase + HealthBaseOffsets::Health, health);
 }
 
 std::uint16_t Game::getHealth()
 {
-	return getValue<std::uint16_t>(healthBase + HealthBaseOffsets::Health);
+	return getValue<std::uint16_t>(mHealthBase + HealthBaseOffsets::Health);
 }
 
 void Game::setHealthLimit(std::uint16_t limit)
 {
-	setValue(healthBase + HealthBaseOffsets::MaxHealth, limit);
+	setValue(mHealthBase + HealthBaseOffsets::MaxHealth, limit);
 }
 
 std::uint16_t Game::getHealthLimit()
 {
-	return getValue<std::uint16_t>(healthBase + HealthBaseOffsets::MaxHealth);
+	return getValue<std::uint16_t>(mHealthBase + HealthBaseOffsets::MaxHealth);
 }
 
-decltype(Game::items)::ValueType Game::getItemName(const decltype(items)::KeyType &id) const
+decltype(Game::mItems)::ValueType Game::getItemName(const decltype(mItems)::KeyType &id) const
 {
-	return items.at(id);
+	return mItems.at(id);
 }
 
-decltype(Game::items)::KeyType Game::getItemId(const decltype(items)::ValueType &id) const
+decltype(Game::mItems)::KeyType Game::getItemId(const decltype(mItems)::ValueType &id) const
 {
-	return items.at(id);
+	return mItems.at(id);
 }
 
 Game::ItemData* Game::begInventory() const
 {
-	return getValue<ItemData*>(playerBase + PlayerBaseOffsets::Inventory);
+	return getValue<ItemData*>(mPlayerBase + PlayerBaseOffsets::Inventory);
 }
 
 Game::ItemData* Game::endInventory() const
 {
-	return getValue<ItemData*>(playerBase + PlayerBaseOffsets::Inventory) + getValue<std::uint32_t>(playerBase + PlayerBaseOffsets::InventorySize);
+	return getValue<ItemData*>(mPlayerBase + PlayerBaseOffsets::Inventory) + getValue<std::uint32_t>(mPlayerBase + PlayerBaseOffsets::InventorySize);
 }
 
 Game::ItemData* Game::addItem() const
 {
-	std::uint32_t invSize = getValue<std::uint32_t>(playerBase + PlayerBaseOffsets::InventorySize);
-	ItemData *result = getValue<ItemData*>(playerBase + PlayerBaseOffsets::Inventory), *end = result + invSize;
+	std::uint32_t invSize = getValue<std::uint32_t>(mPlayerBase + PlayerBaseOffsets::InventorySize);
+	ItemData *result = getValue<ItemData*>(mPlayerBase + PlayerBaseOffsets::Inventory), *end = result + invSize;
 	
 	while (result != end)
 	{
@@ -422,8 +425,8 @@ const std::vector<String>& Game::getItemNames()
 
 	if (itemNames.empty())
 	{
-		itemNames.reserve(items.size());
-		for (const auto &item : items)
+		itemNames.reserve(mItems.size());
+		for (const auto &item : mItems)
 			itemNames.push_back(item.second);
 	}
 
@@ -432,23 +435,23 @@ const std::vector<String>& Game::getItemNames()
 
 bool Game::isAshleyPresent()
 {
-	return getValue<std::uint32_t>(healthBase + HealthBaseOffsets::AshleyPresent) & 0x04000000;
+	return getValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::AshleyPresent) & 0x04000000;
 }
 
 void Game::toggleAshley(bool toggle)
 {
-	setValue<std::uint32_t>(healthBase + HealthBaseOffsets::AshleyPresent, toggle ? 0x04000000 : 0);
+	setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::AshleyPresent, toggle ? 0x04000000 : 0);
 }
 
 void Game::setCharacter(std::uint8_t id)
 {
 	if (id <= 5) //Check validity
-		setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Character, id);
+		setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Character, id);
 }
 
 std::uint8_t Game::getCharacter()
 {
-	return getValue<std::uint8_t>(healthBase + HealthBaseOffsets::Character);
+	return getValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Character);
 }
 
 void Game::setCostume(std::uint8_t id)
@@ -458,28 +461,28 @@ void Game::setCostume(std::uint8_t id)
 	{
 	case Leon:
 		if (id <= 4)
-			setValue(healthBase + HealthBaseOffsets::Costume, id);
+			setValue(mHealthBase + HealthBaseOffsets::Costume, id);
 		break;
 	case Ashley:
 		if(id <= 2)
-			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
+			setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id);
 		break;
 	case Ada:
 		if (id <= 3 && id != 2)
-			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
+			setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id);
 		break;
 	case HUNK:
 	case Krauser:
 	case Wesker:
 		if (!id)
-			setValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume, id);
+			setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id);
 		break;
 	}
 }
 
 std::uint8_t Game::getCostume()
 {
-	return getValue<std::uint8_t>(healthBase + HealthBaseOffsets::Costume);
+	return getValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume);
 }
 
 const std::vector<String>& Game::getCharacterCostumeNames(std::uint8_t id)
@@ -498,7 +501,7 @@ const std::vector<String>& Game::getCharacterCostumeNames(std::uint8_t id)
 
 Game::WeaponData* Game::getWeaponDataPtr(ItemId id) const
 {
-	WeaponData *result = nullptr, *iter = (WeaponData*)weaponDataIndex;
+	WeaponData *result = nullptr, *iter = (WeaponData*)mWeaponDataIndex;
 	while (iter->id() != ItemId::MagnumAmmo)
 	{
 		if (iter->id() == id) {
@@ -532,12 +535,12 @@ bool Game::isWeapon(ItemId id) const
 
 float* Game::getFirepowerTableEntry(std::uint8_t i) const
 {
-	return (float*)(firePowerTable + i * 7 * sizeof(float));
+	return (float*)(mFirePowerTable + i * 7 * sizeof(float));
 }
 
 void Game::setFirepowerTableEntry(std::uint8_t i, const float (&newValues)[7])
 {
-	setValue(firePowerTable + i * 7 * sizeof(float), newValues);
+	setValue(mFirePowerTable + i * 7 * sizeof(float), newValues);
 }
 
 const std::vector<ItemId>& Game::getAmmoItemIds()
@@ -558,33 +561,33 @@ const std::vector<ItemId>& Game::getAmmoItemIds()
 
 void Game::setMoney(std::uint32_t value)
 {
-	setValue<std::uint32_t>(healthBase + HealthBaseOffsets::Money, value);
+	setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Money, value);
 }
 
 std::uint32_t Game::getMoney()
 {
-	return getValue<std::uint32_t>(healthBase + HealthBaseOffsets::Money);
+	return getValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Money);
 }
 
 void Game::useDoor(void *doorData)
 {
-	setScenePtr(doorData); 
+	mSetScene(doorData); 
 }
 
 void Game::refreshDoorList()
 {
 	std::unique_lock<std::mutex>(doorVectorMutex);
-	sceneChanged = true;
+	mSceneChanged = true;
 	Pointer door = getFirstValidDoor();
 
-	doors.clear();
+	mDoors.clear();
 
 	if (door)
 	{
 		while (!((std::uint32_t)door & 1))
 		{
 			if (getValue<std::uint8_t>(door + 0x35) == 1) { //if it's a door
-				doors.push_back(door);
+				mDoors.push_back(door);
 			}
 			door = getValue<Pointer>(door);
 		}
@@ -593,15 +596,15 @@ void Game::refreshDoorList()
 
 const std::vector<void *>& Game::getDoors()
 {
-	return doors;
+	return mDoors;
 }
 
 bool Game::doorListChanged()
 {
 	std::unique_lock<std::mutex>(doorVectorMutex);
 
-	if (sceneChanged) {
-		sceneChanged = false;
+	if (mSceneChanged) {
+		mSceneChanged = false;
 		return true;
 	}
 	else return false;
@@ -610,55 +613,55 @@ bool Game::doorListChanged()
 void Game::setScene(std::uint32_t scene)
 {
 	float origin[3] = {};
-	setValue<std::uint32_t>(healthBase + HealthBaseOffsets::Scene, scene);
-	setValue/*<float, 3>*/(healthBase + HealthBaseOffsets::SceneEntryX, origin);
-	setValue(healthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
+	setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Scene, scene);
+	setValue/*<float, 3>*/(mHealthBase + HealthBaseOffsets::SceneEntryX, origin);
+	setValue(mHealthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
 }
 
 std::uint32_t Game::getScene()
 {
-	return getValue<std::uint32_t>(healthBase + HealthBaseOffsets::Scene);
+	return getValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Scene);
 }
 
 std::array<float, 3> Game::getSceneEntryCoords()
 {
-	return getValue<std::array<float, 3>>(healthBase + HealthBaseOffsets::SceneEntryX);
+	return getValue<std::array<float, 3>>(mHealthBase + HealthBaseOffsets::SceneEntryX);
 }
 
 void Game::setDifficulty(Difficulty value)
 {
-	setValue<Difficulty>(healthBase + HealthBaseOffsets::Difficulty, value);
+	setValue<Difficulty>(mHealthBase + HealthBaseOffsets::Difficulty, value);
 }
 
 Game::Difficulty Game::getDifficulty()
 {
-	return getValue<Difficulty>(healthBase + HealthBaseOffsets::Difficulty);
+	return getValue<Difficulty>(mHealthBase + HealthBaseOffsets::Difficulty);
 }
 
 void Game::toggleNoclip(bool toggle)
 {
 	DWORD oldProtect;
 
-	if (VirtualProtect(noclipAddress, 1, PAGE_EXECUTE_READWRITE, &oldProtect))
+	if (VirtualProtect(mNoclipAddress, 1, PAGE_EXECUTE_READWRITE, &oldProtect))
 	{
-		setValue<std::uint8_t>(noclipAddress, toggle ? 0xC3 /*ret*/ : 0x55 /*push ebp*/);
-		VirtualProtect(noclipAddress, 1, oldProtect, &oldProtect);
+		setValue<std::uint8_t>(mNoclipAddress, toggle ? 0xC3 /*ret*/ : 0x55 /*push ebp*/);
+		VirtualProtect(mNoclipAddress, 1, oldProtect, &oldProtect);
 	}
 }
 
 bool Game::isNoclipOn()
 {
-	return getValue<std::uint8_t>(noclipAddress) == 0xC3 /*ret*/ ? true : false;
+	return getValue<std::uint8_t>(mNoclipAddress) == 0xC3 /*ret*/ ? true : false;
 }
 
 void Game::spawnPickup(float coords[3], std::uint32_t id, std::uint32_t amount)
 {
-	sceAtCreateItemAt(coords, id, amount, 3, -1, 0, -1);
+	mSceAtCreateItemAt(coords, id, amount, 3, -1, 0, -1);
 }
 
 void Game::spawnPickup(std::uint32_t id, std::uint32_t amount)
 {
-	float coords[3] = { getValue<float>(healthBase + HealthBaseOffsets::PlayerX), getValue<float>(healthBase + HealthBaseOffsets::PlayerY), getValue<float>(healthBase + HealthBaseOffsets::PlayerZ) };
+	float coords[3] = { getValue<float>(mHealthBase + HealthBaseOffsets::PlayerX), getValue<float>(mHealthBase + HealthBaseOffsets::PlayerY), getValue<float>(mHealthBase + HealthBaseOffsets::PlayerZ) };
 	spawnPickup(coords, id, amount);
 }
 
@@ -671,47 +674,54 @@ Game::InventoryIconData Game::getItemDimensions(ItemId id)
 
 void Game::setMaxItemAmount(ItemId id, std::uint32_t amount)
 {
-	std::unique_lock<std::mutex> lck(doorVectorMutex);
+	std::unique_lock<std::mutex> lck(mDoorVectorMutex);
 	std::string_view sql("REPLACE INTO stack_limit(item_id, max_amount) VALUES (?, ?)");
-	sqlite3_stmt *statement = nullptr;
+	sqlite3 *database = nullptr;
 
-	itemStackCap[id] = amount;
+	mItemStackCap[id] = amount;
 	lck.unlock();
 
-	if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
+	if ((sqlite3_open("RE4H.db", &database) & 0xFF) == SQLITE_OK)
 	{
-		sqlite3_bind_int(statement, 1, static_cast<int>(id));
-		sqlite3_bind_int(statement, 2, amount);
-		sqlite3_step(statement);
-		sqlite3_finalize(statement);
+		sqlite3_stmt *statement = nullptr;
+
+		if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
+		{
+			sqlite3_bind_int(statement, 1, static_cast<int>(id));
+			sqlite3_bind_int(statement, 2, amount);
+			sqlite3_step(statement);
+			sqlite3_finalize(statement);
+		}
 	}
+
+	sqlite3_close_v2(database);
 }
 
 void Game::toggleMaxItemAmountHook(bool toggle)
 {
 	if (toggle)
-		replaceFunction(getModelDataHookLocation, myGetInventoryModelData);
+		replaceFunction(mGetModelDataHookLocation, myGetInventoryModelData);
 	else
-		replaceFunction(getModelDataHookLocation, getModelDataOriginal);
+		replaceFunction(mGetModelDataHookLocation, mGetModelDataOriginal);
 }
 
 bool Game::isMaxItemHookEnabled()
 {
-	return follow(getModelDataHookLocation) != getModelDataOriginal;
+	return follow(mGetModelDataHookLocation) != mGetModelDataOriginal;
 }
 
 void Game::toggleFastTmp(bool toggle)
 {
 	DWORD oldProtect;
-	if (VirtualProtect(tmpFireRate, sizeof(float), PAGE_READWRITE, &oldProtect)) {
-		*(float *)tmpFireRate = toggle ? 1.5f : 3.0f;
-		VirtualProtect(tmpFireRate, sizeof(float), oldProtect, &oldProtect);
+	if (VirtualProtect(mTmpFireRate, sizeof(float), PAGE_READWRITE, &oldProtect)) {
+		*(float *)mTmpFireRate = toggle ? 1.5f : 3.0f;
+		VirtualProtect(mTmpFireRate, sizeof(float), oldProtect, &oldProtect);
 	}
 }
 
 bool Game::isFastTmpEnabled()
 {
-	return *(float*)tmpFireRate == 1.5f;
+	return *(float*)mTmpFireRate == 1.5f;
 }
 
 void Game::loadSceneFile(const std::string &sceneName)
@@ -720,34 +730,34 @@ void Game::loadSceneFile(const std::string &sceneName)
 	
 	if (sceneHandle != INVALID_HANDLE_VALUE)
 	{
-		readMinimumHeader(sceneHandle, nullptr);
+		mReadMinimumHeader(sceneHandle, nullptr);
 		CloseHandle(sceneHandle);
 	}
 }
 
 void Game::setLoggerCallback(void (__cdecl *callback)(const char*, ...))
 {
-	replaceFunction(loggerFunction, callback);
-	replaceFunction(loggerFunction2, callback);
+	replaceFunction(mLoggerFunction, callback);
+	replaceFunction(mLoggerFunction2, callback);
 }
 
 void Game::openTypewriter(TypewriterMode mode)
 {
-	Pointer node = getValue<Pointer>(linkedList + 0x34);
+	Pointer node = getValue<Pointer>(mLinkedList + 0x34);
 	node = getValue<Pointer>(node + 0x14);
 	node += 0x18;
 
 	setValue<TypewriterMode>(node + 0x14, mode);
-	setValue<Pointer>(node + 0x33C, typewriterProc);
+	setValue<Pointer>(node + 0x33C, mTypewriterProcedure);
 	setValue<std::uint8_t>(node + 4, 1);
 }
 
 void Game::openMerchant()
 {
-	openMerchantPtr(0x10, 0);
+	mOpenMerchant(0x10, 0);
 }
 
-const Bimap<ItemId, String> Game::items = {
+const Bimap<ItemId, String> Game::mItems = {
 	{ ItemId::MagnumAmmo, TEXT("Magnum Ammo") },
 	{ ItemId::HandGrenade, TEXT("Hand Grenade") },
 	{ ItemId::IncendiaryGrenade, TEXT("Incendiary Grenade") },
