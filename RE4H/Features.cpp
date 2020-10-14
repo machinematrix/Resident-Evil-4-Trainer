@@ -290,10 +290,8 @@ Game::Game()
 	sceAtHookLocation = follow(sceAtHookLocation);
 	loggerFunction = follow(loggerFunction);
 	loggerFunction2 = follow(loggerFunction2 + 10);
-	tmpFireRate += 2;
-	tmpFireRate = getValue<Pointer>(tmpFireRate);
-	++linkedList; //skip BB
-	linkedList = getValue<Pointer>(linkedList);
+	tmpFireRate = getValue<Pointer>(tmpFireRate + 2);
+	linkedList = getValue<Pointer>(linkedList + 1);
 
 	myDropRandomizer(0, nullptr, nullptr, this);
 	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
