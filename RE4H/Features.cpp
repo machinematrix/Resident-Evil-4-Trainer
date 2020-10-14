@@ -11,6 +11,7 @@
 namespace
 {
 	void *cookie = reinterpret_cast<void*>(6);
+	constexpr const char *databaseName = "RE4H.db";
 }
 
 namespace HealthBaseOffsets
@@ -261,7 +262,7 @@ Game::Game()
 {
 	sqlite3 *database = nullptr;
 
-	if ((sqlite3_open("RE4H.db", &database) & 0xFF) == SQLITE_OK)
+	if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
 	{
 		std::string_view sql("SELECT * FROM stack_limit");
 		sqlite3_stmt *statement = nullptr;
@@ -681,7 +682,7 @@ void Game::setMaxItemAmount(ItemId id, std::uint32_t amount)
 	mItemStackCap[id] = amount;
 	lck.unlock();
 
-	if ((sqlite3_open("RE4H.db", &database) & 0xFF) == SQLITE_OK)
+	if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
 	{
 		sqlite3_stmt *statement = nullptr;
 
