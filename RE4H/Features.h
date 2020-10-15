@@ -296,28 +296,32 @@ public:
 	class ItemData;
 	class WeaponData;
 	class InventoryIconData;
+	enum class MeleeType { HEAD, KNEE };
 private:
 	static const Bimap<ItemId, String> mItems;
 	std::mutex mDoorVectorMutex;
 	bool mSceneChanged = false;
-	Pointer mHealthBase;
-	Pointer mPlayerBase;
-	Pointer mWeaponDataIndex;
-	Pointer mFirePowerTable;
-	Pointer mNoclipAddress;
-	Pointer mDoorData;
-	Pointer mDoorList; //at dereference, then at +0x10, first four bits are door index * 2
-	Pointer mDropRandomizerHookLocation;
+	Pointer mHealthBase; //bio4.exe+806F3C
+	Pointer mPlayerBase; //bio4.exe+870FD4
+	Pointer mWeaponDataIndex; //bio4.exe+724B10
+	Pointer mFirePowerTable; //bio4.exe+800B18
+	Pointer mNoclipAddress; //bio4.exe+192E40
+	Pointer mDoorData; //bio4.exe+8502C0
+	Pointer mDoorList; //bio4.exe+867728. At dereference, then at +0x10, first four bits are door index * 2
+	Pointer mDropRandomizerHookLocation; //bio4.exe+18DF1A
 	Pointer mDropRandomizerOriginal = nullptr;
-	Pointer mGetModelDataHookLocation;
+	Pointer mGetModelDataHookLocation; //bio4.exe+3898A6
 	Pointer mGetModelDataOriginal = nullptr;
-	Pointer mSceAtHookLocation;
+	Pointer mSceAtHookLocation; //bio4.exe+23D004
 	Pointer mSceAtOriginal = nullptr;
-	Pointer mTmpFireRate;
-	Pointer mLoggerFunction;
-	Pointer mLoggerFunction2;
-	Pointer mLinkedList;
-	Pointer mTypewriterProcedure;
+	Pointer mTmpFireRate; //bio4.exe+70F8BC
+	Pointer mLoggerFunction; //bio4.exe+8300
+	Pointer mLoggerFunction2; //bio4.exe+CE5F
+	Pointer mLinkedList; //bio4.exe+E6E608
+	Pointer mTypewriterProcedure; //bio4.exe+563FF0
+	Pointer mEntityList; //bio4.exe+7FDB18
+	Pointer mEnemyVTable; //bio4.exe+71035C. VTable for enemies that can be meelee'd
+	Pointer mPlayerNode; //bio4.exe+857054
 	Pointer mOriginalLogger = nullptr, mOriginalLogger2 = nullptr;
 	std::vector<void*> mDoors;
 	std::map<ItemId, std::uint32_t> mItemStackCap;
@@ -327,6 +331,9 @@ private:
 	void(__cdecl *mGetInventoryModelData)(ItemId id, InventoryIconData *result);
 	std::uint32_t(__cdecl *mReadMinimumHeader)(void *sceneHandle, void *unknown);
 	void(__cdecl *mOpenMerchant)(std::int32_t, std::int32_t);
+	void(__cdecl *mMeleeHead)(void *enemyPointer, void*);
+	void(__cdecl *mMeleeKnee)(void *enemyPointer, void*);
+	void(__cdecl *mMeleeKneeKrauser)(void *enemyPointer, void*);
 	
 	static void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	static int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
@@ -398,11 +405,12 @@ public:
 
 	void loadSceneFile(const std::string &sceneName);
 
-	//returns old callback
 	void setLoggerCallback(void(__cdecl *callback)(const char*, ...));// -> void(__cdecl*)(const char *, ...);
 
 	void openTypewriter(TypewriterMode mode);
 	void openMerchant();
+
+	void melee(MeleeType);
 };
 
 class Game::ItemData //Must be 14 bytes

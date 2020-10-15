@@ -244,10 +244,10 @@ Game::Game()
 	mWeaponDataIndex(patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40")),
 	mFirePowerTable(patternScan("D9 04 8D ????????  D9 5D 08")),
 	mNoclipAddress(patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57")),
-	mDoorData(patternScan("????????  6A 0B  75 ??  6A 3A")),
+	mDoorData(patternScan("B9 ????????  6A 0B  75 ??  6A 3A")),
 	mSetScene((decltype(mSetScene))patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????")),
 	mSceAtCreateItemAt((decltype(mSceAtCreateItemAt))patternScan("55  8B EC  83 EC 0C  57  6A 0D")),
-	mDoorList(patternScan("????????  53  05 8C000000  56  C6 45 CB 00")),
+	mDoorList(patternScan("A1 ????????  53  05 8C000000  56  C6 45 CB 00")),
 	mDropRandomizerHookLocation(patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC")),
 	mGetInventoryModelData((decltype(mGetInventoryModelData))patternScan("55  8B EC  0FB7 45 ??  3D 0F010000")),
 	mGetModelDataHookLocation(patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74")),
@@ -258,7 +258,15 @@ Game::Game()
 	mLoggerFunction2(patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3")),
 	mLinkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
 	mTypewriterProcedure(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
-	mOpenMerchant(reinterpret_cast<decltype(mOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004")))
+	mOpenMerchant(reinterpret_cast<decltype(mOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004"))),
+	//mMeleeFirstArgumentPointer(patternScan("3B 05 ????????  76 02")),
+	mEntityList(patternScan("8B 35 ????????  85 F6  74 43  8B C6")),
+	mEnemyVTable(patternScan("C7 06 ????????  8B C6  5E  5D  C2 0400  33 C0  5E  5D  C2 0400  CCCCCCCCCCCCCCCCCCCC 55  8B EC  56  8B 75 08  85 F6  74 0D  8B CE  E8 ????????  C7 06 ????????  5E  5D  C3  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  C7 05 ???????? ????????  C7 05 ???????? ????????  C3")),
+	//mMelee(reinterpret_cast<decltype(mMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"))),
+	mMeleeHead(reinterpret_cast<decltype(mMeleeHead)>(patternScan("55  8B EC  A1 ????????  0FB6 80 ????????  83 E8 03"))),
+	mMeleeKnee(reinterpret_cast<decltype(mMeleeKnee)>(patternScan("55  8B EC  A1 ????????  80 B8 C84F0000 04"))),
+	mMeleeKneeKrauser(reinterpret_cast<decltype(mMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00")))
+	//mEnemyList(patternScan("A1 ????????  8D 4C 06 14  E8 ????????  84 C0"))
 {
 	sqlite3 *database = nullptr;
 
@@ -288,8 +296,8 @@ Game::Game()
 	mPlayerBase = getValue<Pointer>(mPlayerBase + 1);
 	mWeaponDataIndex = getValue<Pointer>(mWeaponDataIndex + 1);
 	mFirePowerTable = getValue<Pointer>(mFirePowerTable + 3);
-	mDoorData = getValue<Pointer>(mDoorData);
-	mDoorList = getValue<Pointer>(mDoorList);
+	mDoorData = getValue<Pointer>(mDoorData + 1);
+	mDoorList = getValue<Pointer>(mDoorList + 1);
 	mGetModelDataHookLocation = follow(mGetModelDataHookLocation);
 	mDropRandomizerHookLocation = follow(mDropRandomizerHookLocation);
 	mSceAtHookLocation = follow(mSceAtHookLocation);
@@ -297,6 +305,9 @@ Game::Game()
 	mLoggerFunction2 = follow(mLoggerFunction2 + 10);
 	mTmpFireRate = getValue<Pointer>(mTmpFireRate + 2);
 	mLinkedList = getValue<Pointer>(mLinkedList + 1);
+	mPlayerNode = getValue<Pointer>(mEntityList + 17);
+	mEntityList = getValue<Pointer>(mEntityList + 2);
+	mEnemyVTable = getValue<Pointer>(mEnemyVTable + 2);
 
 	myDropRandomizer(0, nullptr, nullptr, this);
 	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
@@ -756,6 +767,43 @@ void Game::openTypewriter(TypewriterMode mode)
 void Game::openMerchant()
 {
 	mOpenMerchant(0x10, 0);
+}
+
+void Game::melee(MeleeType type)
+{
+	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
+	{
+		float rotation = getValue<float>(playerEntity + 0xA4);
+		bool successfulMelee = false;
+		auto character = getCharacter();
+		
+		if (character == Characters::Krauser) //Game crashes when doing this with Krauser for some reason.
+			return;
+
+		for (Pointer node = getValue<Pointer>(mEntityList); node; node = getValue<Pointer>(node + 8))
+		{
+			if (getValue<Pointer>(node) == mEnemyVTable)
+			{
+				switch (type)
+				{
+					case MeleeType::HEAD:
+						mMeleeHead(node, 0);
+						break;
+					case MeleeType::KNEE:
+						mMeleeKnee(node, 0);
+						break;
+				}
+				successfulMelee = true;
+				break;
+			}
+		}
+
+		if (successfulMelee && (character != Characters::HUNK || type == MeleeType::KNEE)) //Don't freeze rotation for Hunk's neck breaker
+		{
+			while (getValue<std::uint8_t>(playerEntity + 0xFC) == 4)
+				setValue(playerEntity + 0xA4, rotation), Sleep(5);
+		}
+	}
 }
 
 const Bimap<ItemId, String> Game::mItems = {
