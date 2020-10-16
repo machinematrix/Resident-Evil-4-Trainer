@@ -617,6 +617,12 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			case KeyBindingsConfig::MERCHANT:
 				wndInfo.cheats.openMerchant();
 				break;
+			case KeyBindingsConfig::MELEE1:
+				wndInfo.cheats.melee(Game::MeleeType::HEAD);
+				break;
+			case KeyBindingsConfig::MELEE2:
+				wndInfo.cheats.melee(Game::MeleeType::KNEE);
+				break;
 			}
 		}
 	}

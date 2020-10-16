@@ -6,7 +6,6 @@
 #define DLG_WEAPONS_STATS_DIALOG        103
 #define DLG_KEYBINDINGS                 106
 #define ItemAmountDialog                109
-
 #define ItemText                        1000
 #define ItemCombo                       1001
 #define AmountText                      1002
@@ -57,14 +56,18 @@
 #define IDC_HEAL_KEY                    1047
 #define IDC_SAVE_KEY                    1048
 #define IDC_MERCHANT_KEY                1049
-#define IDC_NOCLIP                      1050
-#define IDC_ASHLEY                      1051
-#define ItemMaxAmountCombo              1052
-#define IDC_SAVE_KEY2                   1053
-#define IDC_SAVE                        1054
-#define IDC_HEAL                        1055
-#define ItemMaxAmountEdit               1056
-#define IDC_MERCHANT                    1057
+#define IDC_MELEE1_KEY                  1050
+#define IDC_MELEE2_KEY                  1051
+#define IDC_NOCLIP                      1052
+#define IDC_ASHLEY                      1053
+#define ItemMaxAmountCombo              1054
+#define IDC_SAVE_KEY2                   1055
+#define IDC_SAVE                        1056
+#define IDC_HEAL                        1057
+#define ItemMaxAmountEdit               1058
+#define IDC_MELEE1                      1060
+#define IDC_MERCHANT                    1061
+#define IDC_MELEE2                      1062
 
 // Next default values for new objects
 // 
@@ -72,7 +75,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1046
+#define _APS_NEXT_CONTROL_VALUE         1059
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

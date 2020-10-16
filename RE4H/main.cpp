@@ -466,7 +466,6 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 BOOL CALLBACK ConfigDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static Bimap<UINT, String> keys;
-	static HWND ashleyKeyCombo, noclipKeyCombo, healKeyCombo;
 	static KeyBindingsConfig bindings(TEXT(".\\bindings.ini"));
 
 	switch (message)
@@ -480,24 +479,18 @@ BOOL CALLBACK ConfigDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				if (auto scanCode = MapVirtualKey(i, MAPVK_VK_TO_VSC)) //If there's a mapping for this key
 				{
 					keyName.resize(GetKeyNameText(scanCode << 16, &keyName.front(), keyName.size()));
-					if (!keyName.empty()) keys.insert({ i, keyName });
+					if (!keyName.empty())
+						keys.insert({ i, keyName });
 				}
 			}
 		}
 
-		noclipKeyCombo = GetDlgItem(hDlg, IDC_NOCLIP_KEY);
-		ashleyKeyCombo = GetDlgItem(hDlg, IDC_ASHLEY_KEY);
-		healKeyCombo = GetDlgItem(hDlg, IDC_HEAL_KEY);
-
-		for (const auto &key : keys) {
-			for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i) {
+		for (const auto &key : keys)
+			for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i)
 				SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_ADDSTRING, 0, (LPARAM)key.second.c_str());
-			}
-		}
 
-		for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i) {
+		for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i)
 			SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_SETCURSEL, std::distance(keys.begin(), keys.find(bindings.getBinding(i))), 0);
-		}
 
 		break;
 	}
