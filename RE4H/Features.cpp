@@ -800,8 +800,12 @@ void Game::melee(MeleeType type)
 
 		if (successfulMelee && (character != Characters::HUNK || type == MeleeType::KNEE)) //Don't freeze rotation for Hunk's neck breaker
 		{
-			while (getValue<std::uint8_t>(playerEntity + 0xFC) == 4)
-				setValue(playerEntity + 0xA4, rotation), Sleep(5);
+			auto freezeRotation = [](Pointer playerEntity, float rotation) {
+				while (getValue<std::uint8_t>(playerEntity + 0xFC) == 4)
+					setValue(playerEntity + 0xA4, rotation), Sleep(5);
+			};
+
+			std::thread(freezeRotation, playerEntity, rotation).detach();
 		}
 	}
 }
