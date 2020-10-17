@@ -733,7 +733,10 @@ void Game::melee(MeleeType type)
 						mMeleeHead(node, 0);
 						break;
 					case MeleeType::KNEE:
-						mMeleeKnee(node, 0);
+						if (character != Characters::Krauser)
+							mMeleeKnee(node, 0);
+						else
+							mMeleeKneeKrauser(node, 0);
 						break;
 				}
 
