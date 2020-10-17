@@ -774,7 +774,6 @@ void Game::melee(MeleeType type)
 	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
 	{
 		float rotation = getValue<float>(playerEntity + 0xA4);
-		bool successfulMelee = false;
 		auto character = getCharacter();
 		
 		if (character == Characters::Krauser) //Game crashes when doing this with Krauser for some reason.
@@ -793,20 +792,22 @@ void Game::melee(MeleeType type)
 						mMeleeKnee(node, 0);
 						break;
 				}
-				successfulMelee = true;
+
+				if (character != Characters::HUNK || type == MeleeType::KNEE) //Don't freeze rotation for Hunk's neck breaker
+				{
+					auto freezeRotation = [](Pointer playerEntity, float rotation) {
+						while (getValue<std::uint8_t>(playerEntity + 0xFC) == 4)
+							setValue(playerEntity + 0xA4, rotation), Sleep(5);
+					};
+
+					std::thread(freezeRotation, playerEntity, rotation).detach();
+				}
+
 				break;
 			}
 		}
 
-		if (successfulMelee && (character != Characters::HUNK || type == MeleeType::KNEE)) //Don't freeze rotation for Hunk's neck breaker
-		{
-			auto freezeRotation = [](Pointer playerEntity, float rotation) {
-				while (getValue<std::uint8_t>(playerEntity + 0xFC) == 4)
-					setValue(playerEntity + 0xA4, rotation), Sleep(5);
-			};
-
-			std::thread(freezeRotation, playerEntity, rotation).detach();
-		}
+		
 	}
 }
 
