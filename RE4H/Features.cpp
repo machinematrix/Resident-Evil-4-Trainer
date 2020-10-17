@@ -78,62 +78,6 @@ enum class GameState : std::uint32_t
 	Pause = 0x106
 };
 
-template<typename T>
-T getValue(Pointer address)
-{
-	return *reinterpret_cast<T*>(address);
-}
-
-template<typename T>
-void setValue(Pointer address, T value)
-{
-	*reinterpret_cast<T*>(address) = value;
-}
-
-template<typename T, size_t sz>
-void setValue(Pointer address, const T (&value)[sz])
-{
-	for (size_t i = 0; i < sz; ++i)
-		((T*)address)[i] = value[i];
-}
-
-template<typename T>
-Pointer pointerPath(Pointer baseAddress, const T& offset)
-{
-	memcpy(&baseAddress, baseAddress + offset, sizeof(Pointer));
-	return baseAddress;
-}
-
-template<typename T, typename ...Args>
-Pointer pointerPath(Pointer baseAddress, const T& offset, const Args& ...offsets)
-{
-	memcpy(&baseAddress, baseAddress + offset, sizeof(Pointer));
-	return pointerPath(baseAddress, offsets...);
-}
-
-Pointer pointerPath(Pointer baseAddress, const std::vector<std::uint64_t>& offsets)
-{
-	for (auto offset : offsets) {
-		memcpy(&baseAddress, baseAddress + offset, sizeof(Pointer));
-	}
-	return baseAddress;
-}
-
-Pointer follow(Pointer instruction)
-{
-	return instruction + getValue<std::int32_t>(instruction + 1) + 5;
-}
-
-template <typename PointerType>
-Pointer replaceFunction(Pointer where, PointerType *function)
-{
-	auto result = follow(where);
-
-	setValue(where + 1, reinterpret_cast<Pointer>(function) - where - 5);
-	 
-	return result;
-}
-
 void __cdecl Game::myGetInventoryModelData(ItemId id, Game::InventoryIconData *result)
 {
 	static Game *game;

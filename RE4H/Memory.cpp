@@ -125,3 +125,8 @@ Pointer patternScan(const std::string &unformattedPattern)
 
 	return 0;
 }
+
+Pointer follow(Pointer instruction)
+{
+	return instruction + getValue<std::int32_t>(instruction + 1) + 5;
+}
