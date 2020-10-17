@@ -24,7 +24,7 @@ template<typename T, size_t sz>
 void setValue(Pointer address, const T(&value)[sz])
 {
 	for (size_t i = 0; i < sz; ++i)
-		((T*)address)[i] = value[i];
+		reinterpret_cast<T*>(address)[i] = value[i];
 }
 
 template<typename T>

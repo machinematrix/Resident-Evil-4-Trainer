@@ -570,7 +570,7 @@ void Game::setScene(std::uint32_t scene)
 {
 	float origin[3] = {};
 	setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Scene, scene);
-	setValue/*<float, 3>*/(mHealthBase + HealthBaseOffsets::SceneEntryX, origin);
+	setValue(mHealthBase + HealthBaseOffsets::SceneEntryX, origin);
 	setValue(mHealthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
 }
 
