@@ -782,7 +782,7 @@ void Game::melee(MeleeType type)
 
 		for (Pointer node = getValue<Pointer>(mEntityList); node; node = getValue<Pointer>(node + 8))
 		{
-			if (getValue<Pointer>(node) == mEnemyVTable)
+			if (getValue<Pointer>(node) == mEnemyVTable && (getValue<std::uint16_t>(node + 0x324) || character != Characters::HUNK || type != MeleeType::HEAD))
 			{
 				switch (type)
 				{
