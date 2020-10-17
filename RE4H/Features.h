@@ -405,7 +405,7 @@ public:
 
 	void loadSceneFile(const std::string &sceneName);
 
-	void setLoggerCallback(void(__cdecl *callback)(const char*, ...));// -> void(__cdecl*)(const char *, ...);
+	void setLoggerCallback(void(__cdecl *callback)(const char*, const char*, const char*, ...));// -> void(__cdecl*)(const char *, ...);
 
 	void openTypewriter(TypewriterMode mode);
 	void openMerchant();

@@ -691,7 +691,7 @@ void Game::loadSceneFile(const std::string &sceneName)
 	}
 }
 
-void Game::setLoggerCallback(void (__cdecl *callback)(const char*, ...))
+void Game::setLoggerCallback(void (__cdecl *callback)(const char*, const char*, const char*, ...))
 {
 	replaceFunction(mLoggerFunction, callback);
 	replaceFunction(mLoggerFunction2, callback);

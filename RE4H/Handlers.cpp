@@ -2,13 +2,13 @@
 
 HWND mainWindowHandle;
 
-void loggerCallback(const char *msg, ...)
+void loggerCallback(const char *msgCouldBeNull1, const char*msgCouldBeNull2, const char*msg, ...)
 {
 	#ifndef NDEBUG
-	static std::mutex mtx;
-
 	using std::string;
-	std::string formatString(msg);
+
+	static std::mutex mtx;
+	std::string formatString;
 	string::size_type i = 0;
 	va_list argumentList;
 	void *returnAddress = nullptr;
@@ -21,7 +21,21 @@ void loggerCallback(const char *msg, ...)
 		pop eax
 	}
 
-	va_start(argumentList, msg);
+	if (msgCouldBeNull1)
+	{
+		formatString = msgCouldBeNull1;
+		va_start(argumentList, msgCouldBeNull1);
+	}
+	else if (msgCouldBeNull2)
+	{
+		formatString = msgCouldBeNull2;
+		va_start(argumentList, msgCouldBeNull2);
+	}
+	else
+	{
+		formatString = msg;
+		va_start(argumentList, msg);
+	}
 
 	while ((i = formatString.find('%', i)) != string::npos)
 	{
@@ -57,7 +71,7 @@ void loggerCallback(const char *msg, ...)
 		}
 
 		default: {
-			void *unknown = va_arg(argumentList, void *); // I have to advance the list, otherwise the sub sequent arguments will not correspond to their position in the format string
+			void *unknown = va_arg(argumentList, void *);
 			++i;
 			break;
 		}
@@ -67,7 +81,7 @@ void loggerCallback(const char *msg, ...)
 	va_end(argumentList);
 
 	mtx.lock();
-	std::cout << formatString << "Return Address: " << returnAddress << '\n' << std::endl;
+	std::cout << formatString << "\nReturn Address: " << returnAddress << '\n' << std::endl;
 	mtx.unlock();
 
 	#endif
