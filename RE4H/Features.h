@@ -414,7 +414,7 @@ public:
 	void openMerchant();
 
 	void melee(MeleeType);
-	void setPlayerCoordinates(const float (&coordinates)[3]);
+	void setPlayerCoordinates(const std::array<float, 3> &coordinates);
 	std::optional<std::array<float, 3>> getPlayerCoordinates();
 };
 

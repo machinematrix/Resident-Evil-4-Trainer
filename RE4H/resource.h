@@ -58,16 +58,20 @@
 #define IDC_MERCHANT_KEY                1049
 #define IDC_MELEE1_KEY                  1050
 #define IDC_MELEE2_KEY                  1051
-#define IDC_NOCLIP                      1052
-#define IDC_ASHLEY                      1053
-#define ItemMaxAmountCombo              1054
-#define IDC_SAVE_KEY2                   1055
-#define IDC_SAVE                        1056
-#define IDC_HEAL                        1057
-#define ItemMaxAmountEdit               1058
+#define IDC_UP_KEY                      1052
+#define IDC_DOWN_KEY                    1053
+#define IDC_NOCLIP                      1054
+#define IDC_ASHLEY                      1055
+#define ItemMaxAmountCombo              1056
+#define IDC_SAVE                        1057
+#define IDC_HEAL                        1058
+#define ItemMaxAmountEdit               1059
 #define IDC_MELEE1                      1060
 #define IDC_MERCHANT                    1061
 #define IDC_MELEE2                      1062
+#define IDC_COMBO2                      1063
+#define IDC_UP                          1064
+#define IDC_DOWN                        1065
 
 // Next default values for new objects
 // 
@@ -75,7 +79,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1059
+#define _APS_NEXT_CONTROL_VALUE         1066
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -473,7 +473,8 @@ BOOL CALLBACK ConfigDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	case WM_INITDIALOG: {
 		if (keys.empty())
 		{
-			for (size_t i = VK_F1; i != 0x5B /*after Z*/; i == VK_F12 ? i = 0x41 /*A*/ : ++i)
+			//for (size_t i = VK_F1; i != 0x5B /*after Z*/; i == VK_F12 ? i = 0x41 /*A*/ : ++i)
+			for (unsigned i = VK_LBUTTON; i <= VK_OEM_CLEAR; ++i)
 			{
 				String keyName(50, TEXT('\0'));
 				if (auto scanCode = MapVirtualKey(i, MAPVK_VK_TO_VSC)) //If there's a mapping for this key

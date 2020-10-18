@@ -773,7 +773,7 @@ void Game::melee(MeleeType type)
 	}
 }
 
-void Game::setPlayerCoordinates(const float(&coordinates)[3])
+void Game::setPlayerCoordinates(const std::array<float, 3> &coordinates)
 {
 	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
 		setValue(playerEntity + 0x94, coordinates);

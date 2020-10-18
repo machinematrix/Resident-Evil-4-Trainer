@@ -637,6 +637,24 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			case KeyBindingsConfig::MELEE2:
 				wndInfo.cheats.melee(Game::MeleeType::KNEE);
 				break;
+			case KeyBindingsConfig::INCREASE_ALTITUDE:
+			{
+				if (auto coordinates = wndInfo.cheats.getPlayerCoordinates())
+				{
+					coordinates.value()[1] += 1000.f;
+					wndInfo.cheats.setPlayerCoordinates(coordinates.value());
+				}
+				break;
+			}
+			case KeyBindingsConfig::DECREASE_ALTITUDE:
+			{
+				if (auto coordinates = wndInfo.cheats.getPlayerCoordinates())
+				{
+					coordinates.value()[1] -= 1000.f;
+					wndInfo.cheats.setPlayerCoordinates(coordinates.value());
+				}
+				break;
+			}
 			}
 		}
 	}

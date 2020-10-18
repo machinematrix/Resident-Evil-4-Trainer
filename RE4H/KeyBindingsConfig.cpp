@@ -1,7 +1,7 @@
 #include "KeyBindingsConfig.h"
 #include <iostream>
 
-const TCHAR *KeyBindingsConfig::configNames[7] = { TEXT("Noclip"), TEXT("Ashley"), TEXT("Heal"), TEXT("Save"), TEXT("Merchant"), TEXT("Melee1"), TEXT("Melee2") };
+const TCHAR *KeyBindingsConfig::configNames[9] = { TEXT("Noclip"), TEXT("Ashley"), TEXT("Heal"), TEXT("Save"), TEXT("Merchant"), TEXT("Melee1"), TEXT("Melee2"), TEXT("Up"), TEXT("Down") };
 const TCHAR * const KeyBindingsConfig::sectionName = TEXT("Bindings");
 
 UINT KeyBindingsConfig::getBinding(size_t control) const
