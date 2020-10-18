@@ -1,5 +1,5 @@
-#ifndef __HACKS__
-#define __HACKS__
+#ifndef __GAME_H__
+#define __GAME_H__
 #include "Memory.h"
 #include "Bimap.h"
 #include <vector>

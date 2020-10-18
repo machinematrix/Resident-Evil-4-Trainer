@@ -102,34 +102,34 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 
 	wndInfo.hInstance = ((LPCREATESTRUCT)lParam)->hInstance;
 	wndInfo.inventoryList.reset(new InventoryListView(0, 0, 0, 0, LVS_NOSORTHEADER | WS_VISIBLE | LVS_SINGLESEL | LVS_SHOWSELALWAYS, hWnd, (HMENU)InventoryList));
-	wndInfo.addItem = CreateWindow(WC_BUTTON, TEXT("Add Item"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)AddItem, nullptr, nullptr);
-	wndInfo.healthSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HealthSet, nullptr, nullptr);
-	wndInfo.healthGet = CreateWindow(WC_BUTTON, TEXT("Get"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HealthGet, nullptr, nullptr);
+	wndInfo.addItem = CreateWindow(WC_BUTTON, TEXT("Add Item"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)ADD_ITEM, nullptr, nullptr);
+	wndInfo.healthSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_SET, nullptr, nullptr);
+	wndInfo.healthGet = CreateWindow(WC_BUTTON, TEXT("Get"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_GET, nullptr, nullptr);
 	wndInfo.healthEdit = CreateWindow(WC_EDIT, nullptr, WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 0, 0, 0, hWnd, (HMENU)HealthEdit, nullptr, nullptr);
 
-	wndInfo.healthLimitSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HealthLimitSet, nullptr, nullptr);
-	wndInfo.healthLimitGet = CreateWindow(WC_BUTTON, TEXT("Get"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HealthLimitGet, nullptr, nullptr);
+	wndInfo.healthLimitSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_LIMIT_SET, nullptr, nullptr);
+	wndInfo.healthLimitGet = CreateWindow(WC_BUTTON, TEXT("Get"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_LIMIT_GET, nullptr, nullptr);
 	wndInfo.healthLimitEdit = CreateWindow(WC_EDIT, nullptr, WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 0, 0, 0, hWnd, (HMENU)HealthLimitEdit, nullptr, nullptr);
-	wndInfo.ashleyCheckbox = CreateWindow(WC_BUTTON, TEXT("Ashley"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)ToggleAshley, nullptr, nullptr);
-	wndInfo.tmpCheckbox = CreateWindow(WC_BUTTON, TEXT("Fast TMP"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)ToggleTMPFireRate, nullptr, nullptr);
-	wndInfo.noclipCheckbox = CreateWindow(WC_BUTTON, TEXT("Noclip"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)ToggleNoclip, nullptr, nullptr);
-	wndInfo.characterComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)CharacterComboBox, nullptr, nullptr);
-	wndInfo.costumeComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)CostumeComboBox, nullptr, nullptr);
-	wndInfo.difficultyComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)DifficultyComboBox, nullptr, nullptr);
+	wndInfo.ashleyCheckbox = CreateWindow(WC_BUTTON, TEXT("Ashley"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_ASHLEY, nullptr, nullptr);
+	wndInfo.tmpCheckbox = CreateWindow(WC_BUTTON, TEXT("Fast TMP"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_TMP_FIRE_RATE, nullptr, nullptr);
+	wndInfo.noclipCheckbox = CreateWindow(WC_BUTTON, TEXT("Noclip"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_NOCLIP, nullptr, nullptr);
+	wndInfo.characterComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)CHARACTER_COMBO_BOX, nullptr, nullptr);
+	wndInfo.costumeComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)COSTUME_COMBO_BOX, nullptr, nullptr);
+	wndInfo.difficultyComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)DIFFICULTY_COMBO_BOX, nullptr, nullptr);
 	wndInfo.sceneEdit = CreateWindow(WC_EDIT, nullptr, WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 0, 0, 0, hWnd, (HMENU)SceneEdit, nullptr, nullptr);
-	wndInfo.sceneSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)SceneSet, nullptr, nullptr);
+	wndInfo.sceneSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)SCENE_SET, nullptr, nullptr);
 	wndInfo.healthText = CreateWindow(WC_STATIC, TEXT("Health:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)HealthText, nullptr, nullptr);
 	wndInfo.healthLimitText = CreateWindow(WC_STATIC, TEXT("Health Limit:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)HealthLimitText, nullptr, nullptr);
 	wndInfo.sceneText = CreateWindow(WC_STATIC, TEXT("Scene:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)SceneText, nullptr, nullptr);
 	wndInfo.doorText = CreateWindow(WC_STATIC, TEXT("Door:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)DoorText, nullptr, nullptr);
 	wndInfo.doorCombo = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD | WS_VSCROLL, 0, 0, 0, 0, hWnd, (HMENU)DoorCombo, nullptr, nullptr);
-	wndInfo.doorButton = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)DoorButton, nullptr, nullptr);
+	wndInfo.doorButton = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)DOOR_BUTTON, nullptr, nullptr);
 	wndInfo.characterText = CreateWindow(WC_STATIC, TEXT("Character:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)CharacterText, nullptr, nullptr);
 	wndInfo.costumeText = CreateWindow(WC_STATIC, TEXT("Costume:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)CostumeText, nullptr, nullptr);
 	wndInfo.difficultyText = CreateWindow(WC_STATIC, TEXT("Difficulty:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)DifficultyText, nullptr, nullptr);
-	wndInfo.maxAmountEditButton = CreateWindow(WC_BUTTON, TEXT("Edit Stack Limit"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)MaxAmountEditButton, nullptr, nullptr);
-	wndInfo.saveButton = CreateWindow(WC_BUTTON, TEXT("Save"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)SaveButton, nullptr, nullptr);
-	wndInfo.merchantButton = CreateWindow(WC_BUTTON, TEXT("Merchant"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)MerchantButton, nullptr, nullptr);
+	wndInfo.maxAmountEditButton = CreateWindow(WC_BUTTON, TEXT("Edit Stack Limit"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)MAX_AMOUNT_EDIT_BUTTON, nullptr, nullptr);
+	wndInfo.saveButton = CreateWindow(WC_BUTTON, TEXT("Save"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)SAVE_BUTTON, nullptr, nullptr);
+	wndInfo.merchantButton = CreateWindow(WC_BUTTON, TEXT("Merchant"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)MERCHANT_BUTTON, nullptr, nullptr);
 
 	wndInfo.inventoryList->setExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_GRIDLINES | LVS_EX_AUTOSIZECOLUMNS);
 	wndInfo.inventoryList->addColumn(TEXT("Address"), 75);
@@ -161,14 +161,14 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	EnumChildWindows(hWnd, (WNDENUMPROC)SetFont, (LPARAM)GetStockObject(DEFAULT_GUI_FONT));
 	SetTimer(hWnd, 1, 1500, nullptr);
 
-	if (!wndInfo.cheats.good())
+	if (!wndInfo.game.good())
 	{
 		ErrorBox(hWnd, TEXT("Could not find one or more pointers"));
 		DestroyWindow(hWnd);
 		return;
 	}
 
-	wndInfo.cheats.setLoggerCallback(loggerCallback);
+	wndInfo.game.setLoggerCallback(loggerCallback);
 }
 
 void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
@@ -260,36 +260,36 @@ void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 
 void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 {
-	if (wndInfo.cheats.good())
+	if (wndInfo.game.good())
 	{
 		HWND focused = GetFocus();
 		//health
 		auto strHealth = GetControlText(wndInfo.healthEdit);
-		auto health = wndInfo.cheats.getHealth();
+		auto health = wndInfo.game.getHealth();
 
 		//health limit
 		auto strHealthLimit = GetControlText(wndInfo.healthLimitEdit);
-		auto healthLimit = wndInfo.cheats.getHealthLimit();
+		auto healthLimit = wndInfo.game.getHealthLimit();
 
 		//scene
 		auto strScene = GetControlText(wndInfo.sceneEdit);
-		auto scene = wndInfo.cheats.getScene();
+		auto scene = wndInfo.game.getScene();
 
 		//character
-		std::int8_t cbChar = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0)), currChar = wndInfo.cheats.getCharacter();
-		std::int8_t cbCostume = static_cast<std::uint8_t>(SendMessage(wndInfo.costumeComboBox, CB_GETCURSEL, 0, 0)), currCostume = wndInfo.cheats.getCostume();
+		std::int8_t cbChar = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0)), currChar = wndInfo.game.getCharacter();
+		std::int8_t cbCostume = static_cast<std::uint8_t>(SendMessage(wndInfo.costumeComboBox, CB_GETCURSEL, 0, 0)), currCostume = wndInfo.game.getCostume();
 
 		//difficulty
-		Game::Difficulty currDiff = wndInfo.cheats.getDifficulty();
+		Game::Difficulty currDiff = wndInfo.game.getDifficulty();
 		auto cbDifficulty = SendMessage(wndInfo.difficultyComboBox, CB_GETCURSEL, 0, 0);
 
 		if (cbChar != currChar) {
 			SendMessage(wndInfo.characterComboBox, CB_SETCURSEL, currChar, 0);
 			SendMessage(wndInfo.costumeComboBox, CB_RESETCONTENT, 0, 0);
-			for (const auto &costumeName : wndInfo.cheats.getCharacterCostumeNames(currChar))
+			for (const auto &costumeName : wndInfo.game.getCharacterCostumeNames(currChar))
 				SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.c_str());
-			wndInfo.cheats.setCostume(0);
-			currCostume = wndInfo.cheats.getCostume();
+			wndInfo.game.setCostume(0);
+			currCostume = wndInfo.game.getCostume();
 		}
 
 		if (cbCostume != currCostume || cbChar != currChar) //If the character or the costume changed
@@ -332,11 +332,11 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 			{}
 		}
 
-		if (wndInfo.cheats.doorListChanged())
+		if (wndInfo.game.doorListChanged())
 		{
 			std::uint32_t i = 0;
 			SendMessage(wndInfo.doorCombo, CB_RESETCONTENT, 0, 0);
-			for (const auto door : wndInfo.cheats.getDoors()) {
+			for (const auto door : wndInfo.game.getDoors()) {
 				SendMessage(wndInfo.doorCombo, CB_ADDSTRING, 0, (LPARAM)std::to_wstring(i).c_str());
 				++i;
 			}
@@ -361,210 +361,233 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 			{}
 		}
 
-		wndInfo.inventoryList->refresh(wndInfo.cheats);
-		SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)wndInfo.cheats.isAshleyPresent(), 0);
-		SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)wndInfo.cheats.isNoclipOn(), 0);
-		SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)wndInfo.cheats.isFastTmpEnabled(), 0);
+		wndInfo.inventoryList->refresh(wndInfo.game);
+		SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isAshleyPresent(), 0);
+		SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isNoclipOn(), 0);
+		SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isFastTmpEnabled(), 0);
 	}
 }
 
 void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 {
 	using namespace MenuIdentifiers;
+
 	switch (LOWORD(wParam))
 	{
-	case HealthLimitSet:
-	case HealthSet: {
-		if (wndInfo.cheats.good())
+		case HEALTH_LIMIT_SET:
+		case HEALTH_SET:
 		{
-			String text = GetControlText(LOWORD(wParam) == HealthSet ? wndInfo.healthEdit : wndInfo.healthLimitEdit);
-			void (Game:: * setter)(std::uint16_t) = (LOWORD(wParam) == HealthSet ? &Game::setHealth : &Game::setHealthLimit);
+			String text = GetControlText(LOWORD(wParam) == HEALTH_SET ? wndInfo.healthEdit : wndInfo.healthLimitEdit);
+			void (Game:: * setter)(std::uint16_t) = (LOWORD(wParam) == HEALTH_SET ? &Game::setHealth : &Game::setHealthLimit);
 
-			try { (wndInfo.cheats.*setter)(std::stoi(text)); }
+			try {
+				(wndInfo.game.*setter)(std::stoi(text));
+			}
 			catch (const std::invalid_argument &) {
 				ErrorBox(hWnd, TEXT("Invalid value"));
 				break;
 			}
+			break;
 		}
-		else ErrorBox(hWnd, TEXT("Hacks not initialized"));
-		break;
-	}
-	case HealthLimitGet:
-	case HealthGet: {
-		if (wndInfo.cheats.good()) {
-			auto getter = (LOWORD(wParam) == HealthGet ? &Game::getHealth : &Game::getHealthLimit);
-			std::wstring health = std::to_wstring((wndInfo.cheats.*getter)());
-			SetWindowText(LOWORD(wParam) == HealthGet ? wndInfo.healthEdit : wndInfo.healthLimitEdit, health.c_str());
-		}
-		else ErrorBox(hWnd, TEXT("Hacks not initialized"));
-		break;
-	}
-	case EditItem: {
-		auto selectedItem = wndInfo.inventoryList->getSelectedItem();
-		if (selectedItem != -1)
+		case HEALTH_LIMIT_GET:
+		case HEALTH_GET:
 		{
-			if (auto itemPtr = wndInfo.inventoryList->getItemAddress(selectedItem))
+			auto getter = (LOWORD(wParam) == HEALTH_GET ? &Game::getHealth : &Game::getHealthLimit);
+			std::wstring health = std::to_wstring((wndInfo.game.*getter)());
+			SetWindowText(LOWORD(wParam) == HEALTH_GET ? wndInfo.healthEdit : wndInfo.healthLimitEdit, health.c_str());
+			break;
+		}
+		case EDIT_ITEM:
+		{
+			auto selectedItem = wndInfo.inventoryList->getSelectedItem();
+
+			if (selectedItem != -1)
 			{
-				DialogInfo info(&wndInfo.cheats, itemPtr);
-				DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemDialog), hWnd, ItemDlgProc, (LPARAM)& info);
-				if (DWORD error = GetLastError()) {
+				if (auto itemPtr = wndInfo.inventoryList->getItemAddress(selectedItem))
+				{
+					DialogInfo info(&wndInfo.game, itemPtr);
+					DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemDialog), hWnd, ItemDlgProc, (LPARAM)&info);
+
+					if (DWORD error = GetLastError())
+					{
+						String msg = TEXT("Could not create dialog: ");
+						msg += std::to_wstring(error);
+						ErrorBox(hWnd, msg.c_str());
+					}
+				}
+				else
+					ErrorBox(hWnd, TEXT("Null item pointer"));
+			}
+			else
+				ErrorBox(hWnd, TEXT("Select an item first"));
+			break;
+		}
+		case ADD_ITEM:
+		{
+			if (auto itemPtr = wndInfo.game.addItem())
+			{
+				itemPtr->amount(1);
+				itemPtr->valid(0);
+				itemPtr->inInventory(0);
+				itemPtr->posX(8);
+				itemPtr->posY(15);
+				itemPtr->rotation(1);
+				DialogInfo info(&wndInfo.game, itemPtr);
+				auto result = DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemDialog), hWnd, ItemDlgProc, (LPARAM)&info);
+				if (result == -1)
+				{
+					String msg = TEXT("Could not create dialog: ");
+					msg += std::to_wstring(GetLastError());
+					ErrorBox(hWnd, msg.c_str());
+				}
+				else
+					itemPtr->valid(static_cast<std::uint8_t>(result));
+			}
+			else
+				ErrorBox(hWnd, TEXT("Inventory is full"));
+			break;
+		}
+		case MAX_AMOUNT_EDIT_BUTTON:
+		{
+			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemAmountDialog), hWnd, EditMaxAmountDlgProc, (LPARAM)&wndInfo.game);
+			break;
+		}
+		case ERASE_ITEM:
+		{
+			wndInfo.inventoryList->eraseSelectedItem();
+			break;
+		}
+		case TOGGLE_ASHLEY:
+		{
+			wndInfo.game.toggleAshley(SendMessage(wndInfo.ashleyCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			break;
+		}
+		case TOGGLE_TMP_FIRE_RATE:
+		{
+			wndInfo.game.toggleFastTmp(SendMessage(wndInfo.tmpCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			break;
+		}
+		case TOGGLE_NOCLIP:
+		{
+			wndInfo.game.toggleNoclip(SendMessage(wndInfo.noclipCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			break;
+		}
+		case CHARACTER_COMBO_BOX:
+		{
+			if (HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				std::uint8_t character = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0));
+
+				if (character != CB_ERR)
+				{
+					wndInfo.game.setCharacter(character);
+					SendMessage(wndInfo.costumeComboBox, CB_RESETCONTENT, 0, 0);
+
+					for (const auto &costumeName : wndInfo.game.getCharacterCostumeNames(wndInfo.game.getCharacter()))
+						SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.c_str());
+				}
+				else
+					ErrorBox(hWnd, TEXT("Invalid character"));
+			}
+			break;
+		}
+		case COSTUME_COMBO_BOX:
+		{
+			if (HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				std::uint8_t cbCostume = static_cast<std::uint8_t>(SendMessage(wndInfo.costumeComboBox, CB_GETCURSEL, 0, 0));
+
+				if (wndInfo.game.getCharacter() == 2 && cbCostume == 2)
+					wndInfo.game.setCostume(3); //remove this from front end
+				else
+				{
+					if (cbCostume != CB_ERR)
+						wndInfo.game.setCostume(cbCostume);
+					else
+						ErrorBox(hWnd, TEXT("Invalid costume"));
+				}
+			}
+			break;
+		}
+		case DIFFICULTY_COMBO_BOX:
+		{
+			if (HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				switch (SendMessage(wndInfo.difficultyComboBox, CB_GETCURSEL, 0, 0))
+				{
+					case 0:
+						wndInfo.game.setDifficulty(Game::Difficulty::AMATEUR);
+						break;
+					case 1:
+						wndInfo.game.setDifficulty(Game::Difficulty::EASY);
+						break;
+					case 2:
+						wndInfo.game.setDifficulty(Game::Difficulty::NORMAL);
+						break;
+					case 3:
+						wndInfo.game.setDifficulty(Game::Difficulty::PROFESSIONAL);
+						break;
+					default:
+						ErrorBox(hWnd, TEXT("Select a difficulty"));
+						break;
+				}
+			}
+			break;
+		}
+		case EDIT_ITEM_STATS:
+		{
+			auto selectedItem = wndInfo.inventoryList->getSelectedItem();
+
+			if (selectedItem != -1)
+			{
+				WeaponStatsInfo info(&wndInfo.game, wndInfo.game.getWeaponDataPtr(wndInfo.inventoryList->getItemAddress(selectedItem)->itemId()));
+				DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_WEAPONS_STATS_DIALOG), hWnd, WeaponDlgProc, (LPARAM)&info);
+				if (DWORD error = GetLastError())
+				{
 					String msg = TEXT("Could not create dialog: ");
 					msg += std::to_wstring(error);
 					ErrorBox(hWnd, msg.c_str());
 				}
 			}
-			else ErrorBox(hWnd, TEXT("Null item pointer"));
-		}
-		else ErrorBox(hWnd, TEXT("Select an item first"));
-		break;
-	}
-	case AddItem: {
-		if (auto itemPtr = wndInfo.cheats.addItem())
-		{
-			itemPtr->amount(1);
-			itemPtr->valid(0);
-			itemPtr->inInventory(0);
-			itemPtr->posX(8);
-			itemPtr->posY(15);
-			itemPtr->rotation(1);
-			DialogInfo info(&wndInfo.cheats, itemPtr);
-			auto result = DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemDialog), hWnd, ItemDlgProc, (LPARAM)& info);
-			if (result == -1) {
-				String msg = TEXT("Could not create dialog: ");
-				msg += std::to_wstring(GetLastError());
-				ErrorBox(hWnd, msg.c_str());
-			}
-			else itemPtr->valid(static_cast<std::uint8_t>(result));
-		}
-		else {
-			ErrorBox(hWnd, TEXT("Inventory is full"));
-		}
-		break;
-	}
-	case MaxAmountEditButton: {
-		DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemAmountDialog), hWnd, EditMaxAmountDlgProc, (LPARAM)& wndInfo.cheats);
-		break;
-	}
-	case EraseItem: {
-		wndInfo.inventoryList->eraseSelectedItem();
-		break;
-	}
-	case ToggleAshley: {
-		wndInfo.cheats.toggleAshley(SendMessage(wndInfo.ashleyCheckbox, BM_GETCHECK, 0, 0) ? true : false);
-		break;
-	}
-	case ToggleTMPFireRate: {
-		wndInfo.cheats.toggleFastTmp(SendMessage(wndInfo.tmpCheckbox, BM_GETCHECK, 0, 0) ? true : false);
-		break;
-	}
-	case ToggleNoclip: {
-		wndInfo.cheats.toggleNoclip(SendMessage(wndInfo.noclipCheckbox, BM_GETCHECK, 0, 0) ? true : false);
-		break;
-	}
-	case CharacterComboBox: {
-		if (HIWORD(wParam) == CBN_SELCHANGE)
-		{
-			std::uint8_t character = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0));
-			if (character != CB_ERR)
-			{
-				wndInfo.cheats.setCharacter(character);
-				SendMessage(wndInfo.costumeComboBox, CB_RESETCONTENT, 0, 0);
-
-				for (const auto &costumeName : wndInfo.cheats.getCharacterCostumeNames(wndInfo.cheats.getCharacter())) {
-					SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.c_str());
-				}
-			}
-			else ErrorBox(hWnd, TEXT("Invalid character"));
-		}
-		break;
-	}
-	case CostumeComboBox: {
-		if (HIWORD(wParam) == CBN_SELCHANGE) {
-			std::uint8_t cbCostume = static_cast<std::uint8_t>(SendMessage(wndInfo.costumeComboBox, CB_GETCURSEL, 0, 0));
-			if (wndInfo.cheats.getCharacter() == 2 && cbCostume == 2) wndInfo.cheats.setCostume(3); //remove this from front end
-			else {
-				if (cbCostume != CB_ERR) wndInfo.cheats.setCostume(cbCostume);
-				else ErrorBox(hWnd, TEXT("Invalid costume"));
-			}
-		}
-		break;
-	}
-	case DifficultyComboBox: {
-		if (HIWORD(wParam) == CBN_SELCHANGE) {
-			switch (SendMessage(wndInfo.difficultyComboBox, CB_GETCURSEL, 0, 0))
-			{
-			case 0:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::AMATEUR);
-				break;
-			case 1:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::EASY);
-				break;
-			case 2:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::NORMAL);
-				break;
-			case 3:
-				wndInfo.cheats.setDifficulty(Game::Difficulty::PROFESSIONAL);
-				break;
-			default:
-				ErrorBox(hWnd, TEXT("Select a difficulty"));
-				break;
-			}
-		}
-		break;
-	}
-	case EditItemStats: {
-		auto selectedItem = wndInfo.inventoryList->getSelectedItem();
-		if (selectedItem != -1)
-		{
-			WeaponStatsInfo info(&wndInfo.cheats, wndInfo.cheats.getWeaponDataPtr(wndInfo.inventoryList->getItemAddress(selectedItem)->itemId()));
-			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_WEAPONS_STATS_DIALOG), hWnd, WeaponDlgProc, (LPARAM)& info);
-			if (DWORD error = GetLastError()) {
-				String msg = TEXT("Could not create dialog: ");
-				msg += std::to_wstring(error);
-				ErrorBox(hWnd, msg.c_str());
-			}
-		}
-		else ErrorBox(hWnd, TEXT("Select an item first"));
-		break;
-	}
-	case SceneSet: {
-		try {
-			wndInfo.cheats.setScene(std::stoul(GetControlText(wndInfo.sceneEdit), nullptr, 16));
-			//wndInfo.hacks.spawnPickup(41, 0);
-		}
-		catch (const std::invalid_argument &) {
-			ErrorBox(hWnd, TEXT("Invalid scene"));
-		}
-		break;
-	}
-	case DoorButton: {
-		auto curSel = SendMessage(wndInfo.doorCombo, CB_GETCURSEL, 0, 0);
-		if (curSel != CB_ERR)
-		{
-			if (static_cast<size_t>(curSel) < wndInfo.cheats.getDoors().size())
-				wndInfo.cheats.useDoor(wndInfo.cheats.getDoors()[curSel]);
 			else
-				ErrorBox(hWnd, TEXT("Invalid door"));
+				ErrorBox(hWnd, TEXT("Select an item first"));
+			break;
 		}
-		else
-			ErrorBox(hWnd, TEXT("Select a door first"));
-		break;
-	}
-	case SaveButton: {
-		wndInfo.cheats.openTypewriter(Game::TypewriterMode::SAVE);
-		break;
-	}
-	case MerchantButton: {
-		wndInfo.cheats.openMerchant();
-		break;
-	}
-	case KeyBindings: {
-		DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_KEYBINDINGS), hWnd, ConfigDlgProc, NULL);
-		break;
-	}
-	case Exit:
-		SendMessage(hWnd, WM_CLOSE, 0, 0);
-		break;
+		case SCENE_SET:
+			try {
+				wndInfo.game.setScene(std::stoul(GetControlText(wndInfo.sceneEdit), nullptr, 16));
+			}
+			catch (const std::invalid_argument &) {
+				ErrorBox(hWnd, TEXT("Invalid scene"));
+			}
+			break;
+		case DOOR_BUTTON:
+		{
+			auto curSel = SendMessage(wndInfo.doorCombo, CB_GETCURSEL, 0, 0);
+
+			if (curSel != CB_ERR)
+			{
+				if (static_cast<size_t>(curSel) < wndInfo.game.getDoors().size())
+					wndInfo.game.useDoor(wndInfo.game.getDoors()[curSel]);
+				else
+					ErrorBox(hWnd, TEXT("Invalid door"));
+			}
+			else
+				ErrorBox(hWnd, TEXT("Select a door first"));
+			break;
+		}
+		case SAVE_BUTTON:
+			wndInfo.game.openTypewriter(Game::TypewriterMode::SAVE);
+			break;
+		case MERCHANT_BUTTON:
+			wndInfo.game.openMerchant();
+			break;
+		case KEY_BINDINGS:
+			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_KEYBINDINGS), hWnd, ConfigDlgProc, NULL);
+			break;
+		case EXIT:
+			SendMessage(hWnd, WM_CLOSE, 0, 0);
+			break;
 	}
 }
 
@@ -584,9 +607,9 @@ void onWmNotify(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 				{
 					POINT cursorPos = item.ptAction;
 					ClientToScreen(hWnd, &cursorPos);
-					AppendMenu(hMenu, MF_ENABLED | MF_STRING, MenuIdentifiers::EditItem, TEXT("Edit Item"));
-					AppendMenu(hMenu, (wndInfo.cheats.isWeapon(wndInfo.inventoryList->getItemAddress(item.iItem)->itemId()) ? MF_ENABLED : MF_GRAYED) | MF_STRING, MenuIdentifiers::EditItemStats, TEXT("Edit Item Stats"));
-					AppendMenu(hMenu, MF_ENABLED | MF_STRING, MenuIdentifiers::EraseItem, TEXT("Erase Item"));
+					AppendMenu(hMenu, MF_ENABLED | MF_STRING, MenuIdentifiers::EDIT_ITEM, TEXT("Edit Item"));
+					AppendMenu(hMenu, (wndInfo.game.isWeapon(wndInfo.inventoryList->getItemAddress(item.iItem)->itemId()) ? MF_ENABLED : MF_GRAYED) | MF_STRING, MenuIdentifiers::EDIT_ITEM_STATS, TEXT("Edit Item Stats"));
+					AppendMenu(hMenu, MF_ENABLED | MF_STRING, MenuIdentifiers::ERASE_ITEM, TEXT("Erase Item"));
 					if (BOOL result = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_TOPALIGN | TPM_LEFTALIGN | TPM_LEFTBUTTON, cursorPos.x, cursorPos.y, 0, item.hdr.hwndFrom, nullptr)) {
 						DestroyMenu(hMenu);
 						SendMessage(hWnd, WM_COMMAND, MAKEWORD(result, 0), 0);
@@ -612,49 +635,45 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			bool toggle;
 			switch (i)
 			{
-			case KeyBindingsConfig::NOCLIP:
-				toggle = !wndInfo.cheats.isNoclipOn();
-				wndInfo.cheats.toggleNoclip(toggle);
-				SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, toggle, 0);
-				break;
-			case KeyBindingsConfig::ASHLEY:
-				toggle = !wndInfo.cheats.isAshleyPresent();
-				wndInfo.cheats.toggleAshley(toggle);
-				SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, toggle, 0);
-				break;
-			case KeyBindingsConfig::HEAL:
-				wndInfo.cheats.setHealth(wndInfo.cheats.getHealthLimit());
-				break;
-			case KeyBindingsConfig::SAVE:
-				wndInfo.cheats.openTypewriter(Game::TypewriterMode::SAVE);
-				break;
-			case KeyBindingsConfig::MERCHANT:
-				wndInfo.cheats.openMerchant();
-				break;
-			case KeyBindingsConfig::MELEE1:
-				wndInfo.cheats.melee(Game::MeleeType::HEAD);
-				break;
-			case KeyBindingsConfig::MELEE2:
-				wndInfo.cheats.melee(Game::MeleeType::KNEE);
-				break;
-			case KeyBindingsConfig::INCREASE_ALTITUDE:
-			{
-				if (auto coordinates = wndInfo.cheats.getPlayerCoordinates())
-				{
-					coordinates.value()[1] += 1000.f;
-					wndInfo.cheats.setPlayerCoordinates(coordinates.value());
-				}
-				break;
-			}
-			case KeyBindingsConfig::DECREASE_ALTITUDE:
-			{
-				if (auto coordinates = wndInfo.cheats.getPlayerCoordinates())
-				{
-					coordinates.value()[1] -= 1000.f;
-					wndInfo.cheats.setPlayerCoordinates(coordinates.value());
-				}
-				break;
-			}
+				case KeyBindingsConfig::NOCLIP:
+					toggle = !wndInfo.game.isNoclipOn();
+					wndInfo.game.toggleNoclip(toggle);
+					SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, toggle, 0);
+					break;
+				case KeyBindingsConfig::ASHLEY:
+					toggle = !wndInfo.game.isAshleyPresent();
+					wndInfo.game.toggleAshley(toggle);
+					SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, toggle, 0);
+					break;
+				case KeyBindingsConfig::HEAL:
+					wndInfo.game.setHealth(wndInfo.game.getHealthLimit());
+					break;
+				case KeyBindingsConfig::SAVE:
+					wndInfo.game.openTypewriter(Game::TypewriterMode::SAVE);
+					break;
+				case KeyBindingsConfig::MERCHANT:
+					wndInfo.game.openMerchant();
+					break;
+				case KeyBindingsConfig::MELEE1:
+					wndInfo.game.melee(Game::MeleeType::HEAD);
+					break;
+				case KeyBindingsConfig::MELEE2:
+					wndInfo.game.melee(Game::MeleeType::KNEE);
+					break;
+				case KeyBindingsConfig::INCREASE_ALTITUDE:
+					if (auto coordinates = wndInfo.game.getPlayerCoordinates())
+					{
+						coordinates.value()[1] += 1000.f;
+						wndInfo.game.setPlayerCoordinates(coordinates.value());
+					}
+					break;
+				case KeyBindingsConfig::DECREASE_ALTITUDE:
+					if (auto coordinates = wndInfo.game.getPlayerCoordinates())
+					{
+						coordinates.value()[1] -= 1000.f;
+						wndInfo.game.setPlayerCoordinates(coordinates.value());
+					}
+					break;
 			}
 		}
 	}

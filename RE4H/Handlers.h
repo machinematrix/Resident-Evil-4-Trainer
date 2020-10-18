@@ -19,38 +19,38 @@ namespace MenuIdentifiers
 	enum
 	{
 		InventoryList,
-		EditItem,
-		EraseItem,
-		AddItem,
-		EditItemStats,
+		EDIT_ITEM,
+		ERASE_ITEM,
+		ADD_ITEM,
+		EDIT_ITEM_STATS,
 		HealthEdit,
-		HealthSet,
-		HealthGet,
+		HEALTH_SET,
+		HEALTH_GET,
 		HealthLimitEdit,
-		HealthLimitGet,
-		HealthLimitSet,
-		ToggleAshley,
-		CharacterComboBox,
-		CostumeComboBox,
-		DifficultyComboBox,
+		HEALTH_LIMIT_GET,
+		HEALTH_LIMIT_SET,
+		TOGGLE_ASHLEY,
+		CHARACTER_COMBO_BOX,
+		COSTUME_COMBO_BOX,
+		DIFFICULTY_COMBO_BOX,
 		SceneEdit,
-		SceneSet,
+		SCENE_SET,
 		HealthText,
 		HealthLimitText,
 		SceneText,
 		DoorText,
 		DoorCombo,
-		DoorButton,
+		DOOR_BUTTON,
 		CharacterText,
 		CostumeText,
 		DifficultyText,
-		ToggleNoclip,
-		KeyBindings, //invokes dialog box
-		Exit,
-		MaxAmountEditButton,
-		ToggleTMPFireRate,
-		SaveButton,
-		MerchantButton
+		TOGGLE_NOCLIP,
+		KEY_BINDINGS, //invokes dialog box
+		EXIT,
+		MAX_AMOUNT_EDIT_BUTTON,
+		TOGGLE_TMP_FIRE_RATE,
+		SAVE_BUTTON,
+		MERCHANT_BUTTON
 	};
 }
 
@@ -66,7 +66,7 @@ namespace Controls
 struct MainWindowInfo
 {
 	HINSTANCE hInstance; //Needed for DialogBox
-	Game cheats;
+	Game game;
 	HWND healthSet;
 	HWND healthGet;
 	HWND healthEdit;

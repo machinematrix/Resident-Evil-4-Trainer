@@ -67,9 +67,9 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter)
 
 	HMENU hMenu = CreateMenu(), hMenuPopup = CreateMenu();
 
-	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::KeyBindings, TEXT("Key bindings"));
+	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::KEY_BINDINGS, TEXT("Key bindings"));
 	AppendMenu(hMenuPopup, MF_SEPARATOR, 0, nullptr);
-	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::Exit, TEXT("Exit"));
+	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::EXIT, TEXT("Exit"));
 	AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hMenuPopup, TEXT("File"));
 
 	if (HWND hWnd = CreateWindowW(windowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, horSize, verSize, nullptr, hMenu, (HINSTANCE)lpParameter, nullptr)) {
@@ -368,7 +368,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	{
 	case WM_INITDIALOG: {
 		info = (WeaponStatsInfo*)lParam;
-		Game *hacks = std::get<0>(*info);
+		Game *game = std::get<0>(*info);
 		Game::WeaponData *data = std::get<1>(*info);
 		
 		if (!data) {
@@ -394,15 +394,15 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		modelEdit = GetDlgItem(hDlg, ModelEdit);
 		ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
 
-		float *firepowerEntry = hacks->getFirepowerTableEntry(data->firepowerIndex());
+		float *firepowerEntry = game->getFirepowerTableEntry(data->firepowerIndex());
 		for (size_t i = 0; i < 7; ++i) {
 			SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
 			SetWindowText(capacityEdits[i], std::to_wstring(data->capacity(i)).c_str());
 		}
 		SetWindowText(modelEdit, std::to_wstring(data->model()).c_str());
-		for (const auto &ammoId : hacks->getAmmoItemIds())
+		for (const auto &ammoId : game->getAmmoItemIds())
 		{
-			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)hacks->getItemName(ammoId).c_str());
+			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)game->getItemName(ammoId).c_str());
 			if (data->weaponAmmo() == ammoId) {
 				SendMessage(ammoCombo, CB_SETCURSEL, SendMessage(ammoCombo, CB_GETCOUNT, 0, 0) - 1, 0);
 			}
@@ -414,7 +414,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		switch (LOWORD(wParam))
 		{
 		case IDOK: {
-			Game *hacks = std::get<0>(*info);
+			Game *game = std::get<0>(*info);
 			Game::WeaponData *data = std::get<1>(*info), newData = *data;
 			float newFirepower[7];
 
@@ -442,7 +442,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				if (curSel != CB_ERR) {
 					String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
 					SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
-					newData.weaponAmmo(hacks->getItemId(strAmmo));
+					newData.weaponAmmo(game->getItemId(strAmmo));
 				}
 			}
 			catch (const std::out_of_range&) {
@@ -450,7 +450,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 			}
 
-			hacks->setWeaponDataPtr(data, newData, newFirepower);
+			game->setWeaponDataPtr(data, newData, newFirepower);
 		} //fall through
 		case IDCANCEL: {
 			EndDialog(hDlg, 0);
