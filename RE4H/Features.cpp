@@ -58,7 +58,7 @@ namespace DoorListOffsets
 	};
 }
 
-namespace Characters
+namespace Character
 {
 	enum : std::uint32_t
 	{
@@ -203,14 +203,13 @@ Game::Game()
 	mLinkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
 	mTypewriterProcedure(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
 	mOpenMerchant(reinterpret_cast<decltype(mOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004"))),
-	//mMeleeFirstArgumentPointer(patternScan("3B 05 ????????  76 02")),
 	mEntityList(patternScan("8B 35 ????????  85 F6  74 43  8B C6")),
 	mEnemyVTable(patternScan("C7 06 ????????  8B C6  5E  5D  C2 0400  33 C0  5E  5D  C2 0400  CCCCCCCCCCCCCCCCCCCC 55  8B EC  56  8B 75 08  85 F6  74 0D  8B CE  E8 ????????  C7 06 ????????  5E  5D  C3  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  C7 05 ???????? ????????  C7 05 ???????? ????????  C3")),
-	//mMelee(reinterpret_cast<decltype(mMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"))),
 	mMeleeHead(reinterpret_cast<decltype(mMeleeHead)>(patternScan("55  8B EC  A1 ????????  0FB6 80 ????????  83 E8 03"))),
 	mMeleeKnee(reinterpret_cast<decltype(mMeleeKnee)>(patternScan("55  8B EC  A1 ????????  80 B8 C84F0000 04"))),
-	mMeleeKneeKrauser(reinterpret_cast<decltype(mMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00")))
-	//mEnemyList(patternScan("A1 ????????  8D 4C 06 14  E8 ????????  84 C0"))
+	mMeleeKneeKrauser(reinterpret_cast<decltype(mMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"))),
+	mMeleeKneeSuplex(reinterpret_cast<decltype(mMeleeKneeSuplex)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"))),
+	mMelee(reinterpret_cast<decltype(mMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C")))
 {
 	sqlite3 *database = nullptr;
 
@@ -412,7 +411,7 @@ std::uint8_t Game::getCharacter()
 
 void Game::setCostume(std::uint8_t id)
 {
-	using namespace Characters;
+	using namespace Character;
 	switch (getCharacter())
 	{
 	case Leon:
@@ -717,30 +716,48 @@ void Game::melee(MeleeType type)
 {
 	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
 	{
-		float rotation = getValue<float>(playerEntity + 0xA4);
 		auto character = getCharacter();
 		
-		if (character == Characters::Krauser) //Game crashes when doing this with Krauser for some reason.
+		if (character == Character::Krauser) //Game crashes when doing this with Krauser for some reason.
 			return;
 
 		for (Pointer node = getValue<Pointer>(mEntityList); node; node = getValue<Pointer>(node + 8))
 		{
-			if (getValue<Pointer>(node) == mEnemyVTable && (getValue<std::uint16_t>(node + 0x324) || character != Characters::HUNK || type != MeleeType::HEAD))
+			if (getValue<Pointer>(node) == mEnemyVTable && (getValue<std::uint16_t>(node + 0x324) || character != Character::HUNK || type != MeleeType::HEAD))
 			{
+				float rotation = getValue<float>(playerEntity + 0xA4);
+				bool freezeRotation = true;
+
 				switch (type)
 				{
 					case MeleeType::HEAD:
+						if (character == Character::HUNK) //If melee is neck breaker
+							if (getValue<std::uint16_t>(node + 0x324)) //and the enemy is alive
+								freezeRotation = false; //don't freeze rotation
+							else
+								continue; //else, look for a new enemy
 						mMeleeHead(node, 0);
 						break;
 					case MeleeType::KNEE:
-						if (character != Characters::Krauser)
-							mMeleeKnee(node, 0);
-						else
-							mMeleeKneeKrauser(node, 0);
+						switch (character)
+						{
+							case Character::Krauser:
+								mMeleeKneeKrauser(node, 0);
+								break;
+							case Character::Leon:
+								if (getValue<std::uint16_t>(node + 0x324))
+									freezeRotation = false;
+								else
+									continue;
+								mMeleeKneeSuplex(node, 0);
+								break;
+							default:
+								mMeleeKnee(node, 0);
+						}
 						break;
 				}
 
-				if (character != Characters::HUNK || type == MeleeType::KNEE) //Don't freeze rotation for Hunk's neck breaker
+				if (freezeRotation)
 				{
 					auto freezeRotation = [](Pointer playerEntity, float rotation) {
 						while (getValue<std::uint8_t>(playerEntity + 0xFC) == 4)
@@ -753,8 +770,6 @@ void Game::melee(MeleeType type)
 				break;
 			}
 		}
-
-		
 	}
 }
 

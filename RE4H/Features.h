@@ -331,9 +331,11 @@ private:
 	void(__cdecl *mGetInventoryModelData)(ItemId id, InventoryIconData *result);
 	std::uint32_t(__cdecl *mReadMinimumHeader)(void *sceneHandle, void *unknown);
 	void(__cdecl *mOpenMerchant)(std::int32_t, std::int32_t);
+	void(__cdecl *mMelee)(void *enemyPointer, void *meleeProcedure);
 	void(__cdecl *mMeleeHead)(void *enemyPointer, void*);
 	void(__cdecl *mMeleeKnee)(void *enemyPointer, void*);
 	void(__cdecl *mMeleeKneeKrauser)(void *enemyPointer, void*);
+	void(__cdecl *mMeleeKneeSuplex)(void *enemyPointer, void*);
 	
 	static void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	static int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
