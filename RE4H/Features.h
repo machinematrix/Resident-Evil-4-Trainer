@@ -4,6 +4,7 @@
 #include "Bimap.h"
 #include <vector>
 #include <array>
+#include <optional>
 #include <mutex>
 #include <map>
 
@@ -413,6 +414,8 @@ public:
 	void openMerchant();
 
 	void melee(MeleeType);
+	void setPlayerCoordinates(const float (&coordinates)[3]);
+	std::optional<std::array<float, 3>> getPlayerCoordinates();
 };
 
 class Game::ItemData //Must be 14 bytes

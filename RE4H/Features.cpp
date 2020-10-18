@@ -773,6 +773,22 @@ void Game::melee(MeleeType type)
 	}
 }
 
+void Game::setPlayerCoordinates(const float(&coordinates)[3])
+{
+	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
+		setValue(playerEntity + 0x94, coordinates);
+}
+
+std::optional<std::array<float, 3>> Game::getPlayerCoordinates()
+{
+	std::optional<std::array<float, 3>> result;
+
+	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
+		result = decltype(result)::value_type{ getValue<float>(playerEntity + 0x94), getValue<float>(playerEntity + 0x98), getValue<float>(playerEntity + 0x9C) };
+
+	return result;
+}
+
 const Bimap<ItemId, String> Game::mItems = {
 	{ ItemId::MagnumAmmo, TEXT("Magnum Ammo") },
 	{ ItemId::HandGrenade, TEXT("Hand Grenade") },
