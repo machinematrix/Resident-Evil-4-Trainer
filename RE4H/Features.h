@@ -1,7 +1,6 @@
 #ifndef __GAME_H__
 #define __GAME_H__
 #include "Memory.h"
-#include "Bimap.h"
 #include <vector>
 #include <array>
 #include <optional>
@@ -300,7 +299,7 @@ public:
 	struct Entity;
 	enum class MeleeType { HEAD, KNEE };
 private:
-	static const Bimap<ItemId, String> mItems;
+	static const std::map<ItemId, String> mItems;
 	std::mutex mDoorVectorMutex;
 	bool mSceneChanged = false;
 	Pointer mHealthBase; //bio4.exe+806F3C
@@ -355,8 +354,7 @@ public:
 	void setHealthLimit(std::uint16_t limit);
 	std::uint16_t getHealthLimit();
 
-	decltype(mItems)::ValueType getItemName(const decltype(mItems)::KeyType &id) const; //throws out_of_range
-	decltype(mItems)::KeyType getItemId(const decltype(mItems)::ValueType &id) const; //throws out_of_range
+	decltype(mItems)::mapped_type getItemName(const decltype(mItems)::key_type &id) const; //throws out_of_range
 	ItemData* begInventory() const;
 	ItemData* endInventory() const;
 	ItemData* addItem() const;
@@ -548,6 +546,6 @@ struct Game::Entity
 	char mPadding6[0x208];
 	std::uint16_t mHealth;
 	std::uint16_t mHealthLimit;
-};
+}; //highest known offset: 0x79C
 
 #endif

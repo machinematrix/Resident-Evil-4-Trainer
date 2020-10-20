@@ -363,6 +363,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 {
 	static WeaponStatsInfo *info;
 	static HWND firePowerEdits[7], capacityEdits[7], modelEdit, ammoCombo;
+	static std::vector<ItemId> ids;
 
 	switch (message)
 	{
@@ -403,9 +404,9 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		for (const auto &ammoId : game->getAmmoItemIds())
 		{
 			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)game->getItemName(ammoId).c_str());
-			if (data->weaponAmmo() == ammoId) {
+			ids.push_back(ammoId);
+			if (data->weaponAmmo() == ammoId)
 				SendMessage(ammoCombo, CB_SETCURSEL, SendMessage(ammoCombo, CB_GETCOUNT, 0, 0) - 1, 0);
-			}
 		}
 		break;
 	}
@@ -442,7 +443,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				if (curSel != CB_ERR) {
 					String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
 					SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
-					newData.weaponAmmo(game->getItemId(strAmmo));
+					newData.weaponAmmo(ids[curSel]);
 				}
 			}
 			catch (const std::out_of_range&) {
@@ -453,6 +454,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			game->setWeaponDataPtr(data, newData, newFirepower);
 		} //fall through
 		case IDCANCEL: {
+			ids.clear();
 			EndDialog(hDlg, 0);
 			break;
 		}

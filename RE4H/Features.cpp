@@ -345,12 +345,7 @@ std::uint16_t Game::getHealthLimit()
 	return getValue<std::uint16_t>(mHealthBase + HealthBaseOffsets::MaxHealth);
 }
 
-decltype(Game::mItems)::ValueType Game::getItemName(const decltype(mItems)::KeyType &id) const
-{
-	return mItems.at(id);
-}
-
-decltype(Game::mItems)::KeyType Game::getItemId(const decltype(mItems)::ValueType &id) const
+decltype(Game::mItems)::mapped_type Game::getItemName(const decltype(mItems)::key_type &id) const
 {
 	return mItems.at(id);
 }
@@ -805,7 +800,7 @@ std::optional<std::array<float, 3>> Game::getPlayerCoordinates()
 	return result;
 }
 
-const Bimap<ItemId, String> Game::mItems = {
+const std::map<ItemId, String> Game::mItems = {
 	{ ItemId::MagnumAmmo, TEXT("Magnum Ammo") },
 	{ ItemId::HandGrenade, TEXT("Hand Grenade") },
 	{ ItemId::IncendiaryGrenade, TEXT("Incendiary Grenade") },
