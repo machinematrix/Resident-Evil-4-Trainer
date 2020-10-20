@@ -747,23 +747,23 @@ void Game::melee(MeleeType type)
 								freezeRotation = false; //don't freeze rotation
 							else
 								continue; //else, look for a new enemy
-						mMeleeHead(node, 0);
+						mMeleeHead(node, nullptr);
 						break;
 					case MeleeType::KNEE:
 						switch (character)
 						{
 							case Character::Krauser:
-								mMeleeKneeKrauser(node, 0);
+								mMeleeKneeKrauser(node, nullptr);
 								break;
 							case Character::Leon:
 								if (node->mHealth)
 									freezeRotation = false;
 								else
 									continue;
-								mMeleeKneeSuplex(node, 0);
+								mMeleeKneeSuplex(node, nullptr);
 								break;
 							default:
-								mMeleeKnee(node, 0);
+								mMeleeKnee(node, nullptr);
 						}
 						break;
 				}
