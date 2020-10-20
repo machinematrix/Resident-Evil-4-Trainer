@@ -297,6 +297,7 @@ public:
 	class ItemData;
 	class WeaponData;
 	class InventoryIconData;
+	struct Entity;
 	enum class MeleeType { HEAD, KNEE };
 private:
 	static const Bimap<ItemId, String> mItems;
@@ -320,9 +321,9 @@ private:
 	Pointer mLoggerFunction2; //bio4.exe+CE5F
 	Pointer mLinkedList; //bio4.exe+E6E608
 	Pointer mTypewriterProcedure; //bio4.exe+563FF0
-	Pointer mEntityList; //bio4.exe+7FDB18
+	Entity **mEntityList; //bio4.exe+7FDB18
 	Pointer mEnemyVTable; //bio4.exe+71035C. VTable for enemies that can be meelee'd
-	Pointer mPlayerNode; //bio4.exe+857054
+	Entity **mPlayerNode; //bio4.exe+857054
 	Pointer mOriginalLogger = nullptr, mOriginalLogger2 = nullptr;
 	std::vector<void*> mDoors;
 	std::map<ItemId, std::uint32_t> mItemStackCap;
@@ -512,7 +513,7 @@ public:
 
 class Game::InventoryIconData
 {
-	enum class ItemType : std::uint8_t { Gun = 1, Ammo, Grenade, Medicine = 6, WeaponAttachment = 9, File, AttacheCase };
+	enum class ItemType : std::uint8_t { Gun = 1, Ammo, Grenade, Medicine = 6, WeaponAttachment = 9, File, AttachCase };
 	std::uint16_t mUnknown;
 	ItemType mItemType;
 	std::uint8_t mUnknown2;
@@ -522,6 +523,31 @@ class Game::InventoryIconData
 public:
 	void stackLimit(std::uint8_t value);
 	std::uint8_t stackLimit() const;
+};
+
+struct Game::Entity
+{
+	Pointer mVTable;
+	char mPadding1[0x4];
+	Entity *mNext;
+	char mPadding2[0x88];
+	float mX;
+	float mY;
+	float mZ;
+	char mPadding3[0x4];
+	float mRotation;
+	char mPadding4[0x54];
+	std::uint8_t mMeleeFlag; //4 == meleeing
+	std::uint8_t mMovementFlag; //0 == Still | 1 == Walking forward | 2 == Walking backwards | 3 == Running | 4 == Turning | 5 == Quickturning
+	std::uint8_t mRunningFlag; //1 == Not running | 3 == Running
+	std::uint8_t mAimingFlag; //1 == Aiming
+	char mPadding5[0x10];
+	float mX2;
+	float mY2;
+	float mZ2;
+	char mPadding6[0x208];
+	std::uint16_t mHealth;
+	std::uint16_t mHealthLimit;
 };
 
 #endif

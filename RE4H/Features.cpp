@@ -8,6 +8,22 @@
 #include <cstdint>
 #include <winsqlite/winsqlite3.h>
 
+static_assert(offsetof(Game::Entity, Game::Entity::mVTable) == 0x0, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mNext) == 0x8, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mX) == 0x94, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mY) == 0x98, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mZ) == 0x9C, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mRotation) == 0xA4, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mMeleeFlag) == 0xFC, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mMovementFlag) == 0xFD, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mRunningFlag) == 0xFE, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mAimingFlag) == 0xFF, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mX2) == 0x110, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mY2) == 0x114, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mZ2) == 0x118, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mHealth) == 0x324, "Bad offset");
+static_assert(offsetof(Game::Entity, Game::Entity::mHealthLimit) == 0x326, "Bad offset");
+
 namespace
 {
 	void *cookie = reinterpret_cast<void*>(6);
@@ -203,7 +219,7 @@ Game::Game()
 	mLinkedList(patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC")),
 	mTypewriterProcedure(patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000")),
 	mOpenMerchant(reinterpret_cast<decltype(mOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004"))),
-	mEntityList(patternScan("8B 35 ????????  85 F6  74 43  8B C6")),
+	mEntityList(reinterpret_cast<decltype(mEntityList)>(patternScan("8B 35 ????????  85 F6  74 43  8B C6"))),
 	mEnemyVTable(patternScan("C7 06 ????????  8B C6  5E  5D  C2 0400  33 C0  5E  5D  C2 0400  CCCCCCCCCCCCCCCCCCCC 55  8B EC  56  8B 75 08  85 F6  74 0D  8B CE  E8 ????????  C7 06 ????????  5E  5D  C3  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  C7 05 ???????? ????????  C7 05 ???????? ????????  C3")),
 	mMeleeHead(reinterpret_cast<decltype(mMeleeHead)>(patternScan("55  8B EC  A1 ????????  0FB6 80 ????????  83 E8 03"))),
 	mMeleeKnee(reinterpret_cast<decltype(mMeleeKnee)>(patternScan("55  8B EC  A1 ????????  80 B8 C84F0000 04"))),
@@ -248,8 +264,8 @@ Game::Game()
 	mLoggerFunction2 = follow(mLoggerFunction2 + 10);
 	mTmpFireRate = getValue<Pointer>(mTmpFireRate + 2);
 	mLinkedList = getValue<Pointer>(mLinkedList + 1);
-	mPlayerNode = getValue<Pointer>(mEntityList + 17);
-	mEntityList = getValue<Pointer>(mEntityList + 2);
+	mPlayerNode = getValue<Entity**>(reinterpret_cast<Pointer>(mEntityList) + 17);
+	mEntityList = getValue<Entity**>(reinterpret_cast<Pointer>(mEntityList) + 2);
 	mEnemyVTable = getValue<Pointer>(mEnemyVTable + 2);
 
 	myDropRandomizer(0, nullptr, nullptr, this);
@@ -714,25 +730,25 @@ void Game::openMerchant()
 
 void Game::melee(MeleeType type)
 {
-	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
+	if (Entity* playerEntity = *mPlayerNode)
 	{
 		auto character = getCharacter();
 		
 		if (character == Character::Krauser) //Game crashes when doing this with Krauser for some reason.
 			return;
 
-		for (Pointer node = getValue<Pointer>(mEntityList); node; node = getValue<Pointer>(node + 8))
+		for (Entity *node = *mEntityList; node; node = node->mNext)
 		{
-			if (getValue<Pointer>(node) == mEnemyVTable && (getValue<std::uint16_t>(node + 0x324) || character != Character::HUNK || type != MeleeType::HEAD))
+			if (node->mVTable == mEnemyVTable)
 			{
-				float rotation = getValue<float>(playerEntity + 0xA4);
+				float rotation = playerEntity->mRotation;
 				bool freezeRotation = true;
 
 				switch (type)
 				{
 					case MeleeType::HEAD:
 						if (character == Character::HUNK) //If melee is neck breaker
-							if (getValue<std::uint16_t>(node + 0x324)) //and the enemy is alive
+							if (node->mHealth) //and the enemy is alive
 								freezeRotation = false; //don't freeze rotation
 							else
 								continue; //else, look for a new enemy
@@ -745,7 +761,7 @@ void Game::melee(MeleeType type)
 								mMeleeKneeKrauser(node, 0);
 								break;
 							case Character::Leon:
-								if (getValue<std::uint16_t>(node + 0x324))
+								if (node->mHealth)
 									freezeRotation = false;
 								else
 									continue;
@@ -759,9 +775,9 @@ void Game::melee(MeleeType type)
 
 				if (freezeRotation)
 				{
-					auto freezeRotation = [](Pointer playerEntity, float rotation) {
-						while (getValue<std::uint8_t>(playerEntity + 0xFC) == 4)
-							setValue(playerEntity + 0xA4, rotation), Sleep(5);
+					auto freezeRotation = [](Entity *playerEntity, float rotation) {
+						while (playerEntity->mMeleeFlag == 4)
+							playerEntity->mRotation = rotation, Sleep(5);
 					};
 
 					std::thread(freezeRotation, playerEntity, rotation).detach();
@@ -775,16 +791,16 @@ void Game::melee(MeleeType type)
 
 void Game::setPlayerCoordinates(const std::array<float, 3> &coordinates)
 {
-	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
-		setValue(playerEntity + 0x94, coordinates);
+	if (Entity *playerEntity = *mPlayerNode)
+		playerEntity->mX = coordinates[0], playerEntity->mY = coordinates[1], playerEntity->mZ = coordinates[2];
 }
 
 std::optional<std::array<float, 3>> Game::getPlayerCoordinates()
 {
 	std::optional<std::array<float, 3>> result;
 
-	if (Pointer playerEntity = getValue<Pointer>(mPlayerNode))
-		result = decltype(result)::value_type{ getValue<float>(playerEntity + 0x94), getValue<float>(playerEntity + 0x98), getValue<float>(playerEntity + 0x9C) };
+	if (Entity *playerEntity = *mPlayerNode)
+		result = decltype(result)::value_type{ playerEntity->mX, playerEntity->mY, playerEntity->mZ };
 
 	return result;
 }
