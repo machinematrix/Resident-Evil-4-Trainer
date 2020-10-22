@@ -33,7 +33,7 @@ namespace MenuIdentifiers
 		CHARACTER_COMBO_BOX,
 		COSTUME_COMBO_BOX,
 		DIFFICULTY_COMBO_BOX,
-		SceneEdit,
+		SceneCombo,
 		SCENE_SET,
 		HealthText,
 		HealthLimitText,
@@ -77,7 +77,7 @@ struct MainWindowInfo
 	HWND ashleyCheckbox;
 	HWND characterComboBox;
 	HWND costumeComboBox;
-	HWND sceneEdit;
+	HWND sceneCombo;
 	HWND sceneSet;
 	HWND characterText;
 	HWND costumeText;

@@ -4,6 +4,7 @@
 #include <vector>
 #include <array>
 #include <optional>
+#include <functional>
 #include <mutex>
 #include <map>
 
@@ -323,11 +324,13 @@ private:
 	Entity **mEntityList; //bio4.exe+7FDB18
 	Pointer mEnemyVTable; //bio4.exe+71035C. VTable for enemies that can be meelee'd
 	Entity **mPlayerNode; //bio4.exe+857054
+	Pointer mUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
 	Pointer mOriginalLogger = nullptr, mOriginalLogger2 = nullptr;
 	std::vector<void*> mDoors;
 	std::map<ItemId, std::uint32_t> mItemStackCap;
+	std::function<void(std::uint32_t, const decltype(mDoors)&)> mDoorListUpdateCallback;
 	
-	void(__cdecl *mSetScene)(void*); //first parameter is a pointer to a 312 byte (0x138) structure
+	void(__cdecl *mUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
 	void(__cdecl *mSceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
 	void(__cdecl *mGetInventoryModelData)(ItemId id, InventoryIconData *result);
 	std::uint32_t(__cdecl *mReadMinimumHeader)(void *sceneHandle, void *unknown);
@@ -341,6 +344,7 @@ private:
 	static void __cdecl myGetInventoryModelData(ItemId, Game::InventoryIconData*);
 	static int __cdecl myDropRandomizer(std::uint32_t, ItemId*, std::uint32_t*, Game*);
 	static std::uint32_t __cdecl sceAtHook(void*, void*);
+	static void __cdecl useDoorHook(void*, void*);
 	Pointer getFirstValidDoor();
 public:
 	enum class Difficulty : std::uint32_t { AMATEUR, EASY = 3, NORMAL = 5, PROFESSIONAL = 6 };
@@ -382,8 +386,7 @@ public:
 
 	void useDoor(void *doorData);
 	void refreshDoorList();
-	const std::vector<void *>& getDoors();
-	bool doorListChanged();
+	const std::vector<void *> getDoors();
 	void setScene(std::uint32_t scene);
 	std::uint32_t getScene();
 	std::array<float, 3> getSceneEntryCoords();
@@ -417,6 +420,7 @@ public:
 	std::optional<std::array<float, 3>> getPlayerCoordinates();
 
 	std::vector<std::wstring> getSceneFileNames();
+	void setDoorListUpdateCallback(decltype(mDoorListUpdateCallback));
 };
 
 class Game::ItemData //Must be 14 bytes

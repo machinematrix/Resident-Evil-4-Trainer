@@ -116,7 +116,7 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	wndInfo.characterComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)CHARACTER_COMBO_BOX, nullptr, nullptr);
 	wndInfo.costumeComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)COSTUME_COMBO_BOX, nullptr, nullptr);
 	wndInfo.difficultyComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)DIFFICULTY_COMBO_BOX, nullptr, nullptr);
-	wndInfo.sceneEdit = CreateWindow(WC_EDIT, nullptr, WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 0, 0, 0, hWnd, (HMENU)SceneEdit, nullptr, nullptr);
+	wndInfo.sceneCombo = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_VSCROLL | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)SceneCombo, nullptr, nullptr);
 	wndInfo.sceneSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)SCENE_SET, nullptr, nullptr);
 	wndInfo.healthText = CreateWindow(WC_STATIC, TEXT("Health:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)HealthText, nullptr, nullptr);
 	wndInfo.healthLimitText = CreateWindow(WC_STATIC, TEXT("Health Limit:"), WS_VISIBLE | WS_CHILD | SS_CENTERIMAGE, 0, 0, 0, 0, hWnd, (HMENU)HealthLimitText, nullptr, nullptr);
@@ -143,7 +143,6 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	wndInfo.inventoryList->addColumn(TEXT("CA"), 50);
 	SendMessage(wndInfo.healthEdit, EM_SETCUEBANNER, FALSE, (LPARAM)TEXT("Health"));
 	SendMessage(wndInfo.healthLimitEdit, EM_SETCUEBANNER, FALSE, (LPARAM)TEXT("Health Limit"));
-	SendMessage(wndInfo.sceneEdit, EM_SETCUEBANNER, FALSE, (LPARAM)TEXT("Scene"));
 	SendMessage(wndInfo.inventoryList->getWindowHandle(), LVM_SETTEXTBKCOLOR, 0, CLR_HILIGHT);
 	SendMessage(wndInfo.characterComboBox, CB_ADDSTRING, 0, (LPARAM)TEXT("Leon"));
 	SendMessage(wndInfo.characterComboBox, CB_ADDSTRING, 0, (LPARAM)TEXT("Ashley"));
@@ -155,9 +154,13 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	SendMessage(wndInfo.difficultyComboBox, CB_ADDSTRING, 0, (LPARAM)TEXT("Easy"));
 	SendMessage(wndInfo.difficultyComboBox, CB_ADDSTRING, 0, (LPARAM)TEXT("Normal"));
 	SendMessage(wndInfo.difficultyComboBox, CB_ADDSTRING, 0, (LPARAM)TEXT("Professional"));
+	SendMessage(wndInfo.sceneCombo, CB_SETMINVISIBLE, 20, 0);
+
+	for (std::wstring_view scene : wndInfo.game.getSceneFileNames())
+		SendMessage(wndInfo.sceneCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(scene.data()));
 
 	wndInfo.kbHook = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, nullptr, GetWindowThreadProcessId(FindWindow(nullptr, TEXT("Resident Evil 4")), nullptr));
-	//std::cout << GetLastError() << std::endl;
+
 	EnumChildWindows(hWnd, (WNDENUMPROC)SetFont, (LPARAM)GetStockObject(DEFAULT_GUI_FONT));
 	SetTimer(hWnd, 1, 1500, nullptr);
 
@@ -168,7 +171,30 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 		return;
 	}
 
+	auto callback = [&wndInfo](std::uint32_t newScene, const std::vector<void*> &doors)
+	{
+		std::wostringstream stream;
+		std::uint32_t i = 0;
+		int curSel;
+
+		SendMessage(wndInfo.doorCombo, CB_RESETCONTENT, 0, 0);
+		for (const auto door : doors)
+		{
+			SendMessage(wndInfo.doorCombo, CB_ADDSTRING, 0, (LPARAM)std::to_wstring(i).c_str());
+			++i;
+		}
+
+		stream << TEXT('r') << std::hex << newScene << TEXT(".udas.lfs");
+		curSel = ComboBox_FindStringExact(wndInfo.sceneCombo, -1, stream.str().c_str());
+
+		if (curSel != CB_ERR)
+			ComboBox_SetCurSel(wndInfo.sceneCombo, curSel);
+		else
+			SendMessage(wndInfo.sceneCombo, WM_CLEAR, 0, 0);
+	};
+
 	wndInfo.game.setLoggerCallback(loggerCallback);
+	wndInfo.game.setDoorListUpdateCallback(callback);
 }
 
 void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
@@ -221,9 +247,9 @@ void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 	MoveWindow(wndInfo.sceneText, lastWnd.left, lastWnd.bottom + spacing, buttonWidth / 2, buttonHeight, update);
 
 	lastWnd = GetWindowRectInParent(wndInfo.sceneText);
-	MoveWindow(wndInfo.sceneEdit, lastWnd.right + spacing, lastWnd.top, buttonWidth / 2, buttonHeight, update);
+	MoveWindow(wndInfo.sceneCombo, lastWnd.right + spacing, lastWnd.top, buttonWidth, buttonHeight, update);
 
-	lastWnd = GetWindowRectInParent(wndInfo.sceneEdit);
+	lastWnd = GetWindowRectInParent(wndInfo.sceneCombo);
 	MoveWindow(wndInfo.sceneSet, lastWnd.right + spacing, lastWnd.top, buttonWidth / 3, buttonHeight, update);
 
 	lastWnd = GetWindowRectInParent(wndInfo.sceneText);
@@ -272,7 +298,6 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 		auto healthLimit = wndInfo.game.getHealthLimit();
 
 		//scene
-		auto strScene = GetControlText(wndInfo.sceneEdit);
 		auto scene = wndInfo.game.getScene();
 
 		//character
@@ -320,26 +345,6 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 			if (cbDifficulty != 3)
 				SendMessage(wndInfo.difficultyComboBox, CB_SETCURSEL, 3, 0);
 			break;
-		}
-
-		if (focused != wndInfo.sceneEdit)
-		{
-			try {
-				if (strScene.empty() || scene != std::stoul(strScene, nullptr, 16))
-					SetWindowText(wndInfo.sceneEdit, toHexWstring(scene).c_str());
-			}
-			catch (const std::invalid_argument&)
-			{}
-		}
-
-		if (wndInfo.game.doorListChanged())
-		{
-			std::uint32_t i = 0;
-			SendMessage(wndInfo.doorCombo, CB_RESETCONTENT, 0, 0);
-			for (const auto door : wndInfo.game.getDoors()) {
-				SendMessage(wndInfo.doorCombo, CB_ADDSTRING, 0, (LPARAM)std::to_wstring(i).c_str());
-				++i;
-			}
 		}
 
 		if (focused != wndInfo.healthEdit)
@@ -555,9 +560,9 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 		}
 		case SCENE_SET:
 			try {
-				wndInfo.game.setScene(std::stoul(GetControlText(wndInfo.sceneEdit), nullptr, 16));
+				wndInfo.game.setScene(std::stoul(GetControlText(wndInfo.sceneCombo).c_str() + 1, nullptr, 16));
 			}
-			catch (const std::invalid_argument &) {
+			catch (const std::invalid_argument&) {
 				ErrorBox(hWnd, TEXT("Invalid scene"));
 			}
 			break;

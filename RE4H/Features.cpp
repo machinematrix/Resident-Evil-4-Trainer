@@ -30,7 +30,6 @@ namespace
 {
 	void *cookie = reinterpret_cast<void*>(6);
 	constexpr const char *databaseName = "RE4H.db";
-	std::wregex sceneFileName(L"r([[:xdigit:]]{3})\\.udas\\.lfs");
 }
 
 namespace HealthBaseOffsets
@@ -170,11 +169,23 @@ std::uint32_t __cdecl Game::sceAtHook(void *arg1, void *arg2)
 	{
 		result = reinterpret_cast<decltype(sceAtHook)*>(game->mSceAtOriginal)(arg1, arg2);
 		game->refreshDoorList();
+		if (game->mDoorListUpdateCallback)
+			game->mDoorListUpdateCallback(getValue<std::uint32_t>(game->mHealthBase + HealthBaseOffsets::Scene), game->mDoors);
 	}
 	else
 		game = reinterpret_cast<Game*>(arg1);
 
 	return result;
+}
+
+void __cdecl Game::useDoorHook(void *arg, void *arg2)
+{
+	static Game *game;
+
+	if (arg != cookie)
+		game->mUseDoor(arg, arg2);
+	else
+		game = static_cast<Game*>(arg2);
 }
 
 Pointer Game::getFirstValidDoor()
@@ -208,7 +219,7 @@ Game::Game()
 	mFirePowerTable(patternScan("D9 04 8D ????????  D9 5D 08")),
 	mNoclipAddress(patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57")),
 	mDoorData(patternScan("B9 ????????  6A 0B  75 ??  6A 3A")),
-	mSetScene((decltype(mSetScene))patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????")),
+	mUseDoor((decltype(mUseDoor))patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????")),
 	mSceAtCreateItemAt((decltype(mSceAtCreateItemAt))patternScan("55  8B EC  83 EC 0C  57  6A 0D")),
 	mDoorList(patternScan("A1 ????????  53  05 8C000000  56  C6 45 CB 00")),
 	mDropRandomizerHookLocation(patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC")),
@@ -228,7 +239,8 @@ Game::Game()
 	mMeleeKnee(reinterpret_cast<decltype(mMeleeKnee)>(patternScan("55  8B EC  A1 ????????  80 B8 C84F0000 04"))),
 	mMeleeKneeKrauser(reinterpret_cast<decltype(mMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"))),
 	mMeleeKneeSuplex(reinterpret_cast<decltype(mMeleeKneeSuplex)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"))),
-	mMelee(reinterpret_cast<decltype(mMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C")))
+	mMelee(reinterpret_cast<decltype(mMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"))),
+	mUseDoorHookLocation(patternScan("8B 04 DD ????????  8B 55 BC"))
 {
 	sqlite3 *database = nullptr;
 
@@ -270,17 +282,20 @@ Game::Game()
 	mPlayerNode = getValue<Entity**>(reinterpret_cast<Pointer>(mEntityList) + 17);
 	mEntityList = getValue<Entity**>(reinterpret_cast<Pointer>(mEntityList) + 2);
 	mEnemyVTable = getValue<Pointer>(mEnemyVTable + 2);
+	mUseDoorHookLocation = getValue<Pointer>(mUseDoorHookLocation + 3) + 1 * 8;
 
 	myDropRandomizer(0, nullptr, nullptr, this);
 	myGetInventoryModelData(ItemId::Invalid, (InventoryIconData*)this);
 	sceAtHook(this, cookie);
+	useDoorHook(cookie, this);
 
+	//Install hooks
 	mGetModelDataOriginal = replaceFunction(mGetModelDataHookLocation, myGetInventoryModelData);
 	mDropRandomizerOriginal = replaceFunction(mDropRandomizerHookLocation, myDropRandomizer);
 	mSceAtOriginal = replaceFunction(mSceAtHookLocation, sceAtHook);
 	mOriginalLogger = replaceFunction(mLoggerFunction, mLoggerFunction);
 	mOriginalLogger2 = replaceFunction(mLoggerFunction2, mLoggerFunction2);
-
+	setValue(mUseDoorHookLocation, useDoorHook);
 #ifndef NDEBUG
 	using std::cout;
 	using std::endl;
@@ -291,7 +306,7 @@ Game::Game()
 	cout << "Noclip code: " << (void*)mNoclipAddress << endl;
 	cout << "Door data: " << (void*)mDoorData << endl;
 	cout << "Door List: " << (void *)mDoorList << endl;
-	cout << "Set Scene: " << (void*)mSetScene << endl;
+	cout << "Set Scene: " << (void*)mUseDoor << endl;
 	cout << "SceCreateItemAt: " << (void*)mSceAtCreateItemAt << endl;
 	cout << "Logger Function Jump: " << (void*)mLoggerFunction << endl;
 #endif
@@ -304,6 +319,7 @@ Game::~Game()
 	replaceFunction(mSceAtHookLocation, mSceAtOriginal);
 	replaceFunction(mLoggerFunction, mOriginalLogger);
 	replaceFunction(mLoggerFunction2, mOriginalLogger2);
+	setValue(mUseDoorHookLocation, mUseDoor);
 }
 
 bool Game::good()
@@ -317,7 +333,7 @@ bool Game::good()
 		&& mDoorList
 		&& mDropRandomizerHookLocation
 		&& mGetModelDataHookLocation
-		&& mSetScene
+		&& mUseDoor
 		&& mSceAtCreateItemAt
 		&& mGetInventoryModelData
 		&& mTmpFireRate
@@ -541,7 +557,7 @@ std::uint32_t Game::getMoney()
 
 void Game::useDoor(void *doorData)
 {
-	mSetScene(doorData); 
+	mUseDoor(doorData, nullptr);
 }
 
 void Game::refreshDoorList()
@@ -564,22 +580,9 @@ void Game::refreshDoorList()
 	}
 }
 
-const std::vector<void *>& Game::getDoors()
+const std::vector<void *> Game::getDoors()
 {
 	return mDoors;
-}
-
-bool Game::doorListChanged()
-{
-	std::unique_lock<std::mutex>(doorVectorMutex);
-
-	if (mSceneChanged)
-	{
-		mSceneChanged = false;
-		return true;
-	}
-	else
-		return false;
 }
 
 void Game::setScene(std::uint32_t scene)
@@ -810,6 +813,7 @@ std::optional<std::array<float, 3>> Game::getPlayerCoordinates()
 
 std::vector<std::wstring> Game::getSceneFileNames()
 {
+	static const std::wregex sceneFileName(L"r([[:xdigit:]]{3})\\.udas\\.lfs");
 	std::vector<std::wstring> result;
 	auto sorter = [](const std::wstring &lhs, const std::wstring &rhs) -> bool
 	{
@@ -842,6 +846,11 @@ std::vector<std::wstring> Game::getSceneFileNames()
 	std::sort(result.begin(), result.end(), sorter);
 
 	return result;
+}
+
+void Game::setDoorListUpdateCallback(decltype(mDoorListUpdateCallback) callback)
+{
+	mDoorListUpdateCallback = callback;
 }
 
 const std::map<ItemId, String> Game::mItems = {
