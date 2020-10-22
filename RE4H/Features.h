@@ -310,7 +310,7 @@ private:
 	Pointer mNoclipAddress; //bio4.exe+192E40
 	Pointer mDoorData; //bio4.exe+8502C0
 	Pointer mDoorList; //bio4.exe+867728. At dereference, then at +0x10, first four bits are door index * 2
-	Pointer mDropRandomizerHookLocation; //bio4.exe+18DF1A
+	Pointer mDropRandomizerHookLocation; //bio4.exe+1BDF1A
 	Pointer mDropRandomizerOriginal = nullptr;
 	Pointer mGetModelDataHookLocation; //bio4.exe+3898A6
 	Pointer mGetModelDataOriginal = nullptr;
@@ -421,6 +421,9 @@ public:
 
 	std::vector<std::wstring> getSceneFileNames();
 	void setDoorListUpdateCallback(decltype(mDoorListUpdateCallback));
+
+	void easyDrops(bool toggle);
+	bool easyDrops();
 };
 
 class Game::ItemData //Must be 14 bytes

@@ -110,9 +110,10 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	wndInfo.healthLimitSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_LIMIT_SET, nullptr, nullptr);
 	wndInfo.healthLimitGet = CreateWindow(WC_BUTTON, TEXT("Get"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_LIMIT_GET, nullptr, nullptr);
 	wndInfo.healthLimitEdit = CreateWindow(WC_EDIT, nullptr, WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 0, 0, 0, hWnd, (HMENU)HealthLimitEdit, nullptr, nullptr);
+	wndInfo.noclipCheckbox = CreateWindow(WC_BUTTON, TEXT("Noclip"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_NOCLIP, nullptr, nullptr);
 	wndInfo.ashleyCheckbox = CreateWindow(WC_BUTTON, TEXT("Ashley"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_ASHLEY, nullptr, nullptr);
 	wndInfo.tmpCheckbox = CreateWindow(WC_BUTTON, TEXT("Fast TMP"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_TMP_FIRE_RATE, nullptr, nullptr);
-	wndInfo.noclipCheckbox = CreateWindow(WC_BUTTON, TEXT("Noclip"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_NOCLIP, nullptr, nullptr);
+	wndInfo.easyDropsCheckbox = CreateWindow(WC_BUTTON, TEXT("Easy Drops"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_EASY_DROPS, nullptr, nullptr);
 	wndInfo.characterComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)CHARACTER_COMBO_BOX, nullptr, nullptr);
 	wndInfo.costumeComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)COSTUME_COMBO_BOX, nullptr, nullptr);
 	wndInfo.difficultyComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)DIFFICULTY_COMBO_BOX, nullptr, nullptr);
@@ -195,6 +196,11 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 
 	wndInfo.game.setLoggerCallback(loggerCallback);
 	wndInfo.game.setDoorListUpdateCallback(callback);
+
+	SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isAshleyPresent(), 0);
+	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isNoclipOn(), 0);
+	SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isFastTmpEnabled(), 0);
+	SendMessage(wndInfo.easyDropsCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.easyDrops(), 0);
 }
 
 void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
@@ -262,14 +268,17 @@ void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 	MoveWindow(wndInfo.doorButton, lastWnd.right + spacing, lastWnd.top, buttonWidth / 3, buttonHeight, update);
 
 	lastWnd = GetWindowRectInParent(wndInfo.doorText);
-	MoveWindow(wndInfo.noclipCheckbox, lastWnd.left, lastWnd.bottom + spacing, buttonWidth / 2, buttonHeight, update);
+	MoveWindow(wndInfo.noclipCheckbox, lastWnd.left, lastWnd.bottom + spacing, buttonWidth * 60 / 100, buttonHeight, update);
 
 	lastWnd = GetWindowRectInParent(wndInfo.noclipCheckbox);
-	MoveWindow(wndInfo.ashleyCheckbox, lastWnd.right + spacing, lastWnd.top, buttonWidth / 2, buttonHeight, update);
+	MoveWindow(wndInfo.ashleyCheckbox, lastWnd.right + spacing, lastWnd.top, buttonWidth * 60 / 100, buttonHeight, update);
 	MoveWindow(wndInfo.characterText, lastWnd.left, lastWnd.bottom + spacing, buttonWidth / 2, buttonHeight, update);
 
 	lastWnd = GetWindowRectInParent(wndInfo.ashleyCheckbox);
-	MoveWindow(wndInfo.tmpCheckbox, lastWnd.right + spacing, lastWnd.top, buttonWidth, buttonHeight, update);
+	MoveWindow(wndInfo.tmpCheckbox, lastWnd.right + spacing, lastWnd.top, buttonWidth * 60 / 100, buttonHeight, update);
+
+	lastWnd = GetWindowRectInParent(wndInfo.tmpCheckbox);
+	MoveWindow(wndInfo.easyDropsCheckbox, lastWnd.right + spacing, lastWnd.top, buttonWidth * 60 / 100, buttonHeight, update);
 
 	lastWnd = GetWindowRectInParent(wndInfo.characterText);
 	MoveWindow(wndInfo.characterComboBox, lastWnd.right + spacing, lastWnd.top, buttonWidth, buttonHeight, update);
@@ -281,7 +290,9 @@ void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 
 	lastWnd = GetWindowRectInParent(wndInfo.difficultyText);
 	MoveWindow(wndInfo.difficultyComboBox, lastWnd.right + spacing, lastWnd.top, buttonWidth, buttonHeight, update);
-	if (!update) UpdateWindow(hWnd);
+	
+	if (!update)
+		UpdateWindow(hWnd);
 }
 
 void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
@@ -370,6 +381,7 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 		SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isAshleyPresent(), 0);
 		SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isNoclipOn(), 0);
 		SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.isFastTmpEnabled(), 0);
+		SendMessage(wndInfo.easyDropsCheckbox, BM_SETCHECK, (WPARAM)wndInfo.game.easyDrops(), 0);
 	}
 }
 
@@ -427,8 +439,8 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				ErrorBox(hWnd, TEXT("Select an item first"));
 			break;
 		}
+
 		case ADD_ITEM:
-		{
 			if (auto itemPtr = wndInfo.game.addItem())
 			{
 				itemPtr->amount(1);
@@ -451,34 +463,32 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			else
 				ErrorBox(hWnd, TEXT("Inventory is full"));
 			break;
-		}
+
 		case MAX_AMOUNT_EDIT_BUTTON:
-		{
 			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemAmountDialog), hWnd, EditMaxAmountDlgProc, (LPARAM)&wndInfo.game);
 			break;
-		}
+
 		case ERASE_ITEM:
-		{
 			wndInfo.inventoryList->eraseSelectedItem();
 			break;
-		}
-		case TOGGLE_ASHLEY:
-		{
-			wndInfo.game.toggleAshley(SendMessage(wndInfo.ashleyCheckbox, BM_GETCHECK, 0, 0) ? true : false);
-			break;
-		}
-		case TOGGLE_TMP_FIRE_RATE:
-		{
-			wndInfo.game.toggleFastTmp(SendMessage(wndInfo.tmpCheckbox, BM_GETCHECK, 0, 0) ? true : false);
-			break;
-		}
+
 		case TOGGLE_NOCLIP:
-		{
 			wndInfo.game.toggleNoclip(SendMessage(wndInfo.noclipCheckbox, BM_GETCHECK, 0, 0) ? true : false);
 			break;
-		}
+
+		case TOGGLE_ASHLEY:
+			wndInfo.game.toggleAshley(SendMessage(wndInfo.ashleyCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			break;
+
+		case TOGGLE_TMP_FIRE_RATE:
+			wndInfo.game.toggleFastTmp(SendMessage(wndInfo.tmpCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			break;
+
+		case TOGGLE_EASY_DROPS:
+			wndInfo.game.easyDrops(SendMessage(wndInfo.easyDropsCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			break;
+
 		case CHARACTER_COMBO_BOX:
-		{
 			if (HIWORD(wParam) == CBN_SELCHANGE)
 			{
 				std::uint8_t character = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0));
@@ -495,9 +505,8 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 					ErrorBox(hWnd, TEXT("Invalid character"));
 			}
 			break;
-		}
+
 		case COSTUME_COMBO_BOX:
-		{
 			if (HIWORD(wParam) == CBN_SELCHANGE)
 			{
 				std::uint8_t cbCostume = static_cast<std::uint8_t>(SendMessage(wndInfo.costumeComboBox, CB_GETCURSEL, 0, 0));
@@ -513,9 +522,8 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				}
 			}
 			break;
-		}
+
 		case DIFFICULTY_COMBO_BOX:
-		{
 			if (HIWORD(wParam) == CBN_SELCHANGE)
 			{
 				switch (SendMessage(wndInfo.difficultyComboBox, CB_GETCURSEL, 0, 0))
@@ -538,7 +546,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				}
 			}
 			break;
-		}
+
 		case EDIT_ITEM_STATS:
 		{
 			auto selectedItem = wndInfo.inventoryList->getSelectedItem();
@@ -558,6 +566,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				ErrorBox(hWnd, TEXT("Select an item first"));
 			break;
 		}
+
 		case SCENE_SET:
 			try {
 				wndInfo.game.setScene(std::stoul(GetControlText(wndInfo.sceneCombo).c_str() + 1, nullptr, 16));
@@ -566,6 +575,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				ErrorBox(hWnd, TEXT("Invalid scene"));
 			}
 			break;
+
 		case DOOR_BUTTON:
 		{
 			auto curSel = SendMessage(wndInfo.doorCombo, CB_GETCURSEL, 0, 0);
@@ -581,15 +591,19 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				ErrorBox(hWnd, TEXT("Select a door first"));
 			break;
 		}
+
 		case SAVE_BUTTON:
 			wndInfo.game.openTypewriter(Game::TypewriterMode::SAVE);
 			break;
+
 		case MERCHANT_BUTTON:
 			wndInfo.game.openMerchant();
 			break;
+
 		case KEY_BINDINGS:
 			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_KEYBINDINGS), hWnd, ConfigDlgProc, NULL);
 			break;
+
 		case EXIT:
 			SendMessage(hWnd, WM_CLOSE, 0, 0);
 			break;

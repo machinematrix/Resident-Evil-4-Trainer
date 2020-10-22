@@ -889,6 +889,19 @@ void Game::setDoorListUpdateCallback(decltype(mDoorListUpdateCallback) callback)
 	mDoorListUpdateCallback = callback;
 }
 
+void Game::easyDrops(bool toggle)
+{
+	if (toggle)
+		replaceFunction(mDropRandomizerHookLocation, myDropRandomizer);
+	else
+		replaceFunction(mDropRandomizerHookLocation, mDropRandomizerOriginal);
+}
+
+bool Game::easyDrops()
+{
+	return follow(mDropRandomizerHookLocation) != mDropRandomizerOriginal;
+}
+
 const std::map<ItemId, String> Game::mItems = {
 	{ ItemId::MagnumAmmo, TEXT("Magnum Ammo") },
 	{ ItemId::HandGrenade, TEXT("Hand Grenade") },

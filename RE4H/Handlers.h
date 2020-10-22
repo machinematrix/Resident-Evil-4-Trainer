@@ -49,17 +49,9 @@ namespace MenuIdentifiers
 		EXIT,
 		MAX_AMOUNT_EDIT_BUTTON,
 		TOGGLE_TMP_FIRE_RATE,
+		TOGGLE_EASY_DROPS,
 		SAVE_BUTTON,
 		MERCHANT_BUTTON
-	};
-}
-
-namespace Controls
-{
-	enum : std::uint32_t
-	{
-		Noclip,
-		Ashley
 	};
 }
 
@@ -92,6 +84,7 @@ struct MainWindowInfo
 	HWND doorButton;
 	HWND maxAmountEditButton;
 	HWND tmpCheckbox;
+	HWND easyDropsCheckbox;
 	HWND saveButton;
 	HWND merchantButton;
 	HHOOK kbHook;
