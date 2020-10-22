@@ -587,7 +587,6 @@ void Game::useDoor(void *doorData)
 
 void Game::refreshDoorList()
 {
-	mSceneChanged = true;
 	Pointer door = getFirstValidDoor();
 
 	mDoors.clear();

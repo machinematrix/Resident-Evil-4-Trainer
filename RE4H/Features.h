@@ -302,7 +302,6 @@ public:
 private:
 	static const std::map<ItemId, String> mItems;
 	std::mutex mStackCapMutex;
-	bool mSceneChanged = false;
 	Pointer mHealthBase; //bio4.exe+806F3C
 	Pointer mPlayerBase; //bio4.exe+870FD4
 	Pointer mWeaponDataIndex; //bio4.exe+724B10
