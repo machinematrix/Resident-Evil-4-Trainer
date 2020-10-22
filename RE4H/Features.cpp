@@ -30,7 +30,7 @@ namespace
 {
 	void *cookie = reinterpret_cast<void*>(6);
 	constexpr const char *databaseName = "RE4H.db";
-	std::regex sceneFileName("r([[:xdigit:]]{3})\\.udas\\.lfs");
+	std::wregex sceneFileName(L"r([[:xdigit:]]{3})\\.udas\\.lfs");
 }
 
 namespace HealthBaseOffsets
@@ -808,12 +808,12 @@ std::optional<std::array<float, 3>> Game::getPlayerCoordinates()
 	return result;
 }
 
-std::vector<std::string> Game::getSceneFileNames()
+std::vector<std::wstring> Game::getSceneFileNames()
 {
-	std::vector<std::string> result;
-	auto sorter = [](const std::string &lhs, const std::string &rhs) -> bool
+	std::vector<std::wstring> result;
+	auto sorter = [](const std::wstring &lhs, const std::wstring &rhs) -> bool
 	{
-		std::smatch lhsResults, rhsResults;
+		std::wsmatch lhsResults, rhsResults;
 		int lhsInt, rhsInt;
 
 		std::regex_match(lhs, lhsResults, sceneFileName);
@@ -832,7 +832,7 @@ std::vector<std::string> Game::getSceneFileNames()
 		path += directory;
 		for (std::filesystem::directory_iterator it(path), end; it != end; ++it)
 		{
-			std::string name = it->path().filename().string();
+			std::wstring name = it->path().filename().wstring();
 
 			if (std::regex_match(name, sceneFileName))
 				result.push_back(name);
