@@ -301,7 +301,7 @@ public:
 	enum class MeleeType { HEAD, KNEE };
 private:
 	static const std::map<ItemId, String> mItems;
-	std::mutex mDoorVectorMutex;
+	std::mutex mStackCapMutex;
 	bool mSceneChanged = false;
 	Pointer mHealthBase; //bio4.exe+806F3C
 	Pointer mPlayerBase; //bio4.exe+870FD4

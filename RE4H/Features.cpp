@@ -41,6 +41,7 @@ namespace HealthBaseOffsets
 		SceneEntryX = 0x2C, //Player coordinates when the map loads
 		SceneEntryY = 0x30,
 		SceneEntryZ = 0x34,
+		Rotation = 0x38,
 		VisibilityFlags = 0x58,
 		PlayerX = 0x124,
 		PlayerY = 0x128,
@@ -102,7 +103,7 @@ void __cdecl Game::myGetInventoryModelData(ItemId id, Game::InventoryIconData *r
 
 	if (id != ItemId::Invalid)
 	{
-		std::unique_lock<std::mutex> lck(game->mDoorVectorMutex);
+		std::unique_lock<std::mutex> lck(game->mStackCapMutex);
 		auto amountIt = game->mItemStackCap.find(id);
 
 		game->mGetInventoryModelData(id, result);
@@ -183,7 +184,30 @@ void __cdecl Game::useDoorHook(void *arg, void *arg2)
 	static Game *game;
 
 	if (arg != cookie)
+	{
+		sqlite3 *database = nullptr;
+
 		game->mUseDoor(arg, arg2);
+
+		if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
+		{
+			std::string_view sql("INSERT INTO scene_entry(scene_id, x, y, z, rotation) VALUES (?, ?, ?, ?, ?)");
+			sqlite3_stmt *statement = nullptr;
+
+			if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
+			{
+				sqlite3_bind_int(statement, 1, getValue<int>(game->mHealthBase + HealthBaseOffsets::Scene));
+				sqlite3_bind_double(statement, 2, getValue<float>(game->mHealthBase + HealthBaseOffsets::SceneEntryX));
+				sqlite3_bind_double(statement, 3, getValue<float>(game->mHealthBase + HealthBaseOffsets::SceneEntryY));
+				sqlite3_bind_double(statement, 4, getValue<float>(game->mHealthBase + HealthBaseOffsets::SceneEntryZ));
+				sqlite3_bind_double(statement, 5, getValue<float>(game->mHealthBase + HealthBaseOffsets::Rotation));
+				sqlite3_step(statement);
+				sqlite3_finalize(statement);
+			}
+
+			sqlite3_close_v2(database);
+		}
+	}
 	else
 		game = static_cast<Game*>(arg2);
 }
@@ -250,6 +274,7 @@ Game::Game()
 		sqlite3_stmt *statement = nullptr;
 
 		sqlite3_exec(database, "CREATE TABLE IF NOT EXISTS stack_limit(item_id INTEGER PRIMARY KEY, max_amount INTEGER)", nullptr, nullptr, nullptr);
+		sqlite3_exec(database, "CREATE TABLE IF NOT EXISTS scene_entry(scene_id INTEGER NOT NULL, x REAL NOT NULL, y REAL NOT NULL, z REAL NOT NULL, rotation REAL NOT NULL, PRIMARY KEY (scene_id, x, y, z))", nullptr, nullptr, nullptr);
 		
 		if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
 		{
@@ -557,12 +582,11 @@ std::uint32_t Game::getMoney()
 
 void Game::useDoor(void *doorData)
 {
-	mUseDoor(doorData, nullptr);
+	useDoorHook(doorData, nullptr);
 }
 
 void Game::refreshDoorList()
 {
-	std::unique_lock<std::mutex>(doorVectorMutex);
 	mSceneChanged = true;
 	Pointer door = getFirstValidDoor();
 
@@ -587,9 +611,34 @@ const std::vector<void *> Game::getDoors()
 
 void Game::setScene(std::uint32_t scene)
 {
-	float origin[3] = {};
+	float entry[4] = {};
+	sqlite3 *database = nullptr;
+	
 	setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Scene, scene);
-	setValue(mHealthBase + HealthBaseOffsets::SceneEntryX, origin);
+
+	if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
+	{
+		std::string_view sql("SELECT x, y, z, rotation FROM scene_entry WHERE scene_id = ?");
+		sqlite3_stmt *statement = nullptr;
+
+		if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
+		{
+			sqlite3_bind_int(statement, 1, scene);
+
+			if ((sqlite3_step(statement) & 0xFF) == SQLITE_ROW)
+			{
+				entry[0] = static_cast<float>(sqlite3_column_double(statement, 0));
+				entry[1] = static_cast<float>(sqlite3_column_double(statement, 1));
+				entry[2] = static_cast<float>(sqlite3_column_double(statement, 2));
+				entry[3] = static_cast<float>(sqlite3_column_double(statement, 3));
+			}
+
+			sqlite3_finalize(statement);
+		}
+	}
+
+	sqlite3_close_v2(database);
+	setValue(mHealthBase + HealthBaseOffsets::SceneEntryX, entry);
 	setValue(mHealthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
 }
 
@@ -649,7 +698,7 @@ Game::InventoryIconData Game::getItemDimensions(ItemId id)
 
 void Game::setMaxItemAmount(ItemId id, std::uint32_t amount)
 {
-	std::unique_lock<std::mutex> lck(mDoorVectorMutex);
+	std::unique_lock<std::mutex> lck(mStackCapMutex);
 	std::string_view sql("REPLACE INTO stack_limit(item_id, max_amount) VALUES (?, ?)");
 	sqlite3 *database = nullptr;
 
@@ -815,19 +864,6 @@ std::vector<std::wstring> Game::getSceneFileNames()
 {
 	static const std::wregex sceneFileName(L"r([[:xdigit:]]{3})\\.udas\\.lfs");
 	std::vector<std::wstring> result;
-	auto sorter = [](const std::wstring &lhs, const std::wstring &rhs) -> bool
-	{
-		std::wsmatch lhsResults, rhsResults;
-		int lhsInt, rhsInt;
-
-		std::regex_match(lhs, lhsResults, sceneFileName);
-		std::regex_match(rhs, rhsResults, sceneFileName);
-
-		lhsInt = std::stoi(lhsResults[1], nullptr, 16);
-		rhsInt = std::stoi(rhsResults[1], nullptr, 16);
-
-		return lhsInt < rhsInt;
-	};
 
 	for (std::string_view directory : { "St0", "St1", "St2", "St3", "St4", "St5", "St6", "St7" })
 	{
@@ -843,7 +879,7 @@ std::vector<std::wstring> Game::getSceneFileNames()
 		}
 	}
 
-	std::sort(result.begin(), result.end(), sorter);
+	std::sort(result.begin(), result.end(), [](const std::wstring &lhs, const std::wstring &rhs) -> bool { return std::stoi(lhs.c_str() + 1, nullptr, 16) < std::stoi(rhs.c_str() + 1, nullptr, 16); });
 
 	return result;
 }
