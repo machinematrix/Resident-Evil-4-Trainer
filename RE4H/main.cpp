@@ -22,10 +22,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH: {
-		if (HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, hModule, 0, nullptr)) {
+		if (HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, hModule, 0, nullptr))
 			CloseHandle(hThread);
-		}
-		else ErrorBox(nullptr, TEXT("Could not create thread"));
+		else
+			ErrorBox(nullptr, TEXT("Could not create thread"));
 		break;
 	}
 	case DLL_THREAD_ATTACH:
