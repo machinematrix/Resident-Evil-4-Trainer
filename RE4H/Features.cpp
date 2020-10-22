@@ -204,9 +204,9 @@ void __cdecl Game::useDoorHook(void *arg, void *arg2)
 				sqlite3_step(statement);
 				sqlite3_finalize(statement);
 			}
-
-			sqlite3_close_v2(database);
 		}
+
+		sqlite3_close_v2(database);
 	}
 	else
 		game = static_cast<Game*>(arg2);
