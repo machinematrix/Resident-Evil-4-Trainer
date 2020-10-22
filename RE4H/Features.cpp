@@ -1,12 +1,14 @@
 #include "Features.h"
 #include <Windows.h>
-#ifndef NDEBUG
-#include <iostream>
-#endif
 #include <random>
 #include <type_traits>
 #include <cstdint>
+#include <regex>
+#include <filesystem>
 #include <winsqlite/winsqlite3.h>
+#ifndef NDEBUG
+#include <iostream>
+#endif
 
 static_assert(offsetof(Game::Entity, Game::Entity::mVTable) == 0x0, "Bad offset");
 static_assert(offsetof(Game::Entity, Game::Entity::mNext) == 0x8, "Bad offset");
@@ -28,6 +30,7 @@ namespace
 {
 	void *cookie = reinterpret_cast<void*>(6);
 	constexpr const char *databaseName = "RE4H.db";
+	std::regex sceneFileName("r([[:xdigit:]]{3})\\.udas\\.lfs");
 }
 
 namespace HealthBaseOffsets
@@ -277,6 +280,7 @@ Game::Game()
 	mSceAtOriginal = replaceFunction(mSceAtHookLocation, sceAtHook);
 	mOriginalLogger = replaceFunction(mLoggerFunction, mLoggerFunction);
 	mOriginalLogger2 = replaceFunction(mLoggerFunction2, mLoggerFunction2);
+
 #ifndef NDEBUG
 	using std::cout;
 	using std::endl;
@@ -552,9 +556,9 @@ void Game::refreshDoorList()
 	{
 		while (!((std::uint32_t)door & 1))
 		{
-			if (getValue<std::uint8_t>(door + 0x35) == 1) { //if it's a door
+			if (getValue<std::uint8_t>(door + 0x35) == 1) //if it's a door
 				mDoors.push_back(door);
-			}
+
 			door = getValue<Pointer>(door);
 		}
 	}
@@ -569,11 +573,13 @@ bool Game::doorListChanged()
 {
 	std::unique_lock<std::mutex>(doorVectorMutex);
 
-	if (mSceneChanged) {
+	if (mSceneChanged)
+	{
 		mSceneChanged = false;
 		return true;
 	}
-	else return false;
+	else
+		return false;
 }
 
 void Game::setScene(std::uint32_t scene)
@@ -679,7 +685,9 @@ bool Game::isMaxItemHookEnabled()
 void Game::toggleFastTmp(bool toggle)
 {
 	DWORD oldProtect;
-	if (VirtualProtect(mTmpFireRate, sizeof(float), PAGE_READWRITE, &oldProtect)) {
+
+	if (VirtualProtect(mTmpFireRate, sizeof(float), PAGE_READWRITE, &oldProtect))
+	{
 		*(float *)mTmpFireRate = toggle ? 1.5f : 3.0f;
 		VirtualProtect(mTmpFireRate, sizeof(float), oldProtect, &oldProtect);
 	}
@@ -796,6 +804,42 @@ std::optional<std::array<float, 3>> Game::getPlayerCoordinates()
 
 	if (Entity *playerEntity = *mPlayerNode)
 		result = decltype(result)::value_type{ playerEntity->mX, playerEntity->mY, playerEntity->mZ };
+
+	return result;
+}
+
+std::vector<std::string> Game::getSceneFileNames()
+{
+	std::vector<std::string> result;
+	auto sorter = [](const std::string &lhs, const std::string &rhs) -> bool
+	{
+		std::smatch lhsResults, rhsResults;
+		int lhsInt, rhsInt;
+
+		std::regex_match(lhs, lhsResults, sceneFileName);
+		std::regex_match(rhs, rhsResults, sceneFileName);
+
+		lhsInt = std::stoi(lhsResults[1], nullptr, 16);
+		rhsInt = std::stoi(rhsResults[1], nullptr, 16);
+
+		return lhsInt < rhsInt;
+	};
+
+	for (std::string_view directory : { "St0", "St1", "St2", "St3", "St4", "St5", "St6", "St7" })
+	{
+		std::string path("BIO4/");
+
+		path += directory;
+		for (std::filesystem::directory_iterator it(path), end; it != end; ++it)
+		{
+			std::string name = it->path().filename().string();
+
+			if (std::regex_match(name, sceneFileName))
+				result.push_back(name);
+		}
+	}
+
+	std::sort(result.begin(), result.end(), sorter);
 
 	return result;
 }
