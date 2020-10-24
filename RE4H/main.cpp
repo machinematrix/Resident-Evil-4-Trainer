@@ -372,101 +372,103 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 
 	switch (message)
 	{
-	case WM_INITDIALOG:
-	{
-		data = reinterpret_cast<Features::WeaponData*>(lParam);
-		
-		if (!data) {
-			ErrorBox(hDlg, TEXT("Null weapon data pointer"));
-			EndDialog(hDlg, 0);
+		case WM_INITDIALOG:
+		{
+			data = reinterpret_cast<Features::WeaponData*>(lParam);
+
+			if (!data)
+			{
+				ErrorBox(hDlg, TEXT("Null weapon data pointer"));
+				EndDialog(hDlg, 0);
+				break;
+			}
+
+			firePowerEdits[0] = GetDlgItem(hDlg, FirePowerLv1);
+			firePowerEdits[1] = GetDlgItem(hDlg, FirePowerLv2);
+			firePowerEdits[2] = GetDlgItem(hDlg, FirePowerLv3);
+			firePowerEdits[3] = GetDlgItem(hDlg, FirePowerLv4);
+			firePowerEdits[4] = GetDlgItem(hDlg, FirePowerLv5);
+			firePowerEdits[5] = GetDlgItem(hDlg, FirePowerLv6);
+			firePowerEdits[6] = GetDlgItem(hDlg, FirePowerLv7);
+			capacityEdits[0] = GetDlgItem(hDlg, CapacityLv1);
+			capacityEdits[1] = GetDlgItem(hDlg, CapacityLv2);
+			capacityEdits[2] = GetDlgItem(hDlg, CapacityLv3);
+			capacityEdits[3] = GetDlgItem(hDlg, CapacityLv4);
+			capacityEdits[4] = GetDlgItem(hDlg, CapacityLv5);
+			capacityEdits[5] = GetDlgItem(hDlg, CapacityLv6);
+			capacityEdits[6] = GetDlgItem(hDlg, CapacityLv7);
+			modelEdit = GetDlgItem(hDlg, ModelEdit);
+			ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
+
+			float *firepowerEntry = Features::GetFirepowerTableEntry(data->firepowerIndex());
+			for (size_t i = 0; i < 7; ++i)
+			{
+				SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
+				SetWindowText(capacityEdits[i], std::to_wstring(data->capacity(i)).c_str());
+			}
+			SetWindowText(modelEdit, std::to_wstring(data->model()).c_str());
+			for (const auto &ammoId : Features::GetAmmoItemIds())
+			{
+				SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)Features::GetItemName(ammoId).c_str());
+				ids.push_back(ammoId);
+				if (data->weaponAmmo() == ammoId)
+					SendMessage(ammoCombo, CB_SETCURSEL, SendMessage(ammoCombo, CB_GETCOUNT, 0, 0) - 1, 0);
+			}
 			break;
 		}
 
-		firePowerEdits[0] = GetDlgItem(hDlg, FirePowerLv1);
-		firePowerEdits[1] = GetDlgItem(hDlg, FirePowerLv2);
-		firePowerEdits[2] = GetDlgItem(hDlg, FirePowerLv3);
-		firePowerEdits[3] = GetDlgItem(hDlg, FirePowerLv4);
-		firePowerEdits[4] = GetDlgItem(hDlg, FirePowerLv5);
-		firePowerEdits[5] = GetDlgItem(hDlg, FirePowerLv6);
-		firePowerEdits[6] = GetDlgItem(hDlg, FirePowerLv7);
-		capacityEdits[0] = GetDlgItem(hDlg, CapacityLv1);
-		capacityEdits[1] = GetDlgItem(hDlg, CapacityLv2);
-		capacityEdits[2] = GetDlgItem(hDlg, CapacityLv3);
-		capacityEdits[3] = GetDlgItem(hDlg, CapacityLv4);
-		capacityEdits[4] = GetDlgItem(hDlg, CapacityLv5);
-		capacityEdits[5] = GetDlgItem(hDlg, CapacityLv6);
-		capacityEdits[6] = GetDlgItem(hDlg, CapacityLv7);
-		modelEdit = GetDlgItem(hDlg, ModelEdit);
-		ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
+		case WM_COMMAND:
+			switch (LOWORD(wParam))
+			{
+				case IDOK:
+				{
+					Features::WeaponData newData = *data;
+					float newFirepower[7];
 
-		float *firepowerEntry = Features::GetFirepowerTableEntry(data->firepowerIndex());
-		for (size_t i = 0; i < 7; ++i) {
-			SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
-			SetWindowText(capacityEdits[i], std::to_wstring(data->capacity(i)).c_str());
-		}
-		SetWindowText(modelEdit, std::to_wstring(data->model()).c_str());
-		for (const auto &ammoId : Features::GetAmmoItemIds())
-		{
-			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)Features::GetItemName(ammoId).c_str());
-			ids.push_back(ammoId);
-			if (data->weaponAmmo() == ammoId)
-				SendMessage(ammoCombo, CB_SETCURSEL, SendMessage(ammoCombo, CB_GETCOUNT, 0, 0) - 1, 0);
-		}
-		break;
-	}
+					try {
+						for (size_t i = 0; i < 7; ++i) {
+							newFirepower[i] = std::stof(GetControlText(firePowerEdits[i]));
+							newData.capacity(i, std::stoi(GetControlText(capacityEdits[i])));
+						}
+					}
+					catch (const std::invalid_argument&) {
+						ErrorBox(hDlg, TEXT("Invalid value in fire power and/or capacity"));
+						break;
+					}
 
-	case WM_COMMAND:
-	{
-		switch (LOWORD(wParam))
-		{
-		case IDOK:
-		{
-			Features::WeaponData newData = *data;
-			float newFirepower[7];
+					try {
+						newData.model(std::stoi(GetControlText(modelEdit)));
+					}
+					catch (const std::invalid_argument&) {
+						ErrorBox(hDlg, TEXT("Invalid value in model"));
+						break;
+					}
 
-			try {
-				for (size_t i = 0; i < 7; ++i) {
-					newFirepower[i] = std::stof(GetControlText(firePowerEdits[i]));
-					newData.capacity(i, std::stoi(GetControlText(capacityEdits[i])));
+					try {
+						auto curSel = ComboBox_GetCurSel(ammoCombo);
+
+						if (curSel != CB_ERR)
+						{
+							String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
+							SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
+							newData.weaponAmmo(ids[curSel]);
+						}
+					}
+					catch (const std::out_of_range&) {
+						ErrorBox(hDlg, TEXT("Invalid ammo type"));
+						break;
+					}
+
+					Features::SetWeaponDataPtr(data, newData, newFirepower);
 				}
+				[[fallthrough]];
+				case IDCANCEL:
+					data = nullptr;
+					ids.clear();
+					EndDialog(hDlg, 0);
+					break;
 			}
-			catch (const std::invalid_argument&) {
-				ErrorBox(hDlg, TEXT("Invalid value in fire power and/or capacity"));
-				break;
-			}
-
-			try {
-				newData.model(std::stoi(GetControlText(modelEdit)));
-			}
-			catch (const std::invalid_argument&) {
-				ErrorBox(hDlg, TEXT("Invalid value in model"));
-				break;
-			}
-
-			try {
-				auto curSel = ComboBox_GetCurSel(ammoCombo);
-				if (curSel != CB_ERR) {
-					String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
-					SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
-					newData.weaponAmmo(ids[curSel]);
-				}
-			}
-			catch (const std::out_of_range&) {
-				ErrorBox(hDlg, TEXT("Invalid ammo type"));
-				break;
-			}
-
-			Features::SetWeaponDataPtr(data, newData, newFirepower);
-		} //fall through
-		case IDCANCEL: {
-			data = nullptr;
-			ids.clear();
-			EndDialog(hDlg, 0);
 			break;
-		}
-		}
-		break;
-	}
 	}
 	return FALSE;
 }
@@ -478,49 +480,48 @@ BOOL CALLBACK ConfigDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 
 	switch (message)
 	{
-	case WM_INITDIALOG: {
-		if (keys.empty())
-		{
-			for (unsigned i = VK_LBUTTON; i <= VK_OEM_CLEAR; ++i)
+		case WM_INITDIALOG:
+			if (keys.empty())
 			{
-				String keyName(50, TEXT('\0'));
-				if (auto scanCode = MapVirtualKey(i, MAPVK_VK_TO_VSC)) //If there's a mapping for this key
+				for (unsigned i = VK_LBUTTON; i <= VK_OEM_CLEAR; ++i)
 				{
-					keyName.resize(GetKeyNameText(scanCode << 16, &keyName.front(), keyName.size()));
-					if (!keyName.empty())
-						keys.insert({ i, keyName });
+					String keyName(50, TEXT('\0'));
+					if (auto scanCode = MapVirtualKey(i, MAPVK_VK_TO_VSC)) //If there's a mapping for this key
+					{
+						keyName.resize(GetKeyNameText(scanCode << 16, &keyName.front(), keyName.size()));
+						if (!keyName.empty())
+							keys.insert({ i, keyName });
+					}
 				}
 			}
-		}
 
-		for (const auto &key : keys)
+			for (const auto &key : keys)
+				for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i)
+					SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_ADDSTRING, 0, (LPARAM)key.second.c_str());
+
 			for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i)
-				SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_ADDSTRING, 0, (LPARAM)key.second.c_str());
+				SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_SETCURSEL, std::distance(keys.begin(), keys.find(bindings.getBinding(i))), 0);
 
-		for (size_t i = 0, ctrlCnt = bindings.getControlCount(); i < ctrlCnt; ++i)
-			SendMessage(GetDlgItem(hDlg, IDC_NOCLIP_KEY + i), CB_SETCURSEL, std::distance(keys.begin(), keys.find(bindings.getBinding(i))), 0);
-
-		break;
-	}
-	case WM_COMMAND: {
-		if (LOWORD(wParam) >= IDC_NOCLIP_KEY && LOWORD(wParam) < IDC_NOCLIP_KEY + bindings.getControlCount() && HIWORD(wParam) == CBN_SELCHANGE)
-		{
-			auto curSel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
-			String keyName(SendMessage((HWND)lParam, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
-
-			SendMessage((HWND)lParam, CB_GETLBTEXT, curSel, (LPARAM)&keyName.front());
-			bindings.setBinding(LOWORD(wParam) - IDC_NOCLIP_KEY, keys.getKey(keyName));
-		}
-
-		switch (LOWORD(wParam))
-		{
-		case IDOK:
-		case IDCANCEL:
-			EndDialog(hDlg, 0);
 			break;
-		}
-		break;
-	}
+
+		case WM_COMMAND:
+			if (LOWORD(wParam) >= IDC_NOCLIP_KEY && LOWORD(wParam) < IDC_NOCLIP_KEY + bindings.getControlCount() && HIWORD(wParam) == CBN_SELCHANGE)
+			{
+				auto curSel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+				String keyName(SendMessage((HWND)lParam, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
+
+				SendMessage((HWND)lParam, CB_GETLBTEXT, curSel, (LPARAM)&keyName.front());
+				bindings.setBinding(LOWORD(wParam) - IDC_NOCLIP_KEY, keys.getKey(keyName));
+			}
+
+			switch (LOWORD(wParam))
+			{
+				case IDOK:
+				case IDCANCEL:
+					EndDialog(hDlg, 0);
+					break;
+			}
+			break;
 	}
 	return FALSE;
 }
