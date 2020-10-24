@@ -11,8 +11,8 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK ItemDlgProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK WeaponDlgProc(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK ConfigDlgProc(HWND, UINT, WPARAM, LPARAM);
-typedef std::tuple<Game*, Game::ItemData*> DialogInfo;
-typedef std::tuple<Game*, Game::WeaponData*> WeaponStatsInfo;
+//typedef std::tuple<Game*, Game::ItemData*> DialogInfo;
+//typedef std::tuple<Game*, Game::WeaponData*> WeaponStatsInfo;
 
 namespace MenuIdentifiers
 {
@@ -58,7 +58,6 @@ namespace MenuIdentifiers
 struct MainWindowInfo
 {
 	HINSTANCE hInstance; //Needed for DialogBox
-	Game game;
 	HWND healthSet;
 	HWND healthGet;
 	HWND healthEdit;

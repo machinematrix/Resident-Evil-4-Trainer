@@ -72,16 +72,25 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter)
 	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::EXIT, TEXT("Exit"));
 	AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hMenuPopup, TEXT("File"));
 
-	if (HWND hWnd = CreateWindowW(windowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, horSize, verSize, nullptr, hMenu, (HINSTANCE)lpParameter, nullptr)) {
-		ShowWindow(hWnd, SW_SHOW);
-		UpdateWindow(hWnd);
-	}
-	else FreeLibraryAndExitThread((HMODULE)lpParameter, FALSE);
-
-	while (GetMessage(&msg, nullptr, 0, 0))
+	if (Features::Initialize())
 	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		if (HWND hWnd = CreateWindowW(windowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, horSize, verSize, nullptr, hMenu, (HINSTANCE)lpParameter, nullptr)) {
+			ShowWindow(hWnd, SW_SHOW);
+			UpdateWindow(hWnd);
+		}
+		else
+		{
+			Features::Terminate();
+			FreeLibraryAndExitThread((HMODULE)lpParameter, FALSE);
+		}
+
+		while (GetMessage(&msg, nullptr, 0, 0))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		Features::Terminate();
 	}
 	
 	UnregisterClass(windowClass, (HMODULE)lpParameter);
@@ -139,22 +148,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static Game *game;
 	static HWND itemCombo, amountEdit, enableCheck;
 	static int itemComboIdentifier;
 
 	switch (message)
 	{
 	case WM_INITDIALOG: {
-		game = reinterpret_cast<Game*>(lParam);
 		itemCombo = GetDlgItem(hDlg, ItemMaxAmountCombo);
 		amountEdit = GetDlgItem(hDlg, ItemMaxAmountEdit);
 		enableCheck = GetDlgItem(hDlg, IDC_ENABLESTACKS);
 		itemComboIdentifier = GetDlgCtrlID(itemCombo);
 
-		for (const auto &name : game->getItemNames())
+		for (const auto &name : Features::GetItemNames())
 			SendMessage(itemCombo, CB_ADDSTRING, 0, (LPARAM)name.c_str());
-		SendMessage(enableCheck, BM_SETCHECK, static_cast<WPARAM>(game->isMaxItemHookEnabled()), 0);
+		SendMessage(enableCheck, BM_SETCHECK, static_cast<WPARAM>(Features::IsMaxItemHookEnabled()), 0);
 		break;
 	}
 
@@ -162,7 +169,6 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 		switch (LOWORD(wParam))
 		{
 		case IDCANCEL: {
-			game = nullptr;
 			EndDialog(hDlg, 0);
 			break;
 		}
@@ -171,7 +177,7 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			{
 				std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
 				if (id != CB_ERR) {
-					std::wstring strAmount = std::to_wstring(game->getItemDimensions(static_cast<ItemId>(id)).stackLimit());
+					std::wstring strAmount = std::to_wstring(Features::GetItemDimensions(static_cast<Features::ItemId>(id)).stackLimit());
 					String strAmount2(strAmount.begin(), strAmount.end());
 					SetWindowText(amountEdit, strAmount.c_str());
 				}
@@ -184,7 +190,7 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			if (id != CB_ERR)
 			{
 				try {
-					game->setMaxItemAmount(static_cast<ItemId>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
+					Features::SetMaxItemAmount(static_cast<Features::ItemId>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
 				}
 				catch (const std::invalid_argument &) {
 					ErrorBox(hDlg, TEXT("Invalid capacity"));
@@ -193,7 +199,7 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			break;
 		}
 		case IDC_ENABLESTACKS:
-			game->toggleMaxItemAmountHook(SendMessage(enableCheck, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
+			Features::ToggleMaxItemAmountHook(SendMessage(enableCheck, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
 			break;
 		}
 
@@ -205,14 +211,14 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
 BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static DialogInfo *info;
 	static HWND itemCombo, inventoryCombo, amountEdit, firepowerCombo, firingSpeedCombo, reloadSpeedCombo, capacityCombo, ammoEdit, posXEdit, posYEdit, rotationCombo;
+	static Features::ItemData *item;
 
 	switch (message)
 	{
-	case WM_INITDIALOG: {
-		info = (DialogInfo*)lParam;
-		auto item = std::get<1>(*info);
+	case WM_INITDIALOG:
+	{
+		item = reinterpret_cast<Features::ItemData*>(lParam);
 
 		itemCombo = GetDlgItem(hDlg, ItemCombo);
 		inventoryCombo = GetDlgItem(hDlg, InventoryCombo);
@@ -226,7 +232,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		posYEdit = GetDlgItem(hDlg, PositionYEdit);
 		rotationCombo = GetDlgItem(hDlg, RotationCombo);
 		
-		for (const auto &name : std::get<0>(*info)->getItemNames())
+		for (const auto &name : Features::GetItemNames())
 			SendMessage(itemCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(name.c_str()));
 
 		for (int i = 0; i < 2; ++i)
@@ -259,12 +265,13 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		SendMessage(rotationCombo, CB_SETCURSEL, item->rotation(), 0);
 		break;
 	}
-	case WM_COMMAND: {
+	case WM_COMMAND:
+	{
 		int valid = 0;
+
 		switch (LOWORD(wParam))
 		{
 		case IDOK: {
-			Game::ItemData *targetItem = std::get<1>(*info);
 			std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
 			std::uint8_t inventory = 0;
 
@@ -335,22 +342,22 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			targetItem->itemId(static_cast<ItemId>(id));
-			targetItem->amount(amount);
-			targetItem->inventory(inventory);
-			targetItem->firePower(fp);
-			targetItem->firingSpeed(fs);
-			targetItem->reloadSpeed(rs);
-			targetItem->capacity(ca);
-			targetItem->ammo(ammo);
-			targetItem->posX(static_cast<std::uint8_t>(x));
-			targetItem->posY(static_cast<std::uint8_t>(y));
-			targetItem->rotation(static_cast<std::uint8_t>(rotation));
+			item->itemId(static_cast<Features::ItemId>(id));
+			item->amount(amount);
+			item->inventory(inventory);
+			item->firePower(fp);
+			item->firingSpeed(fs);
+			item->reloadSpeed(rs);
+			item->capacity(ca);
+			item->ammo(ammo);
+			item->posX(static_cast<std::uint8_t>(x));
+			item->posY(static_cast<std::uint8_t>(y));
+			item->rotation(static_cast<std::uint8_t>(rotation));
 			valid = 1;
 		}
 		[[fallthrough]];
 		case IDCANCEL:
-			info = nullptr;
+			item = nullptr;
 			EndDialog(hDlg, valid);
 			break;
 		}
@@ -361,16 +368,15 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static WeaponStatsInfo *info;
 	static HWND firePowerEdits[7], capacityEdits[7], modelEdit, ammoCombo;
-	static std::vector<ItemId> ids;
+	static std::vector<Features::ItemId> ids;
+	static Features::WeaponData *data;
 
 	switch (message)
 	{
-	case WM_INITDIALOG: {
-		info = (WeaponStatsInfo*)lParam;
-		Game *game = std::get<0>(*info);
-		Game::WeaponData *data = std::get<1>(*info);
+	case WM_INITDIALOG:
+	{
+		data = reinterpret_cast<Features::WeaponData*>(lParam);
 		
 		if (!data) {
 			ErrorBox(hDlg, TEXT("Null weapon data pointer"));
@@ -395,15 +401,15 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		modelEdit = GetDlgItem(hDlg, ModelEdit);
 		ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
 
-		float *firepowerEntry = game->getFirepowerTableEntry(data->firepowerIndex());
+		float *firepowerEntry = Features::GetFirepowerTableEntry(data->firepowerIndex());
 		for (size_t i = 0; i < 7; ++i) {
 			SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
 			SetWindowText(capacityEdits[i], std::to_wstring(data->capacity(i)).c_str());
 		}
 		SetWindowText(modelEdit, std::to_wstring(data->model()).c_str());
-		for (const auto &ammoId : game->getAmmoItemIds())
+		for (const auto &ammoId : Features::GetAmmoItemIds())
 		{
-			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)game->getItemName(ammoId).c_str());
+			SendMessage(ammoCombo, CB_ADDSTRING, 0, (LPARAM)Features::GetItemName(ammoId).c_str());
 			ids.push_back(ammoId);
 			if (data->weaponAmmo() == ammoId)
 				SendMessage(ammoCombo, CB_SETCURSEL, SendMessage(ammoCombo, CB_GETCOUNT, 0, 0) - 1, 0);
@@ -411,12 +417,13 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 		break;
 	}
 
-	case WM_COMMAND: {
+	case WM_COMMAND:
+	{
 		switch (LOWORD(wParam))
 		{
-		case IDOK: {
-			Game *game = std::get<0>(*info);
-			Game::WeaponData *data = std::get<1>(*info), newData = *data;
+		case IDOK:
+		{
+			Features::WeaponData newData = *data;
 			float newFirepower[7];
 
 			try {
@@ -451,9 +458,10 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 			}
 
-			game->setWeaponDataPtr(data, newData, newFirepower);
+			Features::SetWeaponDataPtr(data, newData, newFirepower);
 		} //fall through
 		case IDCANCEL: {
+			data = nullptr;
 			ids.clear();
 			EndDialog(hDlg, 0);
 			break;
@@ -475,7 +483,6 @@ BOOL CALLBACK ConfigDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 	case WM_INITDIALOG: {
 		if (keys.empty())
 		{
-			//for (size_t i = VK_F1; i != 0x5B /*after Z*/; i == VK_F12 ? i = 0x41 /*A*/ : ++i)
 			for (unsigned i = VK_LBUTTON; i <= VK_OEM_CLEAR; ++i)
 			{
 				String keyName(50, TEXT('\0'));

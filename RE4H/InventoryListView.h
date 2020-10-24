@@ -24,9 +24,9 @@ public:
 	using ReportListView::getWindowHandle;
 	using ReportListView::itemCount;
 	enum InvColumn { Address, Id, Name, Amount, Inventory, FirePower, FiringSpeed, ReloadSpeed, Capacity };
-	void refresh(const Game &game);
+	void refresh();
 	void eraseSelectedItem();
-	Game::ItemData* getItemAddress(unsigned item);
+	Features::ItemData* getItemAddress(unsigned item);
 };
 
 #endif

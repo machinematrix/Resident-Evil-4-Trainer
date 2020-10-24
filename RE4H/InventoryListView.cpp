@@ -6,12 +6,12 @@
 *recorrer items, si alguno ya no es valido borrarlo. Luego recorrer inventario del juego y agregar items nuevos si los hay, o modificar los que ya estan
 *Tengo solo lista e inventario del juego.
 */
-void InventoryListView::refresh(const Game &game)
+void InventoryListView::refresh()
 {
 	for (unsigned listItem = 0, itemCnt = itemCount(); listItem < itemCnt;) //erase items that are no longer in the inventory
 	{
 		try {
-			Game::ItemData *ptr = (Game::ItemData*)std::stoi(getItemText(listItem, Address), nullptr, 16); //throws
+			Features::ItemData *ptr = (Features::ItemData*)std::stoi(getItemText(listItem, Address), nullptr, 16); //throws
 			if (ptr->valid())
 				++listItem;
 			else {
@@ -28,7 +28,7 @@ void InventoryListView::refresh(const Game &game)
 		}
 	}
 
-	for (Game::ItemData *first = game.begInventory(), *last = game.endInventory(); first != last; ++first)
+	for (Features::ItemData *first = Features::BegInventory(), *last = Features::EndInventory(); first != last; ++first)
 	{
 		if (first->valid()) //there are no more invalid items in the list, so this is ok.
 		{
@@ -44,7 +44,9 @@ void InventoryListView::refresh(const Game &game)
 			}
 
 			setItemText(item, Id, std::to_wstring(static_cast<std::uint16_t>(first->itemId())));
-			try { setItemText(item, Name, game.getItemName(first->itemId())); }
+			try {
+				setItemText(item, Name, Features::GetItemName(first->itemId()));
+			}
 			catch (const std::out_of_range&) {
 				String msg(TEXT("Name not found for ID "));
 				msg += std::to_wstring(static_cast<std::uint32_t>(first->itemId()));
@@ -66,7 +68,7 @@ void InventoryListView::eraseSelectedItem()
 	if (item != -1)
 	{
 		try {
-			Game::ItemData *itemPtr = (Game::ItemData*)std::stoi(getItemText(item, Address), nullptr, 16);
+			Features::ItemData *itemPtr = (Features::ItemData*)std::stoi(getItemText(item, Address), nullptr, 16);
 			itemPtr->valid(0);
 			eraseItem(item);
 		}
@@ -79,13 +81,13 @@ void InventoryListView::eraseSelectedItem()
 	else ErrorBox(GetParent(getWindowHandle()), TEXT("Select an item first"));
 }
 
-Game::ItemData* InventoryListView::getItemAddress(unsigned item)
+Features::ItemData* InventoryListView::getItemAddress(unsigned item)
 {
-	Game::ItemData *result = nullptr;
+	Features::ItemData *result = nullptr;
 	if (item < itemCount())
 	{
 		try {
-			result = (Game::ItemData*)std::stoi(getItemText(item, Address), nullptr, 16);
+			result = (Features::ItemData*)std::stoi(getItemText(item, Address), nullptr, 16);
 		}
 		catch (const std::invalid_argument&) {
 			String msg = TEXT("Invalid pointer found in list item ");
