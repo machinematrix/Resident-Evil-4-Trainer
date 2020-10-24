@@ -106,35 +106,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-	case WM_CREATE: {
+	case WM_CREATE:
 		onWmCreate(hWnd, wParam, lParam, wndInfo);
 		break;
-	}
 
-	case WM_SIZE: {
+	case WM_SIZE:
 		onWmSize(hWnd, wParam, lParam, wndInfo);
 		break;
-	}
 
-	case WM_TIMER: {
+	case WM_TIMER:
 		onWmTimer(hWnd, wParam, lParam, wndInfo);
 		break;
-	}
 
-	case WM_COMMAND: {
+	case WM_COMMAND:
 		onWmCommand(hWnd, wParam, lParam, wndInfo);
 		break;
-	}
 
-	case WM_NOTIFY: {
+	case WM_NOTIFY:
 		onWmNotify(hWnd, wParam, lParam, wndInfo);
 		break;
-	}
 
-	case WM_KEYDOWN: {
+	case WM_KEYDOWN:
 		onWmKeydown(hWnd, wParam, lParam, wndInfo);
 		break;
-	}
 
 	case WM_DESTROY:
 		onWmDestroy(hWnd, wParam, lParam, wndInfo);
@@ -153,59 +147,61 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 
 	switch (message)
 	{
-	case WM_INITDIALOG: {
-		itemCombo = GetDlgItem(hDlg, ItemMaxAmountCombo);
-		amountEdit = GetDlgItem(hDlg, ItemMaxAmountEdit);
-		enableCheck = GetDlgItem(hDlg, IDC_ENABLESTACKS);
-		itemComboIdentifier = GetDlgCtrlID(itemCombo);
+		case WM_INITDIALOG:
+			itemCombo = GetDlgItem(hDlg, ItemMaxAmountCombo);
+			amountEdit = GetDlgItem(hDlg, ItemMaxAmountEdit);
+			enableCheck = GetDlgItem(hDlg, IDC_ENABLESTACKS);
+			itemComboIdentifier = GetDlgCtrlID(itemCombo);
 
-		for (const auto &name : Features::GetItemNames())
-			SendMessage(itemCombo, CB_ADDSTRING, 0, (LPARAM)name.c_str());
-		SendMessage(enableCheck, BM_SETCHECK, static_cast<WPARAM>(Features::IsMaxItemHookEnabled()), 0);
-		break;
-	}
+			for (const auto &name : Features::GetItemNames())
+				SendMessage(itemCombo, CB_ADDSTRING, 0, (LPARAM)name.c_str());
 
-	case WM_COMMAND: {
-		switch (LOWORD(wParam))
+			SendMessage(enableCheck, BM_SETCHECK, static_cast<WPARAM>(Features::IsMaxItemHookEnabled()), 0);
+			break;
+
+		case WM_COMMAND:
 		{
-		case IDCANCEL: {
-			EndDialog(hDlg, 0);
-			break;
-		}
-		case ItemMaxAmountCombo: {
-			if (HIWORD(wParam) == CBN_SELCHANGE)
+			switch (LOWORD(wParam))
 			{
-				std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
-				if (id != CB_ERR) {
-					std::wstring strAmount = std::to_wstring(Features::GetItemDimensions(static_cast<Features::ItemId>(id)).stackLimit());
-					String strAmount2(strAmount.begin(), strAmount.end());
-					SetWindowText(amountEdit, strAmount.c_str());
-				}
-			}
-			break;
-		}
-		case IDC_SETAMOUNT: {
-			std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
+				case IDCANCEL:
+					EndDialog(hDlg, 0);
+					break;
+				case ItemMaxAmountCombo:
+					if (HIWORD(wParam) == CBN_SELCHANGE)
+					{
+						std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
+						if (id != CB_ERR) {
+							std::wstring strAmount = std::to_wstring(Features::GetItemDimensions(static_cast<Features::ItemId>(id)).stackLimit());
+							String strAmount2(strAmount.begin(), strAmount.end());
+							SetWindowText(amountEdit, strAmount.c_str());
+						}
+					}
+					break;
 
-			if (id != CB_ERR)
-			{
-				try {
-					Features::SetMaxItemAmount(static_cast<Features::ItemId>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
-				}
-				catch (const std::invalid_argument &) {
-					ErrorBox(hDlg, TEXT("Invalid capacity"));
-				}
-			}
-			break;
-		}
-		case IDC_ENABLESTACKS:
-			Features::ToggleMaxItemAmountHook(SendMessage(enableCheck, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
-			break;
-		}
+				case IDC_SETAMOUNT:
+				{
+					std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
 
-		break;
+					if (id != CB_ERR)
+					{
+						try {
+							Features::SetMaxItemAmount(static_cast<Features::ItemId>(id), std::stoul(GetControlText(amountEdit))); //not checking whether the text is a valid number, but it doesn't matter since the edit control is number-only
+						}
+						catch (const std::invalid_argument &) {
+							ErrorBox(hDlg, TEXT("Invalid capacity"));
+						}
+					}
+					break;
+				}
+				case IDC_ENABLESTACKS:
+					Features::ToggleMaxItemAmountHook(SendMessage(enableCheck, BM_GETCHECK, 0, 0) == BST_CHECKED ? true : false);
+					break;
+			}
+
+			break;
+		}
 	}
-	}
+
 	return FALSE;
 }
 
@@ -216,153 +212,155 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
-	case WM_INITDIALOG:
-	{
-		item = reinterpret_cast<Features::ItemData*>(lParam);
-
-		itemCombo = GetDlgItem(hDlg, ItemCombo);
-		inventoryCombo = GetDlgItem(hDlg, InventoryCombo);
-		amountEdit = GetDlgItem(hDlg, AmountEdit);
-		firepowerCombo = GetDlgItem(hDlg, FirepowerCombo);
-		firingSpeedCombo = GetDlgItem(hDlg, FiringSpeedCombo);
-		reloadSpeedCombo = GetDlgItem(hDlg, ReloadSpeedCombo);
-		capacityCombo = GetDlgItem(hDlg, CapacityCombo);
-		ammoEdit = GetDlgItem(hDlg, AmmoEdit);
-		posXEdit = GetDlgItem(hDlg, PositionXEdit);
-		posYEdit = GetDlgItem(hDlg, PositionYEdit);
-		rotationCombo = GetDlgItem(hDlg, RotationCombo);
-		
-		for (const auto &name : Features::GetItemNames())
-			SendMessage(itemCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(name.c_str()));
-
-		for (int i = 0; i < 2; ++i)
-			SendMessage(inventoryCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::to_wstring(i).c_str()));
-
-		for (unsigned i = 0; i < 7; ++i)
+		case WM_INITDIALOG:
 		{
-			TCHAR str[2] = { (TCHAR)(TEXT('0') + i), 0};
-			SendMessage(firepowerCombo, CB_ADDSTRING, 0, (LPARAM)str);
-			SendMessage(firingSpeedCombo, CB_ADDSTRING, 0, (LPARAM)str);
-			SendMessage(reloadSpeedCombo, CB_ADDSTRING, 0, (LPARAM)str);
-			SendMessage(capacityCombo, CB_ADDSTRING, 0, (LPARAM)str);
-		}
+			item = reinterpret_cast<Features::ItemData*>(lParam);
 
-		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Right"));
-		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Down"));
-		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Left"));
-		SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Up"));
+			itemCombo = GetDlgItem(hDlg, ItemCombo);
+			inventoryCombo = GetDlgItem(hDlg, InventoryCombo);
+			amountEdit = GetDlgItem(hDlg, AmountEdit);
+			firepowerCombo = GetDlgItem(hDlg, FirepowerCombo);
+			firingSpeedCombo = GetDlgItem(hDlg, FiringSpeedCombo);
+			reloadSpeedCombo = GetDlgItem(hDlg, ReloadSpeedCombo);
+			capacityCombo = GetDlgItem(hDlg, CapacityCombo);
+			ammoEdit = GetDlgItem(hDlg, AmmoEdit);
+			posXEdit = GetDlgItem(hDlg, PositionXEdit);
+			posYEdit = GetDlgItem(hDlg, PositionYEdit);
+			rotationCombo = GetDlgItem(hDlg, RotationCombo);
 
-		SendMessage(itemCombo, CB_SETCURSEL, static_cast<WPARAM>(item->itemId()), 0);
-		SendMessage(inventoryCombo, CB_SETCURSEL, static_cast<WPARAM>(item->inventory()), 0);
-		SetWindowText(amountEdit, std::to_wstring(item->amount()).c_str());
-		SendMessage(firepowerCombo, CB_SETCURSEL, item->firePower(), 0);
-		SendMessage(firingSpeedCombo, CB_SETCURSEL, item->firingSpeed(), 0);
-		SendMessage(reloadSpeedCombo, CB_SETCURSEL, item->reloadSpeed(), 0);
-		SendMessage(capacityCombo, CB_SETCURSEL, item->capacity(), 0);
-		SetWindowText(ammoEdit, std::to_wstring(item->ammo()).c_str());
-		SetWindowText(posXEdit, std::to_wstring(item->posX()).c_str());
-		SetWindowText(posYEdit, std::to_wstring(item->posY()).c_str());
-		SendMessage(rotationCombo, CB_SETCURSEL, item->rotation(), 0);
-		break;
-	}
-	case WM_COMMAND:
-	{
-		int valid = 0;
+			for (const auto &name : Features::GetItemNames())
+				SendMessage(itemCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(name.c_str()));
 
-		switch (LOWORD(wParam))
-		{
-		case IDOK: {
-			std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
-			std::uint8_t inventory = 0;
+			for (int i = 0; i < 2; ++i)
+				SendMessage(inventoryCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(std::to_wstring(i).c_str()));
 
-			if (id == CB_ERR) { //ID
-				ErrorBox(hDlg, TEXT("Select an item"));
-				break;
+			for (unsigned i = 0; i < 7; ++i)
+			{
+				TCHAR str[2] = { (TCHAR)(TEXT('0') + i), 0 };
+				SendMessage(firepowerCombo, CB_ADDSTRING, 0, (LPARAM)str);
+				SendMessage(firingSpeedCombo, CB_ADDSTRING, 0, (LPARAM)str);
+				SendMessage(reloadSpeedCombo, CB_ADDSTRING, 0, (LPARAM)str);
+				SendMessage(capacityCombo, CB_ADDSTRING, 0, (LPARAM)str);
 			}
 
-			try {
-				amount = std::stoi(GetControlText(amountEdit)); //AMOUNT
-			}
-			catch (const std::invalid_argument&) {
-				ErrorBox(hDlg, TEXT("Invalid amount"));
-				break;
-			}
+			SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Right"));
+			SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Down"));
+			SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Left"));
+			SendMessage(rotationCombo, CB_ADDSTRING, 0, (LPARAM)TEXT("Up"));
 
-			if ((inventory = ComboBox_GetCurSel(inventoryCombo)) == CB_ERR) {
-				ErrorBox(hDlg, TEXT("Select an inventory"));
-				break;
-			}
-
-			if ((fp = ComboBox_GetCurSel(firepowerCombo)) == CB_ERR) { //FP
-				ErrorBox(hDlg, TEXT("Select a fire power level"));
-				break;
-			}
-			
-			if ((fs = ComboBox_GetCurSel(firingSpeedCombo)) == CB_ERR) { //FS
-				ErrorBox(hDlg, TEXT("Select a firing speed level"));
-				break;
-			}
-
-			if ((rs = ComboBox_GetCurSel(reloadSpeedCombo)) == CB_ERR) { //RS
-				ErrorBox(hDlg, TEXT("Select a reload speed level"));
-				break;
-			}
-
-			if ((ca = ComboBox_GetCurSel(capacityCombo)) == CB_ERR) { //CA
-				ErrorBox(hDlg, TEXT("Select a capacity level"));
-				break;
-			}
-
-			try {
-				ammo = std::stoi(GetControlText(ammoEdit)); //AMMO
-			}
-			catch (const std::invalid_argument&) {
-				ErrorBox(hDlg, TEXT("Invalid ammo amount"));
-				break;
-			}
-
-			try {
-				x = std::stoi(GetControlText(posXEdit)); //X
-			}
-			catch (const std::invalid_argument&) {
-				ErrorBox(hDlg, TEXT("Invalid horizontal position"));
-				break;
-			}
-
-			try {
-				y = std::stoi(GetControlText(posYEdit)); //Y
-			} 
-			catch (const std::invalid_argument&) {
-				ErrorBox(hDlg, TEXT("Invalid vertical position"));
-				break;
-			}
-
-			if ((rotation = ComboBox_GetCurSel(rotationCombo)) == CB_ERR) { //ROTATION
-				ErrorBox(hDlg, TEXT("Select an orientation"));
-				break;
-			}
-
-			item->itemId(static_cast<Features::ItemId>(id));
-			item->amount(amount);
-			item->inventory(inventory);
-			item->firePower(fp);
-			item->firingSpeed(fs);
-			item->reloadSpeed(rs);
-			item->capacity(ca);
-			item->ammo(ammo);
-			item->posX(static_cast<std::uint8_t>(x));
-			item->posY(static_cast<std::uint8_t>(y));
-			item->rotation(static_cast<std::uint8_t>(rotation));
-			valid = 1;
-		}
-		[[fallthrough]];
-		case IDCANCEL:
-			item = nullptr;
-			EndDialog(hDlg, valid);
+			SendMessage(itemCombo, CB_SETCURSEL, static_cast<WPARAM>(item->itemId()), 0);
+			SendMessage(inventoryCombo, CB_SETCURSEL, static_cast<WPARAM>(item->inventory()), 0);
+			SetWindowText(amountEdit, std::to_wstring(item->amount()).c_str());
+			SendMessage(firepowerCombo, CB_SETCURSEL, item->firePower(), 0);
+			SendMessage(firingSpeedCombo, CB_SETCURSEL, item->firingSpeed(), 0);
+			SendMessage(reloadSpeedCombo, CB_SETCURSEL, item->reloadSpeed(), 0);
+			SendMessage(capacityCombo, CB_SETCURSEL, item->capacity(), 0);
+			SetWindowText(ammoEdit, std::to_wstring(item->ammo()).c_str());
+			SetWindowText(posXEdit, std::to_wstring(item->posX()).c_str());
+			SetWindowText(posYEdit, std::to_wstring(item->posY()).c_str());
+			SendMessage(rotationCombo, CB_SETCURSEL, item->rotation(), 0);
 			break;
 		}
+		case WM_COMMAND:
+		{
+			int valid = 0;
+
+			switch (LOWORD(wParam))
+			{
+				case IDOK:
+				{
+					std::uint16_t id = static_cast<std::uint16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0)), amount = 0, fp = 0, fs = 0, rs = 0, ca = 0, ammo = 0, x = 0, y = 0, rotation = 0;
+					std::uint8_t inventory = 0;
+
+					if (id == CB_ERR) { //ID
+						ErrorBox(hDlg, TEXT("Select an item"));
+						break;
+					}
+
+					try {
+						amount = std::stoi(GetControlText(amountEdit)); //AMOUNT
+					}
+					catch (const std::invalid_argument&) {
+						ErrorBox(hDlg, TEXT("Invalid amount"));
+						break;
+					}
+
+					if ((inventory = ComboBox_GetCurSel(inventoryCombo)) == CB_ERR) {
+						ErrorBox(hDlg, TEXT("Select an inventory"));
+						break;
+					}
+
+					if ((fp = ComboBox_GetCurSel(firepowerCombo)) == CB_ERR) { //FP
+						ErrorBox(hDlg, TEXT("Select a fire power level"));
+						break;
+					}
+
+					if ((fs = ComboBox_GetCurSel(firingSpeedCombo)) == CB_ERR) { //FS
+						ErrorBox(hDlg, TEXT("Select a firing speed level"));
+						break;
+					}
+
+					if ((rs = ComboBox_GetCurSel(reloadSpeedCombo)) == CB_ERR) { //RS
+						ErrorBox(hDlg, TEXT("Select a reload speed level"));
+						break;
+					}
+
+					if ((ca = ComboBox_GetCurSel(capacityCombo)) == CB_ERR) { //CA
+						ErrorBox(hDlg, TEXT("Select a capacity level"));
+						break;
+					}
+
+					try {
+						ammo = std::stoi(GetControlText(ammoEdit)); //AMMO
+					}
+					catch (const std::invalid_argument&) {
+						ErrorBox(hDlg, TEXT("Invalid ammo amount"));
+						break;
+					}
+
+					try {
+						x = std::stoi(GetControlText(posXEdit)); //X
+					}
+					catch (const std::invalid_argument&) {
+						ErrorBox(hDlg, TEXT("Invalid horizontal position"));
+						break;
+					}
+
+					try {
+						y = std::stoi(GetControlText(posYEdit)); //Y
+					}
+					catch (const std::invalid_argument&) {
+						ErrorBox(hDlg, TEXT("Invalid vertical position"));
+						break;
+					}
+
+					if ((rotation = ComboBox_GetCurSel(rotationCombo)) == CB_ERR) { //ROTATION
+						ErrorBox(hDlg, TEXT("Select an orientation"));
+						break;
+					}
+
+					item->itemId(static_cast<Features::ItemId>(id));
+					item->amount(amount);
+					item->inventory(inventory);
+					item->firePower(fp);
+					item->firingSpeed(fs);
+					item->reloadSpeed(rs);
+					item->capacity(ca);
+					item->ammo(ammo);
+					item->posX(static_cast<std::uint8_t>(x));
+					item->posY(static_cast<std::uint8_t>(y));
+					item->rotation(static_cast<std::uint8_t>(rotation));
+					valid = 1;
+				}
+				[[fallthrough]];
+				case IDCANCEL:
+					item = nullptr;
+					EndDialog(hDlg, valid);
+					break;
+			}
+		}
 	}
-	}
+
 	return FALSE;
 }
 
