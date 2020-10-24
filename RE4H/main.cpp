@@ -21,13 +21,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 {
 	switch (ul_reason_for_call)
 	{
-	case DLL_PROCESS_ATTACH: {
+	case DLL_PROCESS_ATTACH:
 		if (HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, hModule, 0, nullptr))
 			CloseHandle(hThread);
 		else
 			ErrorBox(nullptr, TEXT("Could not create thread"));
 		break;
-	}
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 	case DLL_PROCESS_DETACH:
@@ -39,65 +38,66 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
 DWORD WINAPI ThreadProc(LPVOID lpParameter)
 {
-	using std::cout;
-	using std::endl;
-	const TCHAR *windowClass = TEXT("MainWnd"), *title = TEXT("RE4H");
-	const int horSize = 640, verSize = 540;
 	WNDCLASSEXW wcex;
 	MSG msg;
+	const TCHAR *windowClass = TEXT("MainWnd"), *title = TEXT("RE4H");
+	const int horSize = 640, verSize = 540;
+	DWORD exitCode = -1;
 
 #ifndef NDEBUG
 	AllocConsole();
 	RedirectSTDIO();
 #endif
 
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = (HINSTANCE)lpParameter;
-	wcex.hIcon = 0;
-	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
-	wcex.lpszMenuName = NULL;
-	wcex.lpszClassName = windowClass;
-	wcex.hIconSm = 0;
-	RegisterClassEx(&wcex); //Register main window
-
-	HMENU hMenu = CreateMenu(), hMenuPopup = CreateMenu();
-
-	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::KEY_BINDINGS, TEXT("Key bindings"));
-	AppendMenu(hMenuPopup, MF_SEPARATOR, 0, nullptr);
-	AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::EXIT, TEXT("Exit"));
-	AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hMenuPopup, TEXT("File"));
-
 	if (Features::Initialize())
 	{
-		if (HWND hWnd = CreateWindowW(windowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, horSize, verSize, nullptr, hMenu, (HINSTANCE)lpParameter, nullptr)) {
+		wcex.cbSize = sizeof(WNDCLASSEX);
+		wcex.style = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc = WndProc;
+		wcex.cbClsExtra = 0;
+		wcex.cbWndExtra = 0;
+		wcex.hInstance = static_cast<HINSTANCE>(lpParameter);
+		wcex.hIcon = 0;
+		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wcex.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
+		wcex.lpszMenuName = NULL;
+		wcex.lpszClassName = windowClass;
+		wcex.hIconSm = 0;
+		RegisterClassEx(&wcex); //Register main window
+
+		HMENU hMenu = CreateMenu(), hMenuPopup = CreateMenu();
+
+		AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::KEY_BINDINGS, TEXT("Key bindings"));
+		AppendMenu(hMenuPopup, MF_SEPARATOR, 0, nullptr);
+		AppendMenu(hMenuPopup, MF_STRING, MenuIdentifiers::EXIT, TEXT("Exit"));
+		AppendMenu(hMenu, MF_POPUP, reinterpret_cast<UINT_PTR>(hMenuPopup), TEXT("File"));
+
+		if (HWND hWnd = CreateWindowW(windowClass, title, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, horSize, verSize, nullptr, hMenu, (HINSTANCE)lpParameter, nullptr))
+		{
 			ShowWindow(hWnd, SW_SHOW);
 			UpdateWindow(hWnd);
+
+			while (GetMessage(&msg, nullptr, 0, 0))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			exitCode = msg.wParam;
 		}
 		else
-		{
-			Features::Terminate();
-			FreeLibraryAndExitThread((HMODULE)lpParameter, FALSE);
-		}
+			ErrorBox(nullptr, TEXT("Could not create main window"));
 
-		while (GetMessage(&msg, nullptr, 0, 0))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
+		UnregisterClass(windowClass, static_cast<HMODULE>(lpParameter));
 		Features::Terminate();
 	}
+	else
+		ErrorBox(nullptr, TEXT("Could not find one or more pointers"));
 	
-	UnregisterClass(windowClass, (HMODULE)lpParameter);
 #ifndef NDEBUG
 	FreeConsole();
 #endif
-	FreeLibraryAndExitThread((HMODULE)lpParameter, (DWORD)msg.wParam);
+	FreeLibraryAndExitThread(static_cast<HMODULE>(lpParameter), exitCode);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
