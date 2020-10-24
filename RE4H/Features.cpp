@@ -914,7 +914,7 @@ namespace Features
 
 	void SetCharacter(std::uint8_t id)
 	{
-		if (id <= 5) //Check validity
+		if (id <= 5)
 			setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Character, id);
 	}
 
@@ -937,8 +937,8 @@ namespace Features
 					setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id);
 				break;
 			case Ada:
-				if (id <= 3 && id != 2)
-					setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id);
+				if (id <= 2)
+					setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id != 2 ? id : 3);
 				break;
 			case HUNK:
 			case Krauser:
@@ -951,7 +951,42 @@ namespace Features
 
 	std::uint8_t GetCostume()
 	{
-		return getValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume);
+		auto costume = getValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume);
+
+		if (GetCharacter() == Character::Ada && costume == 3)
+			costume = 2;
+
+		return costume;
+	}
+
+	void FixCostume()
+	{
+		auto costume = GetCostume();
+
+		switch (GetCharacter())
+		{
+			case Character::Leon:
+				if (costume > 4)
+					SetCostume(0);
+				break;
+
+			case Character::Ashley:
+				if (costume > 2)
+					SetCostume(0);
+				break;
+
+			case Character::Ada:
+				if (costume > 2)
+					SetCostume(2);
+				break;
+
+			case Character::HUNK:
+			case Character::Krauser:
+			case Character::Wesker:
+				if (costume)
+					SetCostume(0);
+				break;
+		}
 	}
 
 	const std::vector<String>& GetCharacterCostumeNames(std::uint8_t id)

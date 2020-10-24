@@ -406,6 +406,7 @@ namespace Features
 	std::uint8_t GetCharacter();
 	void SetCostume(std::uint8_t id);
 	std::uint8_t GetCostume();
+	void FixCostume();
 	const std::vector<String>& GetCharacterCostumeNames(std::uint8_t id);
 
 	WeaponData* GetWeaponDataPtr(ItemId id);

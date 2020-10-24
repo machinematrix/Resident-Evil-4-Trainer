@@ -310,24 +310,18 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 	Features::Difficulty currDiff = Features::GetDifficulty();
 	auto cbDifficulty = SendMessage(wndInfo.difficultyComboBox, CB_GETCURSEL, 0, 0);
 
-	if (cbChar != currChar) {
+	if (cbChar != currChar)
+	{
 		SendMessage(wndInfo.characterComboBox, CB_SETCURSEL, currChar, 0);
 		SendMessage(wndInfo.costumeComboBox, CB_RESETCONTENT, 0, 0);
 		for (const auto &costumeName : Features::GetCharacterCostumeNames(currChar))
-			SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.c_str());
-		Features::SetCostume(0);
+			SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(costumeName.c_str()));
+		Features::FixCostume();
 		currCostume = Features::GetCostume();
 	}
 
 	if (cbCostume != currCostume || cbChar != currChar) //If the character or the costume changed
-	{
-		if (currChar == 2 && currCostume == 3) {
-			if (cbCostume != 2)
-				SendMessage(wndInfo.costumeComboBox, CB_SETCURSEL, 2, 0);
-		}
-		else
-			SendMessage(wndInfo.costumeComboBox, CB_SETCURSEL, currCostume, 0);
-	}
+		SendMessage(wndInfo.costumeComboBox, CB_SETCURSEL, currCostume, 0);
 
 	switch (currDiff) //update difficulty combo box
 	{
@@ -364,9 +358,7 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 			if (strHealthLimit.empty() || healthLimit != std::stoul(strHealthLimit))
 				SetWindowText(wndInfo.healthLimitEdit, std::to_wstring(healthLimit).c_str());
 		}
-		catch (const std::invalid_argument&)
-		{
-		}
+		catch (const std::invalid_argument&) {}
 	}
 
 	wndInfo.inventoryList->refresh();
@@ -490,6 +482,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 
 					for (const auto &costumeName : Features::GetCharacterCostumeNames(Features::GetCharacter()))
 						SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.c_str());
+					Features::FixCostume();
 				}
 				else
 					ErrorBox(hWnd, TEXT("Invalid character"));
@@ -501,15 +494,8 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			{
 				std::uint8_t cbCostume = static_cast<std::uint8_t>(SendMessage(wndInfo.costumeComboBox, CB_GETCURSEL, 0, 0));
 
-				if (Features::GetCharacter() == 2 && cbCostume == 2)
-					Features::SetCostume(3); //remove this from front end
-				else
-				{
-					if (cbCostume != CB_ERR)
-						Features::SetCostume(cbCostume);
-					else
-						ErrorBox(hWnd, TEXT("Invalid costume"));
-				}
+				if (cbCostume != CB_ERR)
+					Features::SetCostume(cbCostume);
 			}
 			break;
 
