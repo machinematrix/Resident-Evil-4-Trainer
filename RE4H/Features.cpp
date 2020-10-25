@@ -120,45 +120,45 @@ namespace Features
 
 	namespace
 	{
-		constexpr const char *databaseName = "RE4H.db";
-		Pointer mHealthBase; //bio4.exe+806F3C
-		Pointer mPlayerBase; //bio4.exe+870FD4
-		Pointer mWeaponDataIndex; //bio4.exe+724B10
-		Pointer mFirePowerTable; //bio4.exe+800B18
-		Pointer mNoclipAddress; //bio4.exe+192E40
-		Pointer mDoorData; //bio4.exe+8502C0
-		Pointer mDoorList; //bio4.exe+867728. At dereference, then at +0x10, first four bits are door index * 2
-		Pointer mDropRandomizerHookLocation; //bio4.exe+1BDF1A
-		Pointer mDropRandomizerOriginal = nullptr;
-		Pointer mGetModelDataHookLocation; //bio4.exe+3898A6
-		Pointer mGetModelDataOriginal = nullptr;
-		Pointer mSceAtHookLocation; //bio4.exe+23D004
-		Pointer mSceAtOriginal = nullptr;
-		Pointer mTmpFireRate; //bio4.exe+70F8BC
-		Pointer mLoggerFunction; //bio4.exe+8300
-		Pointer mLoggerFunction2; //bio4.exe+CE5F
-		Pointer mLinkedList; //bio4.exe+E6E608
-		Pointer mTypewriterProcedure; //bio4.exe+563FF0
-		Entity **mEntityList; //bio4.exe+7FDB18
-		Pointer mEnemyVTable; //bio4.exe+71035C. VTable for enemies that can be meelee'd
-		Entity **mPlayerNode; //bio4.exe+857054
-		Pointer mUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
-		Pointer mOriginalLogger = nullptr, mOriginalLogger2 = nullptr;
-		void(__cdecl *mUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
-		void(__cdecl *mSceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
-		void(__cdecl *mGetInventoryModelData)(ItemId id, InventoryIconData *result);
-		std::uint32_t(__cdecl *mReadMinimumHeader)(void *sceneHandle, void *unknown);
-		void(__cdecl *mOpenMerchant)(std::int32_t, std::int32_t);
-		void(__cdecl *mMelee)(void *enemyPointer, void *meleeProcedure);
-		void(__cdecl *mMeleeHead)(void *enemyPointer, void*);
-		void(__cdecl *mMeleeKnee)(void *enemyPointer, void*);
-		void(__cdecl *mMeleeKneeKrauser)(void *enemyPointer, void*);
-		void(__cdecl *mMeleeKneeSuplex)(void *enemyPointer, void*);
-		std::mutex mStackCapMutex;
-		std::vector<void*> mDoors;
-		std::map<ItemId, std::uint32_t> mItemStackCap;
-		std::function<void(std::uint32_t, const std::vector<void*>&)> mDoorListUpdateCallback;
-		const std::map<ItemId, String> mItems = {
+		constexpr const char *kDatabaseName = "RE4H.db";
+		Pointer gHealthBase; //bio4.exe+806F3C
+		Pointer gPlayerBase; //bio4.exe+870FD4
+		Pointer gWeaponDataIndex; //bio4.exe+724B10
+		Pointer gFirePowerTable; //bio4.exe+800B18
+		Pointer gNoclipAddress; //bio4.exe+192E40
+		Pointer gDoorData; //bio4.exe+8502C0
+		Pointer gDoorList; //bio4.exe+867728. At dereference, then at +0x10, first four bits are door index * 2
+		Pointer gDropRandomizerHookLocation; //bio4.exe+1BDF1A
+		Pointer gDropRandomizerOriginal = nullptr;
+		Pointer gGetModelDataHookLocation; //bio4.exe+3898A6
+		Pointer gGetModelDataOriginal = nullptr;
+		Pointer gSceAtHookLocation; //bio4.exe+23D004
+		Pointer gSceAtOriginal = nullptr;
+		Pointer gTmpFireRate; //bio4.exe+70F8BC
+		Pointer gLoggerFunction; //bio4.exe+8300
+		Pointer gLoggerFunction2; //bio4.exe+CE5F
+		Pointer gLinkedList; //bio4.exe+E6E608
+		Pointer gTypewriterProcedure; //bio4.exe+563FF0
+		Entity **gEntityList; //bio4.exe+7FDB18
+		Pointer gEnemyVTable; //bio4.exe+71035C. VTable for enemies that can be meelee'd
+		Entity **gPlayerNode; //bio4.exe+857054
+		Pointer gUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
+		Pointer gOriginalLogger = nullptr, gOriginalLogger2 = nullptr;
+		void(__cdecl *gUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
+		void(__cdecl *gSceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
+		void(__cdecl *gGetInventoryModelData)(ItemId id, InventoryIconData *result);
+		std::uint32_t(__cdecl *gReadMinimumHeader)(void *sceneHandle, void *unknown);
+		void(__cdecl *gOpenMerchant)(std::int32_t, std::int32_t);
+		void(__cdecl *gMelee)(void *enemyPointer, void *meleeProcedure);
+		void(__cdecl *gMeleeHead)(void *enemyPointer, void*);
+		void(__cdecl *gMeleeKnee)(void *enemyPointer, void*);
+		void(__cdecl *gMeleeKneeKrauser)(void *enemyPointer, void*);
+		void(__cdecl *gMeleeKneeSuplex)(void *enemyPointer, void*);
+		std::mutex gStackCapMutex;
+		std::vector<void*> gDoors;
+		std::map<ItemId, std::uint32_t> gItemStackCap;
+		std::function<void(std::uint32_t, const std::vector<void*>&)> gDoorListUpdateCallback;
+		const std::map<ItemId, String> gItems = {
 			{ ItemId::MagnumAmmo, TEXT("Magnum Ammo") },
 			{ ItemId::HandGrenade, TEXT("Hand Grenade") },
 			{ ItemId::IncendiaryGrenade, TEXT("Incendiary Grenade") },
@@ -432,6 +432,16 @@ namespace Features
 			{ ItemId::Mission4TreasureMap, TEXT("Mission 4 Treasure Map") },
 			{ ItemId::Mission5TreasureMap, TEXT("Mission 5 Treasure Map") },
 		};
+
+		ItemId& operator++(ItemId &id)
+		{
+			if (static_cast<uint16_t>(id) >= static_cast<uint16_t>(ItemId::Last))
+				throw std::out_of_range("ItemId increment past ItemId::Last");
+
+			id = static_cast<ItemId>(static_cast<std::uint16_t>(id) + 1);
+
+			return id;
+		}
 	}
 
 	void ItemData::itemId(ItemId id)
@@ -619,16 +629,26 @@ namespace Features
 		return mStackLimit;
 	}
 
+	void InventoryIconData::itemType(ItemType type)
+	{
+		mItemType = type;
+	}
+
+	InventoryIconData::ItemType InventoryIconData::itemType() const
+	{
+		return mItemType;
+	}
+
 	void __cdecl myGetInventoryModelData(ItemId id, InventoryIconData *result)
 	{
 		if (id != ItemId::Invalid)
 		{
-			std::unique_lock<std::mutex> lck(mStackCapMutex);
-			auto amountIt = mItemStackCap.find(id);
+			std::unique_lock<std::mutex> lck(gStackCapMutex);
+			auto amountIt = gItemStackCap.find(id);
 
-			mGetInventoryModelData(id, result);
+			gGetInventoryModelData(id, result);
 
-			if (amountIt != mItemStackCap.end())
+			if (amountIt != gItemStackCap.end())
 				result->stackLimit(amountIt->second);
 		}
 	}
@@ -665,7 +685,7 @@ namespace Features
 		}
 
 		*outItemId = candidates[randomizer(engine) % candidates.size()];
-		mGetInventoryModelData(*outItemId, &icon);
+		gGetInventoryModelData(*outItemId, &icon);
 		*outItemCount = randomizer(engine) % icon.stackLimit() + 1;
 
 		result = true;
@@ -675,11 +695,11 @@ namespace Features
 
 	std::uint32_t __cdecl sceAtHook(void *arg1, void *arg2)
 	{
-		std::uint32_t result = reinterpret_cast<decltype(sceAtHook)*>(mSceAtOriginal)(arg1, arg2);
+		std::uint32_t result = reinterpret_cast<decltype(sceAtHook)*>(gSceAtOriginal)(arg1, arg2);
 
 		RefreshDoorList();
-		if (mDoorListUpdateCallback)
-			mDoorListUpdateCallback(getValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Scene), mDoors);
+		if (gDoorListUpdateCallback)
+			gDoorListUpdateCallback(getValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::Scene), gDoors);
 
 		return result;
 	}
@@ -688,20 +708,20 @@ namespace Features
 	{
 		sqlite3 *database = nullptr;
 
-		mUseDoor(arg, arg2);
+		gUseDoor(arg, arg2);
 
-		if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
+		if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
 		{
 			std::string_view sql("INSERT INTO scene_entry(scene_id, x, y, z, rotation) VALUES (?, ?, ?, ?, ?)");
 			sqlite3_stmt *statement = nullptr;
 
 			if ((sqlite3_prepare_v2(database, sql.data(), static_cast<int>(sql.size() + 1), &statement, nullptr) & 0xFF) == SQLITE_OK)
 			{
-				sqlite3_bind_int(statement, 1, getValue<int>(mHealthBase + HealthBaseOffsets::Scene));
-				sqlite3_bind_double(statement, 2, getValue<float>(mHealthBase + HealthBaseOffsets::SceneEntryX));
-				sqlite3_bind_double(statement, 3, getValue<float>(mHealthBase + HealthBaseOffsets::SceneEntryY));
-				sqlite3_bind_double(statement, 4, getValue<float>(mHealthBase + HealthBaseOffsets::SceneEntryZ));
-				sqlite3_bind_double(statement, 5, getValue<float>(mHealthBase + HealthBaseOffsets::Rotation));
+				sqlite3_bind_int(statement, 1, getValue<int>(gHealthBase + HealthBaseOffsets::Scene));
+				sqlite3_bind_double(statement, 2, getValue<float>(gHealthBase + HealthBaseOffsets::SceneEntryX));
+				sqlite3_bind_double(statement, 3, getValue<float>(gHealthBase + HealthBaseOffsets::SceneEntryY));
+				sqlite3_bind_double(statement, 4, getValue<float>(gHealthBase + HealthBaseOffsets::SceneEntryZ));
+				sqlite3_bind_double(statement, 5, getValue<float>(gHealthBase + HealthBaseOffsets::Rotation));
 				sqlite3_step(statement);
 				sqlite3_finalize(statement);
 			}
@@ -714,43 +734,43 @@ namespace Features
 	{
 		sqlite3 *database = nullptr;
 
-		mHealthBase = patternScan("A1 ????????  83 C0 60  6A 10  50  E8");
-		mPlayerBase = patternScan("B9 ????????  E8 ????????  8B 35 ????????  81");
-		mWeaponDataIndex = patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40");
-		mFirePowerTable = patternScan("D9 04 8D ????????  D9 5D 08");
-		mNoclipAddress = patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57");
-		mDoorData = patternScan("B9 ????????  6A 0B  75 ??  6A 3A");
-		mDoorList = patternScan("A1 ????????  53  05 8C000000  56  C6 45 CB 00");
-		mDropRandomizerHookLocation = patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC");
-		mGetModelDataHookLocation = patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74");
-		mSceAtHookLocation = patternScan("E8 ????????  8B 0D ????????  A1 ????????  8D 14 09");
-		mTmpFireRate = patternScan("D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41");
-		mLoggerFunction = patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10");
-		mLoggerFunction2 = patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3");
-		mLinkedList = patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC");
-		mTypewriterProcedure = patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000");
-		mEntityList = reinterpret_cast<decltype(mEntityList)>(patternScan("8B 35 ????????  85 F6  74 43  8B C6"));
-		mEnemyVTable = patternScan("C7 06 ????????  8B C6  5E  5D  C2 0400  33 C0  5E  5D  C2 0400  CCCCCCCCCCCCCCCCCCCC 55  8B EC  56  8B 75 08  85 F6  74 0D  8B CE  E8 ????????  C7 06 ????????  5E  5D  C3  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  C7 05 ???????? ????????  C7 05 ???????? ????????  C3");
-		mUseDoorHookLocation = patternScan("8B 04 DD ????????  8B 55 BC");
-		mUseDoor = reinterpret_cast<decltype(mUseDoor)>(patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????"));
-		mSceAtCreateItemAt = reinterpret_cast<decltype(mSceAtCreateItemAt)>(patternScan("55  8B EC  83 EC 0C  57  6A 0D"));
-		mGetInventoryModelData = reinterpret_cast<decltype(mGetInventoryModelData)>(patternScan("55  8B EC  0FB7 45 ??  3D 0F010000"));
-		mReadMinimumHeader = reinterpret_cast<decltype(mReadMinimumHeader)>(patternScan("55  8B EC  53  8B 1D ????????  56  68 ????????"));
-		mOpenMerchant = reinterpret_cast<decltype(mOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004"));
-		mMeleeHead = reinterpret_cast<decltype(mMeleeHead)>(patternScan("55  8B EC  A1 ????????  0FB6 80 ????????  83 E8 03"));
-		mMeleeKnee = reinterpret_cast<decltype(mMeleeKnee)>(patternScan("55  8B EC  A1 ????????  80 B8 C84F0000 04"));
-		mMeleeKneeKrauser = reinterpret_cast<decltype(mMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
-		mMeleeKneeSuplex = reinterpret_cast<decltype(mMeleeKneeSuplex)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
-		mMelee = reinterpret_cast<decltype(mMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"));
+		gHealthBase = patternScan("A1 ????????  83 C0 60  6A 10  50  E8");
+		gPlayerBase = patternScan("B9 ????????  E8 ????????  8B 35 ????????  81");
+		gWeaponDataIndex = patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40");
+		gFirePowerTable = patternScan("D9 04 8D ????????  D9 5D 08");
+		gNoclipAddress = patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57");
+		gDoorData = patternScan("B9 ????????  6A 0B  75 ??  6A 3A");
+		gDoorList = patternScan("A1 ????????  53  05 8C000000  56  C6 45 CB 00");
+		gDropRandomizerHookLocation = patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC");
+		gGetModelDataHookLocation = patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74");
+		gSceAtHookLocation = patternScan("E8 ????????  8B 0D ????????  A1 ????????  8D 14 09");
+		gTmpFireRate = patternScan("D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41");
+		gLoggerFunction = patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10");
+		gLoggerFunction2 = patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3");
+		gLinkedList = patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC");
+		gTypewriterProcedure = patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000");
+		gEntityList = reinterpret_cast<decltype(gEntityList)>(patternScan("8B 35 ????????  85 F6  74 43  8B C6"));
+		gEnemyVTable = patternScan("C7 06 ????????  8B C6  5E  5D  C2 0400  33 C0  5E  5D  C2 0400  CCCCCCCCCCCCCCCCCCCC 55  8B EC  56  8B 75 08  85 F6  74 0D  8B CE  E8 ????????  C7 06 ????????  5E  5D  C3  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  C7 05 ???????? ????????  C7 05 ???????? ????????  C3");
+		gUseDoorHookLocation = patternScan("8B 04 DD ????????  8B 55 BC");
+		gUseDoor = reinterpret_cast<decltype(gUseDoor)>(patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????"));
+		gSceAtCreateItemAt = reinterpret_cast<decltype(gSceAtCreateItemAt)>(patternScan("55  8B EC  83 EC 0C  57  6A 0D"));
+		gGetInventoryModelData = reinterpret_cast<decltype(gGetInventoryModelData)>(patternScan("55  8B EC  0FB7 45 ??  3D 0F010000"));
+		gReadMinimumHeader = reinterpret_cast<decltype(gReadMinimumHeader)>(patternScan("55  8B EC  53  8B 1D ????????  56  68 ????????"));
+		gOpenMerchant = reinterpret_cast<decltype(gOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004"));
+		gMeleeHead = reinterpret_cast<decltype(gMeleeHead)>(patternScan("55  8B EC  A1 ????????  0FB6 80 ????????  83 E8 03"));
+		gMeleeKnee = reinterpret_cast<decltype(gMeleeKnee)>(patternScan("55  8B EC  A1 ????????  80 B8 C84F0000 04"));
+		gMeleeKneeKrauser = reinterpret_cast<decltype(gMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
+		gMeleeKneeSuplex = reinterpret_cast<decltype(gMeleeKneeSuplex)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
+		gMelee = reinterpret_cast<decltype(gMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"));
 
-		if (!(mHealthBase && mPlayerBase && mWeaponDataIndex && mFirePowerTable && mNoclipAddress && mDoorData
-			  && mDoorList && mDropRandomizerHookLocation && mGetModelDataHookLocation && mSceAtHookLocation && mTmpFireRate && mLoggerFunction
-			  && mLoggerFunction2 && mLinkedList && mTypewriterProcedure && mEntityList && mEnemyVTable && mUseDoorHookLocation
-			  && mUseDoor && mSceAtCreateItemAt && mGetInventoryModelData && mReadMinimumHeader && mOpenMerchant && mMeleeHead
-			  && mMeleeKnee && mMeleeKneeKrauser && mMeleeKneeSuplex && mMelee))
+		if (!(gHealthBase && gPlayerBase && gWeaponDataIndex && gFirePowerTable && gNoclipAddress && gDoorData
+			  && gDoorList && gDropRandomizerHookLocation && gGetModelDataHookLocation && gSceAtHookLocation && gTmpFireRate && gLoggerFunction
+			  && gLoggerFunction2 && gLinkedList && gTypewriterProcedure && gEntityList && gEnemyVTable && gUseDoorHookLocation
+			  && gUseDoor && gSceAtCreateItemAt && gGetInventoryModelData && gReadMinimumHeader && gOpenMerchant && gMeleeHead
+			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee))
 			return false;
 
-		if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
+		if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
 		{
 			std::string_view sql("SELECT * FROM stack_limit");
 			sqlite3_stmt *statement = nullptr;
@@ -764,7 +784,7 @@ namespace Features
 				{
 					int itemId = sqlite3_column_int(statement, 0), limit = sqlite3_column_int(statement, 1);
 
-					mItemStackCap[static_cast<ItemId>(itemId)] = limit;
+					gItemStackCap[static_cast<ItemId>(itemId)] = limit;
 				}
 
 				sqlite3_finalize(statement);
@@ -773,45 +793,45 @@ namespace Features
 
 		sqlite3_close_v2(database);
 
-		mHealthBase = pointerPath(mHealthBase, 0x1, 0x0);
-		mPlayerBase = getValue<Pointer>(mPlayerBase + 1);
-		mWeaponDataIndex = getValue<Pointer>(mWeaponDataIndex + 1);
-		mFirePowerTable = getValue<Pointer>(mFirePowerTable + 3);
-		mDoorData = getValue<Pointer>(mDoorData + 1);
-		mDoorList = getValue<Pointer>(mDoorList + 1);
-		mGetModelDataHookLocation = follow(mGetModelDataHookLocation);
-		mDropRandomizerHookLocation = follow(mDropRandomizerHookLocation);
-		mSceAtHookLocation = follow(mSceAtHookLocation);
-		mLoggerFunction = follow(mLoggerFunction);
-		mLoggerFunction2 = follow(mLoggerFunction2 + 10);
-		mTmpFireRate = getValue<Pointer>(mTmpFireRate + 2);
-		mLinkedList = getValue<Pointer>(mLinkedList + 1);
-		mPlayerNode = getValue<Entity**>(reinterpret_cast<Pointer>(mEntityList) + 17);
-		mEntityList = getValue<Entity**>(reinterpret_cast<Pointer>(mEntityList) + 2);
-		mEnemyVTable = getValue<Pointer>(mEnemyVTable + 2);
-		mUseDoorHookLocation = getValue<Pointer>(mUseDoorHookLocation + 3) + 1 * 8;
+		gHealthBase = pointerPath(gHealthBase, 0x1, 0x0);
+		gPlayerBase = getValue<Pointer>(gPlayerBase + 1);
+		gWeaponDataIndex = getValue<Pointer>(gWeaponDataIndex + 1);
+		gFirePowerTable = getValue<Pointer>(gFirePowerTable + 3);
+		gDoorData = getValue<Pointer>(gDoorData + 1);
+		gDoorList = getValue<Pointer>(gDoorList + 1);
+		gGetModelDataHookLocation = follow(gGetModelDataHookLocation);
+		gDropRandomizerHookLocation = follow(gDropRandomizerHookLocation);
+		gSceAtHookLocation = follow(gSceAtHookLocation);
+		gLoggerFunction = follow(gLoggerFunction);
+		gLoggerFunction2 = follow(gLoggerFunction2 + 10);
+		gTmpFireRate = getValue<Pointer>(gTmpFireRate + 2);
+		gLinkedList = getValue<Pointer>(gLinkedList + 1);
+		gPlayerNode = getValue<Entity**>(reinterpret_cast<Pointer>(gEntityList) + 17);
+		gEntityList = getValue<Entity**>(reinterpret_cast<Pointer>(gEntityList) + 2);
+		gEnemyVTable = getValue<Pointer>(gEnemyVTable + 2);
+		gUseDoorHookLocation = getValue<Pointer>(gUseDoorHookLocation + 3) + 1 * 8;
 
 		//Install hooks
-		mGetModelDataOriginal = replaceFunction(mGetModelDataHookLocation, myGetInventoryModelData);
-		mDropRandomizerOriginal = replaceFunction(mDropRandomizerHookLocation, myDropRandomizer);
-		mSceAtOriginal = replaceFunction(mSceAtHookLocation, sceAtHook);
-		mOriginalLogger = replaceFunction(mLoggerFunction, mLoggerFunction);
-		mOriginalLogger2 = replaceFunction(mLoggerFunction2, mLoggerFunction2);
-		setValue(mUseDoorHookLocation, useDoorHook);
+		gGetModelDataOriginal = replaceFunction(gGetModelDataHookLocation, myGetInventoryModelData);
+		gDropRandomizerOriginal = replaceFunction(gDropRandomizerHookLocation, myDropRandomizer);
+		gSceAtOriginal = replaceFunction(gSceAtHookLocation, sceAtHook);
+		gOriginalLogger = replaceFunction(gLoggerFunction, gLoggerFunction);
+		gOriginalLogger2 = replaceFunction(gLoggerFunction2, gLoggerFunction2);
+		setValue(gUseDoorHookLocation, useDoorHook);
 
 		#ifndef NDEBUG
 		using std::cout;
 		using std::endl;
-		cout << "Health Base: " << (void*)mHealthBase << endl;
-		cout << "Player Base: " << (void*)mPlayerBase << endl;
-		cout << "Weapon Data Index: " << (void*)mWeaponDataIndex << endl;
-		cout << "Fire power table: " << (void*)mFirePowerTable << endl;
-		cout << "Noclip code: " << (void*)mNoclipAddress << endl;
-		cout << "Door data: " << (void*)mDoorData << endl;
-		cout << "Door List: " << (void *)mDoorList << endl;
-		cout << "Set Scene: " << (void*)mUseDoor << endl;
-		cout << "SceCreateItemAt: " << (void*)mSceAtCreateItemAt << endl;
-		cout << "Logger Function Jump: " << (void*)mLoggerFunction << endl;
+		cout << "Health Base: " << (void*)gHealthBase << endl;
+		cout << "Player Base: " << (void*)gPlayerBase << endl;
+		cout << "Weapon Data Index: " << (void*)gWeaponDataIndex << endl;
+		cout << "Fire power table: " << (void*)gFirePowerTable << endl;
+		cout << "Noclip code: " << (void*)gNoclipAddress << endl;
+		cout << "Door data: " << (void*)gDoorData << endl;
+		cout << "Door List: " << (void *)gDoorList << endl;
+		cout << "Set Scene: " << (void*)gUseDoor << endl;
+		cout << "SceCreateItemAt: " << (void*)gSceAtCreateItemAt << endl;
+		cout << "Logger Function Jump: " << (void*)gLoggerFunction << endl;
 		#endif
 
 		return true;
@@ -819,53 +839,53 @@ namespace Features
 
 	void Terminate()
 	{
-		replaceFunction(mGetModelDataHookLocation, mGetModelDataOriginal);
-		replaceFunction(mDropRandomizerHookLocation, mDropRandomizerOriginal);
-		replaceFunction(mSceAtHookLocation, mSceAtOriginal);
-		replaceFunction(mLoggerFunction, mOriginalLogger);
-		replaceFunction(mLoggerFunction2, mOriginalLogger2);
-		setValue(mUseDoorHookLocation, mUseDoor);
+		replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
+		replaceFunction(gDropRandomizerHookLocation, gDropRandomizerOriginal);
+		replaceFunction(gSceAtHookLocation, gSceAtOriginal);
+		replaceFunction(gLoggerFunction, gOriginalLogger);
+		replaceFunction(gLoggerFunction2, gOriginalLogger2);
+		setValue(gUseDoorHookLocation, gUseDoor);
 	}
 
 	void SetHealth(std::uint16_t health)
 	{
-		setValue(mHealthBase + HealthBaseOffsets::Health, health);
+		setValue(gHealthBase + HealthBaseOffsets::Health, health);
 	}
 
 	std::uint16_t GetHealth()
 	{
-		return getValue<std::uint16_t>(mHealthBase + HealthBaseOffsets::Health);
+		return getValue<std::uint16_t>(gHealthBase + HealthBaseOffsets::Health);
 	}
 
 	void SetHealthLimit(std::uint16_t limit)
 	{
-		setValue(mHealthBase + HealthBaseOffsets::MaxHealth, limit);
+		setValue(gHealthBase + HealthBaseOffsets::MaxHealth, limit);
 	}
 
 	std::uint16_t GetHealthLimit()
 	{
-		return getValue<std::uint16_t>(mHealthBase + HealthBaseOffsets::MaxHealth);
+		return getValue<std::uint16_t>(gHealthBase + HealthBaseOffsets::MaxHealth);
 	}
 
 	String GetItemName(ItemId id)
 	{
-		return mItems.at(id);
+		return gItems.at(id);
 	}
 
 	ItemData* BegInventory()
 	{
-		return getValue<ItemData*>(mPlayerBase + PlayerBaseOffsets::Inventory);
+		return getValue<ItemData*>(gPlayerBase + PlayerBaseOffsets::Inventory);
 	}
 
 	ItemData* EndInventory()
 	{
-		return getValue<ItemData*>(mPlayerBase + PlayerBaseOffsets::Inventory) + getValue<std::uint32_t>(mPlayerBase + PlayerBaseOffsets::InventorySize);
+		return getValue<ItemData*>(gPlayerBase + PlayerBaseOffsets::Inventory) + getValue<std::uint32_t>(gPlayerBase + PlayerBaseOffsets::InventorySize);
 	}
 
 	ItemData* AddItem()
 	{
-		std::uint32_t invSize = getValue<std::uint32_t>(mPlayerBase + PlayerBaseOffsets::InventorySize);
-		ItemData *result = getValue<ItemData*>(mPlayerBase + PlayerBaseOffsets::Inventory), *end = result + invSize;
+		std::uint32_t invSize = getValue<std::uint32_t>(gPlayerBase + PlayerBaseOffsets::InventorySize);
+		ItemData *result = getValue<ItemData*>(gPlayerBase + PlayerBaseOffsets::Inventory), *end = result + invSize;
 
 		while (result != end)
 		{
@@ -894,8 +914,8 @@ namespace Features
 
 		if (itemNames.empty())
 		{
-			itemNames.reserve(mItems.size());
-			for (const auto &item : mItems)
+			itemNames.reserve(gItems.size());
+			for (const auto &item : gItems)
 				itemNames.push_back(item.second);
 		}
 
@@ -904,23 +924,23 @@ namespace Features
 
 	bool IsAshleyPresent()
 	{
-		return getValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::AshleyPresent) & 0x04000000;
+		return getValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::AshleyPresent) & 0x04000000;
 	}
 
 	void ToggleAshley(bool toggle)
 	{
-		setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::AshleyPresent, toggle ? 0x04000000 : 0);
+		setValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::AshleyPresent, toggle ? 0x04000000 : 0);
 	}
 
 	void SetCharacter(std::uint8_t id)
 	{
 		if (id <= 5)
-			setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Character, id);
+			setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Character, id);
 	}
 
 	std::uint8_t GetCharacter()
 	{
-		return getValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Character);
+		return getValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Character);
 	}
 
 	void SetCostume(std::uint8_t id)
@@ -930,28 +950,28 @@ namespace Features
 		{
 			case Leon:
 				if (id <= 4)
-					setValue(mHealthBase + HealthBaseOffsets::Costume, id);
+					setValue(gHealthBase + HealthBaseOffsets::Costume, id);
 				break;
 			case Ashley:
 				if (id <= 2)
-					setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id);
+					setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Costume, id);
 				break;
 			case Ada:
 				if (id <= 2)
-					setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id != 2 ? id : 3);
+					setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Costume, id != 2 ? id : 3);
 				break;
 			case HUNK:
 			case Krauser:
 			case Wesker:
 				if (!id)
-					setValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume, id);
+					setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Costume, id);
 				break;
 		}
 	}
 
 	std::uint8_t GetCostume()
 	{
-		auto costume = getValue<std::uint8_t>(mHealthBase + HealthBaseOffsets::Costume);
+		auto costume = getValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Costume);
 
 		if (GetCharacter() == Character::Ada && costume == 3)
 			costume = 2;
@@ -1005,7 +1025,7 @@ namespace Features
 
 	WeaponData* GetWeaponDataPtr(ItemId id)
 	{
-		WeaponData *result = nullptr, *iter = (WeaponData*)mWeaponDataIndex;
+		WeaponData *result = nullptr, *iter = (WeaponData*)gWeaponDataIndex;
 
 		while (iter->id() != ItemId::MagnumAmmo)
 		{
@@ -1039,38 +1059,39 @@ namespace Features
 
 	float* GetFirepowerTableEntry(std::uint8_t i)
 	{
-		return reinterpret_cast<float*>(mFirePowerTable + i * 7 * sizeof(float));
+		return reinterpret_cast<float*>(gFirePowerTable + i * 7 * sizeof(float));
 	}
 
 	void SetFirepowerTableEntry(std::uint8_t i, const float(&newValues)[7])
 	{
-		setValue(mFirePowerTable + i * 7 * sizeof(float), newValues);
+		setValue(gFirePowerTable + i * 7 * sizeof(float), newValues);
 	}
 
-	const std::vector<ItemId>& GetAmmoItemIds()
+	const std::vector<ItemId> GetAmmoItemIds()
 	{
-		static const std::vector<ItemId> ammoIds = { ItemId::MagnumAmmo,
-															ItemId::HandgunAmmo,
-															ItemId::RifleAmmo,
-															ItemId::ShotgunShells,
-															ItemId::HandcannonAmmo,
-															ItemId::TMPAmmo1,
-															ItemId::Arrows,
-															ItemId::RifleAmmoInfrared,
-															ItemId::ChicagoTypewriterAmmo,
-															ItemId::MineDarts,
-															ItemId::BowgunBolts };
-		return ammoIds;
+		std::vector<ItemId> result;
+
+		for (ItemId id = ItemId::First; id != ItemId::Last; ++id)
+		{
+			InventoryIconData data = {};
+
+			gGetInventoryModelData(id, &data);
+
+			if (data.itemType() == InventoryIconData::ItemType::AMMO)
+				result.push_back(id);
+		}
+
+		return result;
 	}
 
 	void SetMoney(std::uint32_t value)
 	{
-		setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Money, value);
+		setValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::Money, value);
 	}
 
 	std::uint32_t GetMoney()
 	{
-		return getValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Money);
+		return getValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::Money);
 	}
 
 	void UseDoor(void *doorData)
@@ -1082,7 +1103,7 @@ namespace Features
 	{
 		Pointer result = nullptr;
 
-		if (result = getValue<Pointer>(mDoorList))
+		if (result = getValue<Pointer>(gDoorList))
 		{
 			result = getValue<Pointer>(result + 4);
 
@@ -1106,14 +1127,14 @@ namespace Features
 	{
 		Pointer door = GetFirstValidDoor();
 
-		mDoors.clear();
+		gDoors.clear();
 
 		if (door)
 		{
 			while (!((std::uint32_t)door & 1))
 			{
 				if (getValue<std::uint8_t>(door + 0x35) == 1) //if it's a door
-					mDoors.push_back(door);
+					gDoors.push_back(door);
 
 				door = getValue<Pointer>(door);
 			}
@@ -1122,19 +1143,19 @@ namespace Features
 
 	const std::vector<void*> GetDoors()
 	{
-		return mDoors;
+		return gDoors;
 	}
 
 	void SetScene(std::uint32_t scene)
 	{
-		if (getValue<GameState>(mHealthBase + HealthBaseOffsets::Status) == GameState::Playing)
+		if (getValue<GameState>(gHealthBase + HealthBaseOffsets::Status) == GameState::Playing)
 		{
 			float entry[4] = {};
 			sqlite3 *database = nullptr;
 
-			setValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Scene, scene);
+			setValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::Scene, scene);
 
-			if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
+			if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
 			{
 				std::string_view sql("SELECT x, y, z, rotation FROM scene_entry WHERE scene_id = ?");
 				sqlite3_stmt *statement = nullptr;
@@ -1156,55 +1177,55 @@ namespace Features
 			}
 
 			sqlite3_close_v2(database);
-			setValue(mHealthBase + HealthBaseOffsets::SceneEntryX, entry);
-			setValue(mHealthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
+			setValue(gHealthBase + HealthBaseOffsets::SceneEntryX, entry);
+			setValue(gHealthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
 		}
 	}
 
 	std::uint32_t GetScene()
 	{
-		return getValue<std::uint32_t>(mHealthBase + HealthBaseOffsets::Scene);
+		return getValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::Scene);
 	}
 
 	std::array<float, 3> GetSceneEntryCoords()
 	{
-		return getValue<std::array<float, 3>>(mHealthBase + HealthBaseOffsets::SceneEntryX);
+		return getValue<std::array<float, 3>>(gHealthBase + HealthBaseOffsets::SceneEntryX);
 	}
 
 	void SetDifficulty(Difficulty value)
 	{
-		setValue<Difficulty>(mHealthBase + HealthBaseOffsets::Difficulty, value);
+		setValue<Difficulty>(gHealthBase + HealthBaseOffsets::Difficulty, value);
 	}
 
 	Difficulty GetDifficulty()
 	{
-		return getValue<Difficulty>(mHealthBase + HealthBaseOffsets::Difficulty);
+		return getValue<Difficulty>(gHealthBase + HealthBaseOffsets::Difficulty);
 	}
 
 	void ToggleNoclip(bool toggle)
 	{
 		DWORD oldProtect;
 
-		if (VirtualProtect(mNoclipAddress, 1, PAGE_EXECUTE_READWRITE, &oldProtect))
+		if (VirtualProtect(gNoclipAddress, 1, PAGE_EXECUTE_READWRITE, &oldProtect))
 		{
-			setValue<std::uint8_t>(mNoclipAddress, toggle ? 0xC3 /*ret*/ : 0x55 /*push ebp*/);
-			VirtualProtect(mNoclipAddress, 1, oldProtect, &oldProtect);
+			setValue<std::uint8_t>(gNoclipAddress, toggle ? 0xC3 /*ret*/ : 0x55 /*push ebp*/);
+			VirtualProtect(gNoclipAddress, 1, oldProtect, &oldProtect);
 		}
 	}
 
 	bool IsNoclipOn()
 	{
-		return getValue<std::uint8_t>(mNoclipAddress) == 0xC3 /*ret*/ ? true : false;
+		return getValue<std::uint8_t>(gNoclipAddress) == 0xC3 /*ret*/ ? true : false;
 	}
 
 	void SpawnPickup(float coords[3], std::uint32_t id, std::uint32_t amount)
 	{
-		mSceAtCreateItemAt(coords, id, amount, 3, -1, 0, -1);
+		gSceAtCreateItemAt(coords, id, amount, 3, -1, 0, -1);
 	}
 
 	void SpawnPickup(std::uint32_t id, std::uint32_t amount)
 	{
-		float coords[3] = { getValue<float>(mHealthBase + HealthBaseOffsets::PlayerX), getValue<float>(mHealthBase + HealthBaseOffsets::PlayerY), getValue<float>(mHealthBase + HealthBaseOffsets::PlayerZ) };
+		float coords[3] = { getValue<float>(gHealthBase + HealthBaseOffsets::PlayerX), getValue<float>(gHealthBase + HealthBaseOffsets::PlayerY), getValue<float>(gHealthBase + HealthBaseOffsets::PlayerZ) };
 		SpawnPickup(coords, id, amount);
 	}
 
@@ -1217,14 +1238,14 @@ namespace Features
 
 	void SetMaxItemAmount(ItemId id, std::uint32_t amount)
 	{
-		std::unique_lock<std::mutex> lck(mStackCapMutex);
+		std::unique_lock<std::mutex> lck(gStackCapMutex);
 		std::string_view sql("REPLACE INTO stack_limit(item_id, max_amount) VALUES (?, ?)");
 		sqlite3 *database = nullptr;
 
-		mItemStackCap[id] = amount;
+		gItemStackCap[id] = amount;
 		lck.unlock();
 
-		if ((sqlite3_open(databaseName, &database) & 0xFF) == SQLITE_OK)
+		if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
 		{
 			sqlite3_stmt *statement = nullptr;
 
@@ -1243,30 +1264,30 @@ namespace Features
 	void ToggleMaxItemAmountHook(bool toggle)
 	{
 		if (toggle)
-			replaceFunction(mGetModelDataHookLocation, myGetInventoryModelData);
+			replaceFunction(gGetModelDataHookLocation, myGetInventoryModelData);
 		else
-			replaceFunction(mGetModelDataHookLocation, mGetModelDataOriginal);
+			replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
 	}
 
 	bool IsMaxItemHookEnabled()
 	{
-		return follow(mGetModelDataHookLocation) != mGetModelDataOriginal;
+		return follow(gGetModelDataHookLocation) != gGetModelDataOriginal;
 	}
 
 	void ToggleFastTmp(bool toggle)
 	{
 		DWORD oldProtect;
 
-		if (VirtualProtect(mTmpFireRate, sizeof(float), PAGE_READWRITE, &oldProtect))
+		if (VirtualProtect(gTmpFireRate, sizeof(float), PAGE_READWRITE, &oldProtect))
 		{
-			*(float *)mTmpFireRate = toggle ? 1.5f : 3.0f;
-			VirtualProtect(mTmpFireRate, sizeof(float), oldProtect, &oldProtect);
+			*(float *)gTmpFireRate = toggle ? 1.5f : 3.0f;
+			VirtualProtect(gTmpFireRate, sizeof(float), oldProtect, &oldProtect);
 		}
 	}
 
 	bool IsFastTmpEnabled()
 	{
-		return *(float*)mTmpFireRate == 1.5f;
+		return *(float*)gTmpFireRate == 1.5f;
 	}
 
 	void LoadSceneFile(const std::string &sceneName)
@@ -1275,45 +1296,45 @@ namespace Features
 
 		if (sceneHandle != INVALID_HANDLE_VALUE)
 		{
-			mReadMinimumHeader(sceneHandle, nullptr);
+			gReadMinimumHeader(sceneHandle, nullptr);
 			CloseHandle(sceneHandle);
 		}
 	}
 
 	void SetLoggerCallback(void(__cdecl *callback)(const char*, const char*, const char*, ...))
 	{
-		replaceFunction(mLoggerFunction, callback);
-		replaceFunction(mLoggerFunction2, callback);
+		replaceFunction(gLoggerFunction, callback);
+		replaceFunction(gLoggerFunction2, callback);
 	}
 
 	void OpenTypewriter(TypewriterMode mode)
 	{
-		Pointer node = getValue<Pointer>(mLinkedList + 0x34);
+		Pointer node = getValue<Pointer>(gLinkedList + 0x34);
 		node = getValue<Pointer>(node + 0x14);
 		node += 0x18;
 
 		setValue<TypewriterMode>(node + 0x14, mode);
-		setValue<Pointer>(node + 0x33C, mTypewriterProcedure);
+		setValue<Pointer>(node + 0x33C, gTypewriterProcedure);
 		setValue<std::uint8_t>(node + 4, 1);
 	}
 
 	void OpenMerchant()
 	{
-		mOpenMerchant(0x10, 0);
+		gOpenMerchant(0x10, 0);
 	}
 
 	void Melee(MeleeType type)
 	{
-		if (Entity* playerEntity = *mPlayerNode)
+		if (Entity* playerEntity = *gPlayerNode)
 		{
 			auto character = GetCharacter();
 
 			if (character == Character::Krauser) //Game crashes when doing this with Krauser for some reason.
 				return;
 
-			for (Entity *node = *mEntityList; node; node = node->mNext)
+			for (Entity *node = *gEntityList; node; node = node->mNext)
 			{
-				if (node->mVTable == mEnemyVTable)
+				if (node->mVTable == gEnemyVTable)
 				{
 					float rotation = playerEntity->mRotation;
 					bool freezeRotation = true;
@@ -1326,23 +1347,23 @@ namespace Features
 									freezeRotation = false; //don't freeze rotation
 								else
 									continue; //else, look for a new enemy
-							mMeleeHead(node, nullptr);
+							gMeleeHead(node, nullptr);
 							break;
 						case MeleeType::KNEE:
 							switch (character)
 							{
 								case Character::Krauser:
-									mMeleeKneeKrauser(node, nullptr);
+									gMeleeKneeKrauser(node, nullptr);
 									break;
 								case Character::Leon:
 									if (node->mHealth)
 										freezeRotation = false;
 									else
 										continue;
-									mMeleeKneeSuplex(node, nullptr);
+									gMeleeKneeSuplex(node, nullptr);
 									break;
 								default:
-									mMeleeKnee(node, nullptr);
+									gMeleeKnee(node, nullptr);
 							}
 							break;
 					}
@@ -1365,7 +1386,7 @@ namespace Features
 
 	void SetPlayerCoordinates(const std::array<float, 3> &coordinates)
 	{
-		if (Entity *playerEntity = *mPlayerNode)
+		if (Entity *playerEntity = *gPlayerNode)
 			playerEntity->mX = coordinates[0], playerEntity->mY = coordinates[1], playerEntity->mZ = coordinates[2];
 	}
 
@@ -1373,7 +1394,7 @@ namespace Features
 	{
 		std::optional<std::array<float, 3>> result;
 
-		if (Entity *playerEntity = *mPlayerNode)
+		if (Entity *playerEntity = *gPlayerNode)
 			result = decltype(result)::value_type{ playerEntity->mX, playerEntity->mY, playerEntity->mZ };
 
 		return result;
@@ -1403,21 +1424,21 @@ namespace Features
 		return result;
 	}
 
-	void SetDoorListUpdateCallback(decltype(mDoorListUpdateCallback) callback)
+	void SetDoorListUpdateCallback(decltype(gDoorListUpdateCallback) callback)
 	{
-		mDoorListUpdateCallback = callback;
+		gDoorListUpdateCallback = callback;
 	}
 
 	void EasyDrops(bool toggle)
 	{
 		if (toggle)
-			replaceFunction(mDropRandomizerHookLocation, myDropRandomizer);
+			replaceFunction(gDropRandomizerHookLocation, myDropRandomizer);
 		else
-			replaceFunction(mDropRandomizerHookLocation, mDropRandomizerOriginal);
+			replaceFunction(gDropRandomizerHookLocation, gDropRandomizerOriginal);
 	}
 
 	bool EasyDrops()
 	{
-		return follow(mDropRandomizerHookLocation) != mDropRandomizerOriginal;
+		return follow(gDropRandomizerHookLocation) != gDropRandomizerOriginal;
 	}
 }

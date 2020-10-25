@@ -290,7 +290,9 @@ namespace Features
 		Mission3TreasureMap,
 		Mission4TreasureMap,
 		Mission5TreasureMap,
-		Invalid = 0xFFFF
+		Invalid = 0xFFFF,
+		First = MagnumAmmo,
+		Last = Mission5TreasureMap
 	};
 	enum class MeleeType { HEAD, KNEE };
 	enum class Difficulty : std::uint32_t { AMATEUR, EASY = 3, NORMAL = 5, PROFESSIONAL = 6 };
@@ -372,7 +374,9 @@ namespace Features
 
 	class InventoryIconData
 	{
-		enum class ItemType : std::uint8_t { Gun = 1, Ammo, Grenade, Medicine = 6, WeaponAttachment = 9, File, AttachCase };
+	public:
+		enum class ItemType : std::uint8_t { GUN = 1, AMMO, GRENADE, MEDICINE = 6, WEAPON_ATTACHMENT = 9, FILE, ATTACH_CASE };
+	private:
 		std::uint16_t mUnknown;
 		ItemType mItemType;
 		std::uint8_t mUnknown2;
@@ -382,6 +386,8 @@ namespace Features
 	public:
 		void stackLimit(std::uint8_t value);
 		std::uint8_t stackLimit() const;
+		void itemType(ItemType);
+		ItemType itemType() const;
 	};
 
 	bool Initialize();
@@ -414,7 +420,7 @@ namespace Features
 	bool IsWeapon(ItemId id);
 	float* GetFirepowerTableEntry(std::uint8_t i);
 	void SetFirepowerTableEntry(std::uint8_t i, const float(&newValues)[7]);
-	const std::vector<ItemId>& GetAmmoItemIds();
+	const std::vector<ItemId> GetAmmoItemIds();
 
 	void SetMoney(std::uint32_t value);
 	std::uint32_t GetMoney();
