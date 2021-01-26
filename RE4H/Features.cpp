@@ -57,7 +57,7 @@ namespace Features
 		};
 	}
 
-	namespace Character
+	/*namespace Character
 	{
 		enum : std::uint32_t
 		{
@@ -68,7 +68,7 @@ namespace Features
 			Krauser,
 			Wesker
 		};
-	}
+	}*/
 
 	enum class GameState : std::uint32_t
 	{
@@ -730,6 +730,73 @@ namespace Features
 		sqlite3_close_v2(database);
 	}
 	
+	bool operator==(Character lhs, std::uint8_t rhs)
+	{
+		return lhs == Character::Leon && rhs == 0
+			|| lhs == Character::Ashley && rhs == 1
+			|| lhs == Character::Ada && rhs == 2
+			|| lhs == Character::HUNK && rhs == 3
+			|| lhs == Character::Krauser && rhs == 4
+			|| lhs == Character::Wesker && rhs == 5;
+	}
+
+	bool operator==(std::uint8_t lhs, Character rhs)
+	{
+		return rhs == lhs;
+	}
+
+	bool operator!=(Character lhs, std::uint8_t rhs)
+	{
+		return !(lhs == rhs);
+	}
+
+	bool operator!=(std::uint8_t lhs, Character rhs)
+	{
+		return !(lhs == rhs);
+	}
+
+	Character GetCharacterFromId(std::uint8_t id)
+	{
+		Character result;
+
+		switch (id)
+		{
+			case 0:
+				result = Character::Leon;
+				break;
+
+			case 1:
+				result = Character::Ashley;
+				break;
+
+			case 2:
+				result = Character::Ada;
+				break;
+
+			case 3:
+				result = Character::HUNK;
+				break;
+
+			case 4:
+				result = Character::Krauser;
+				break;
+
+			case 5:
+				result = Character::Wesker;
+				break;
+
+			default:
+				throw std::runtime_error("Invalid character id");
+		}
+
+		return result;
+	}
+
+	std::uint8_t GetCharacterId(Character character)
+	{
+		return static_cast<std::uint8_t>(character);
+	}
+
 	bool Initialize()
 	{
 		sqlite3 *database = nullptr;
@@ -932,37 +999,35 @@ namespace Features
 		setValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::AshleyPresent, toggle ? 0x04000000 : 0);
 	}
 
-	void SetCharacter(std::uint8_t id)
+	void SetCharacter(Character id)
 	{
-		if (id <= 5)
-			setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Character, id);
+		setValue<Character>(gHealthBase + HealthBaseOffsets::Character, id);
 	}
 
-	std::uint8_t GetCharacter()
+	Character GetCharacter()
 	{
-		return getValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Character);
+		return getValue<Character>(gHealthBase + HealthBaseOffsets::Character);
 	}
 
 	void SetCostume(std::uint8_t id)
 	{
-		using namespace Character;
 		switch (GetCharacter())
 		{
-			case Leon:
+			case Character::Leon:
 				if (id <= 4)
 					setValue(gHealthBase + HealthBaseOffsets::Costume, id);
 				break;
-			case Ashley:
+			case Character::Ashley:
 				if (id <= 2)
 					setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Costume, id);
 				break;
-			case Ada:
+			case Character::Ada:
 				if (id <= 2)
 					setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Costume, id != 2 ? id : 3);
 				break;
-			case HUNK:
-			case Krauser:
-			case Wesker:
+			case Character::HUNK:
+			case Character::Krauser:
+			case Character::Wesker:
 				if (!id)
 					setValue<std::uint8_t>(gHealthBase + HealthBaseOffsets::Costume, id);
 				break;
@@ -1009,18 +1074,32 @@ namespace Features
 		}
 	}
 
-	const std::vector<String>& GetCharacterCostumeNames(std::uint8_t id)
+	const std::vector<StringView> GetCharacterCostumeNames(Character id)
 	{
-		static const std::vector<String> costumes[7] = {
-			{ TEXT("Normal with Jacket"), TEXT("Normal Without Jacket"), TEXT("Normal With Vest"), TEXT("R.P.D"), TEXT("Mafia") }, //Leon
-			{ TEXT("Normal"), TEXT("Pop star"), TEXT("Knight") }, //Ashley
-			{ TEXT("The Mercenaries"), TEXT("Assignment Ada"), TEXT("Separate Ways") }, //Ada
-			{ TEXT("Normal") }, //HUNK
-			{ TEXT("Normal") }, //Krauser
-			{ TEXT("Normal") } //Wesker
-		};
+		std::vector<StringView> result;
 
-		return costumes[id <= 5 ? id : 6];
+		switch (GetCharacter())
+		{
+			case Character::Leon:
+				result = { TEXT("Normal with Jacket"), TEXT("Normal Without Jacket"), TEXT("Normal With Vest"), TEXT("R.P.D"), TEXT("Mafia") };
+				break;
+
+			case Character::Ashley:
+				result = { TEXT("Normal"), TEXT("Pop star"), TEXT("Knight") };
+				break;
+
+			case Character::Ada:
+				result = { TEXT("The Mercenaries"), TEXT("Assignment Ada"), TEXT("Separate Ways") };
+				break;
+
+			case Character::HUNK:
+			case Character::Krauser:
+			case Character::Wesker:
+				result = { TEXT("Normal") };
+				break;
+		}
+
+		return result;
 	}
 
 	WeaponData* GetWeaponDataPtr(ItemId id)
@@ -1325,7 +1404,7 @@ namespace Features
 
 	void Melee(MeleeType type)
 	{
-		if (Entity* playerEntity = *gPlayerNode)
+		if (Entity *playerEntity = *gPlayerNode)
 		{
 			auto character = GetCharacter();
 

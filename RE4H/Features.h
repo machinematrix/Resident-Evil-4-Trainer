@@ -7,11 +7,14 @@
 #include <functional>
 #include <mutex>
 #include <map>
+#include <string_view>
 
 #ifdef UNICODE
-typedef std::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t>> String;
+using String = std::basic_string<wchar_t>;
+using StringView = std::basic_string_view<wchar_t>;
 #else
-typedef std::basic_string<char, std::char_traits<char>, std::allocator<char>> String;
+using String = std::basic_string<char>;
+using StringView = std::basic_string_view<char>;
 #endif
 
 namespace Features
@@ -294,6 +297,15 @@ namespace Features
 		First = MagnumAmmo,
 		Last = Mission5TreasureMap
 	};
+	enum class Character : std::uint8_t
+	{
+		Leon,
+		Ashley,
+		Ada,
+		HUNK,
+		Krauser,
+		Wesker
+	};
 	enum class MeleeType { HEAD, KNEE };
 	enum class Difficulty : std::uint32_t { AMATEUR, EASY = 3, NORMAL = 5, PROFESSIONAL = 6 };
 	enum class TypewriterMode : std::uint32_t { LOAD, SAVE };
@@ -390,6 +402,13 @@ namespace Features
 		ItemType itemType() const;
 	};
 
+	bool operator==(Character lhs, std::uint8_t rhs);
+	bool operator==(std::uint8_t lhs, Character rhs);
+	bool operator!=(Character lhs, std::uint8_t rhs);
+	bool operator!=(std::uint8_t lhs, Character rhs);
+	Character GetCharacterFromId(std::uint8_t id);
+	std::uint8_t GetCharacterId(Character character);
+
 	bool Initialize();
 	void Terminate();
 
@@ -408,12 +427,12 @@ namespace Features
 	void ToggleAshley(bool toggle);
 
 	//0: Leon | 1: Ashley | 2: Ada | 3: HUNK | 4: Krauser | 5: Wesker
-	void SetCharacter(std::uint8_t id);
-	std::uint8_t GetCharacter();
+	void SetCharacter(Character id);
+	Character GetCharacter();
 	void SetCostume(std::uint8_t id);
 	std::uint8_t GetCostume();
 	void FixCostume();
-	const std::vector<String>& GetCharacterCostumeNames(std::uint8_t id);
+	const std::vector<StringView> GetCharacterCostumeNames(Character id);
 
 	WeaponData* GetWeaponDataPtr(ItemId id);
 	void SetWeaponDataPtr(WeaponData *target, const WeaponData &source, const float(&newFirepower)[7]);

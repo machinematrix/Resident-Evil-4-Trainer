@@ -303,7 +303,8 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 	auto scene = Features::GetScene();
 
 	//character
-	std::int8_t cbChar = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0)), currChar = Features::GetCharacter();
+	std::int8_t cbChar = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0));
+	Features::Character currChar = Features::GetCharacter();
 	std::int8_t cbCostume = static_cast<std::uint8_t>(SendMessage(wndInfo.costumeComboBox, CB_GETCURSEL, 0, 0)), currCostume = Features::GetCostume();
 
 	//difficulty
@@ -312,10 +313,10 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 
 	if (cbChar != currChar)
 	{
-		SendMessage(wndInfo.characterComboBox, CB_SETCURSEL, currChar, 0);
+		SendMessage(wndInfo.characterComboBox, CB_SETCURSEL, GetCharacterId(currChar), 0);
 		SendMessage(wndInfo.costumeComboBox, CB_RESETCONTENT, 0, 0);
-		for (const auto &costumeName : Features::GetCharacterCostumeNames(currChar))
-			SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(costumeName.c_str()));
+		for (const auto costumeName : Features::GetCharacterCostumeNames(currChar))
+			SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(costumeName.data()));
 		Features::FixCostume();
 		currCostume = Features::GetCostume();
 	}
@@ -473,15 +474,15 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 		case CHARACTER_COMBO_BOX:
 			if (HIWORD(wParam) == CBN_SELCHANGE)
 			{
-				std::uint8_t character = static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0));
+				auto character = Features::GetCharacterFromId(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0));
 
 				if (character != CB_ERR)
 				{
 					Features::SetCharacter(character);
 					SendMessage(wndInfo.costumeComboBox, CB_RESETCONTENT, 0, 0);
 
-					for (const auto &costumeName : Features::GetCharacterCostumeNames(Features::GetCharacter()))
-						SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.c_str());
+					for (const auto costumeName : Features::GetCharacterCostumeNames(Features::GetCharacter()))
+						SendMessage(wndInfo.costumeComboBox, CB_ADDSTRING, 0, (LPARAM)costumeName.data());
 					Features::FixCostume();
 				}
 				else
