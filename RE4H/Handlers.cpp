@@ -474,7 +474,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 		case CHARACTER_COMBO_BOX:
 			if (HIWORD(wParam) == CBN_SELCHANGE)
 			{
-				auto character = Features::GetCharacterFromId(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0));
+				auto character = Features::GetCharacterFromId(static_cast<std::uint8_t>(SendMessage(wndInfo.characterComboBox, CB_GETCURSEL, 0, 0)));
 
 				if (character != CB_ERR)
 				{
@@ -658,14 +658,14 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				case KeyBindingsConfig::INCREASE_ALTITUDE:
 					if (auto coordinates = Features::GetPlayerCoordinates())
 					{
-						coordinates.value()[1] += 1000.f;
+						coordinates.value().mY += 1000.f;
 						Features::SetPlayerCoordinates(coordinates.value());
 					}
 					break;
 				case KeyBindingsConfig::DECREASE_ALTITUDE:
 					if (auto coordinates = Features::GetPlayerCoordinates())
 					{
-						coordinates.value()[1] -= 1000.f;
+						coordinates.value().mY -= 1000.f;
 						Features::SetPlayerCoordinates(coordinates.value());
 					}
 					break;

@@ -310,6 +310,13 @@ namespace Features
 	enum class Difficulty : std::uint32_t { AMATEUR, EASY = 3, NORMAL = 5, PROFESSIONAL = 6 };
 	enum class TypewriterMode : std::uint32_t { LOAD, SAVE };
 
+	struct Coordinates
+	{
+		float mX;
+		float mY;
+		float mZ;
+	};
+
 	class ItemData //Must be 14 bytes
 	{
 		ItemId mId;
@@ -449,7 +456,7 @@ namespace Features
 	const std::vector<void *> GetDoors();
 	void SetScene(std::uint32_t scene);
 	std::uint32_t GetScene();
-	std::array<float, 3> GetSceneEntryCoords();
+	Coordinates GetSceneEntryCoords();
 
 	void SetDifficulty(Difficulty value);
 	Difficulty GetDifficulty();
@@ -457,8 +464,8 @@ namespace Features
 	void ToggleNoclip(bool toggle);
 	bool IsNoclipOn();
 
-	void SpawnPickup(float coords[3], std::uint32_t id, std::uint32_t amount);
-	void SpawnPickup(std::uint32_t id, std::uint32_t amount);
+	void SpawnPickup(const Coordinates &coords, ItemId id, std::uint32_t amount);
+	void SpawnPickup(ItemId id, std::uint32_t amount);
 
 	InventoryIconData GetItemDimensions(ItemId id);
 	void SetMaxItemAmount(ItemId id, std::uint32_t amount);
@@ -476,8 +483,8 @@ namespace Features
 	void OpenMerchant();
 
 	void Melee(MeleeType);
-	void SetPlayerCoordinates(const std::array<float, 3> &coordinates);
-	std::optional<std::array<float, 3>> GetPlayerCoordinates();
+	void SetPlayerCoordinates(const Coordinates &coordinates);
+	std::optional<Coordinates> GetPlayerCoordinates();
 
 	std::vector<std::wstring> GetSceneFileNames();
 	void SetDoorListUpdateCallback(std::function<void(std::uint32_t, const std::vector<void*>&)>);

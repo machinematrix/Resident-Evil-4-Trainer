@@ -83,9 +83,7 @@ namespace Features
 		char mPadding1[0x4];
 		Entity *mNext;
 		char mPadding2[0x88];
-		float mX;
-		float mY;
-		float mZ;
+		Coordinates mCoords;
 		char mPadding3[0x4];
 		float mRotation;
 		char mPadding4[0x54];
@@ -94,9 +92,7 @@ namespace Features
 		std::uint8_t mRunningFlag; //1 == Not running | 3 == Running
 		std::uint8_t mAimingFlag; //1 == Aiming
 		char mPadding5[0x10];
-		float mX2;
-		float mY2;
-		float mZ2;
+		Coordinates mCoords2;
 		char mPadding6[0x208];
 		std::uint16_t mHealth;
 		std::uint16_t mHealthLimit;
@@ -104,17 +100,17 @@ namespace Features
 
 	static_assert(offsetof(Features::Entity, Features::Entity::mVTable) == 0x0, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mNext) == 0x8, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mX) == 0x94, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mY) == 0x98, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mZ) == 0x9C, "Bad offset");
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords) == 0x94, "Bad offset");
+	/*static_assert(offsetof(Features::Entity, Features::Entity::mY) == 0x98, "Bad offset");
+	static_assert(offsetof(Features::Entity, Features::Entity::mZ) == 0x9C, "Bad offset");*/
 	static_assert(offsetof(Features::Entity, Features::Entity::mRotation) == 0xA4, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mMeleeFlag) == 0xFC, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mMovementFlag) == 0xFD, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mRunningFlag) == 0xFE, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mAimingFlag) == 0xFF, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mX2) == 0x110, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mY2) == 0x114, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mZ2) == 0x118, "Bad offset");
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords2) == 0x110, "Bad offset");
+	/*static_assert(offsetof(Features::Entity, Features::Entity::mY2) == 0x114, "Bad offset");
+	static_assert(offsetof(Features::Entity, Features::Entity::mZ2) == 0x118, "Bad offset");*/
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealth) == 0x324, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealthLimit) == 0x326, "Bad offset");
 
@@ -145,7 +141,7 @@ namespace Features
 		Pointer gUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
 		Pointer gOriginalLogger = nullptr, gOriginalLogger2 = nullptr;
 		void(__cdecl *gUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
-		void(__cdecl *gSceAtCreateItemAt)(float coords[3], int32_t itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
+		void(__cdecl *gSceAtCreateItemAt)(Coordinates coords, ItemId itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
 		void(__cdecl *gGetInventoryModelData)(ItemId id, InventoryIconData *result);
 		std::uint32_t(__cdecl *gReadMinimumHeader)(void *sceneHandle, void *unknown);
 		void(__cdecl *gOpenMerchant)(std::int32_t, std::int32_t);
@@ -1266,9 +1262,9 @@ namespace Features
 		return getValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::Scene);
 	}
 
-	std::array<float, 3> GetSceneEntryCoords()
+	Coordinates GetSceneEntryCoords()
 	{
-		return getValue<std::array<float, 3>>(gHealthBase + HealthBaseOffsets::SceneEntryX);
+		return getValue<Coordinates>(gHealthBase + HealthBaseOffsets::SceneEntryX);
 	}
 
 	void SetDifficulty(Difficulty value)
@@ -1297,14 +1293,14 @@ namespace Features
 		return getValue<std::uint8_t>(gNoclipAddress) == 0xC3 /*ret*/ ? true : false;
 	}
 
-	void SpawnPickup(float coords[3], std::uint32_t id, std::uint32_t amount)
+	void SpawnPickup(const Coordinates &coords, ItemId id, std::uint32_t amount)
 	{
 		gSceAtCreateItemAt(coords, id, amount, 3, -1, 0, -1);
 	}
 
-	void SpawnPickup(std::uint32_t id, std::uint32_t amount)
+	void SpawnPickup(ItemId id, std::uint32_t amount)
 	{
-		float coords[3] = { getValue<float>(gHealthBase + HealthBaseOffsets::PlayerX), getValue<float>(gHealthBase + HealthBaseOffsets::PlayerY), getValue<float>(gHealthBase + HealthBaseOffsets::PlayerZ) };
+		Coordinates coords{ getValue<float>(gHealthBase + HealthBaseOffsets::PlayerX), getValue<float>(gHealthBase + HealthBaseOffsets::PlayerY), getValue<float>(gHealthBase + HealthBaseOffsets::PlayerZ) };
 		SpawnPickup(coords, id, amount);
 	}
 
@@ -1463,18 +1459,18 @@ namespace Features
 		}
 	}
 
-	void SetPlayerCoordinates(const std::array<float, 3> &coordinates)
+	void SetPlayerCoordinates(const Coordinates &coordinates)
 	{
 		if (Entity *playerEntity = *gPlayerNode)
-			playerEntity->mX = coordinates[0], playerEntity->mY = coordinates[1], playerEntity->mZ = coordinates[2];
+			playerEntity->mCoords = coordinates;
 	}
 
-	std::optional<std::array<float, 3>> GetPlayerCoordinates()
+	std::optional<Coordinates> GetPlayerCoordinates()
 	{
-		std::optional<std::array<float, 3>> result;
+		std::optional<Coordinates> result;
 
 		if (Entity *playerEntity = *gPlayerNode)
-			result = decltype(result)::value_type{ playerEntity->mX, playerEntity->mY, playerEntity->mZ };
+			result = playerEntity->mCoords;
 
 		return result;
 	}
