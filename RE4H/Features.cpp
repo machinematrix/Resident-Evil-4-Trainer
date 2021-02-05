@@ -57,19 +57,6 @@ namespace Features
 		};
 	}
 
-	/*namespace Character
-	{
-		enum : std::uint32_t
-		{
-			Leon,
-			Ashley,
-			Ada,
-			HUNK,
-			Krauser,
-			Wesker
-		};
-	}*/
-
 	enum class GameState : std::uint32_t
 	{
 		Playing = 0x3,
@@ -101,16 +88,12 @@ namespace Features
 	static_assert(offsetof(Features::Entity, Features::Entity::mVTable) == 0x0, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mNext) == 0x8, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mCoords) == 0x94, "Bad offset");
-	/*static_assert(offsetof(Features::Entity, Features::Entity::mY) == 0x98, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mZ) == 0x9C, "Bad offset");*/
 	static_assert(offsetof(Features::Entity, Features::Entity::mRotation) == 0xA4, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mMeleeFlag) == 0xFC, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mMovementFlag) == 0xFD, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mRunningFlag) == 0xFE, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mAimingFlag) == 0xFF, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mCoords2) == 0x110, "Bad offset");
-	/*static_assert(offsetof(Features::Entity, Features::Entity::mY2) == 0x114, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mZ2) == 0x118, "Bad offset");*/
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealth) == 0x324, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealthLimit) == 0x326, "Bad offset");
 
@@ -992,7 +975,13 @@ namespace Features
 
 	void ToggleAshley(bool toggle)
 	{
-		setValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::AshleyPresent, toggle ? 0x04000000 : 0);
+		if (Entity *playerEntity = *gPlayerNode)
+		{
+			setValue<std::uint32_t>(gHealthBase + HealthBaseOffsets::AshleyPresent, toggle ? 0x04000000 : 0);
+			setValue<Coordinates>(gHealthBase + HealthBaseOffsets::SceneEntryX, playerEntity->mCoords);
+			setValue<float>(gHealthBase + HealthBaseOffsets::Rotation, playerEntity->mRotation);
+			setValue<GameState>(gHealthBase + HealthBaseOffsets::Status, GameState::ChangingScene);
+		}
 	}
 
 	void SetCharacter(Character id)
