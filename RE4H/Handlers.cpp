@@ -1,4 +1,5 @@
 #include "Handlers.h"
+#include <regex>
 
 HWND mainWindowHandle;
 
@@ -7,7 +8,7 @@ void loggerCallback(const char *msgCouldBeNull1, const char*msgCouldBeNull2, con
 	#ifndef NDEBUG
 	using std::string;
 
-	static std::mutex mtx;
+	static std::mutex outputMutex;
 	std::string formatString;
 	string::size_type i = 0;
 	va_list argumentList;
@@ -71,8 +72,35 @@ void loggerCallback(const char *msgCouldBeNull1, const char*msgCouldBeNull2, con
 		}
 
 		default: {
-			void *unknown = va_arg(argumentList, void *);
-			++i;
+			static const std::regex hexRegex("%([[:digit:]]+)(x|d)");
+			std::smatch results;
+
+			if (std::regex_search(formatString.cbegin() + i, formatString.cend(), results, hexRegex) && !results.position())
+			{
+				std::ostringstream stream;
+				std::string strNum;
+				unsigned argument = va_arg(argumentList, unsigned), argumentLength = std::stoul(results[1]);
+
+				if (results[2] == 'x')
+					stream << std::hex;
+				stream << argument;
+				strNum = stream.str();
+
+				if (argumentLength <= strNum.size())
+					strNum.erase(strNum.begin(), strNum.begin() + (strNum.size() - argumentLength));
+				else
+					strNum.insert(0, argumentLength - strNum.size(), '0');
+
+				formatString.replace(i, results.length(), strNum);
+				i += strNum.size();
+			}
+			else
+			{
+				void *unknown = va_arg(argumentList, void*);
+
+				MessageBeep(MB_ICONERROR);
+				++i;
+			}
 			break;
 		}
 		}
@@ -80,9 +108,9 @@ void loggerCallback(const char *msgCouldBeNull1, const char*msgCouldBeNull2, con
 
 	va_end(argumentList);
 
-	mtx.lock();
+	outputMutex.lock();
 	std::cout << formatString << "\nReturn Address: " << returnAddress << '\n' << std::endl;
-	mtx.unlock();
+	outputMutex.unlock();
 
 	#endif
 }
