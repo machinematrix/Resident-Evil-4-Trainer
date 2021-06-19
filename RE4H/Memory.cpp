@@ -26,7 +26,7 @@ namespace {
 			if (temp == "??") result.push_back(0x3F);
 			else result.push_back(std::stoi(temp, nullptr, 16));
 		}
-		return std::move(result);
+		return result;
 	}
 
 	std::vector<PROCESS_HEAP_ENTRY> getHeapElements()
