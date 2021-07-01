@@ -895,6 +895,7 @@ namespace Features
 		cout << "Set Scene: " << (void*)gUseDoor << endl;
 		cout << "SceCreateItemAt: " << (void*)gSceAtCreateItemAt << endl;
 		cout << "Logger Function Jump: " << (void*)gLoggerFunction << endl;
+		cout << "Player entity pointer: " << (void *)gPlayerNode << endl;
 		#endif
 
 		return true;
