@@ -123,6 +123,9 @@ namespace Features
 		Entity **gPlayerNode; //bio4.exe+857054
 		Pointer gUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
 		Pointer gOriginalLogger = nullptr, gOriginalLogger2 = nullptr;
+		Pointer gFirepowerDivision; //bio4.exe+306718
+		float *gOriginalFirepowerIdentity; //bio4.exe+800B50
+		float gMockFirepowerIdentity = 1.0f;
 		void(__cdecl *gUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
 		void(__cdecl *gSceAtCreateItemAt)(Coordinates coords, ItemId itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
 		void(__cdecl *gGetInventoryModelData)(ItemId id, InventoryIconData *result);
@@ -815,12 +818,13 @@ namespace Features
 		gMeleeKneeKrauser = reinterpret_cast<decltype(gMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
 		gMeleeKneeSuplex = reinterpret_cast<decltype(gMeleeKneeSuplex)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
 		gMelee = reinterpret_cast<decltype(gMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"));
+		gFirepowerDivision = patternScan("D8 35 ????????  D9 5D F8  D9 45 F8");
 
 		if (!(gHealthBase && gPlayerBase && gWeaponDataIndex && gFirePowerTable && gNoclipAddress && gDoorData
 			  && gDoorList && gDropRandomizerHookLocation && gGetModelDataHookLocation && gSceAtHookLocation && gTmpFireRate && gLoggerFunction
 			  && gLoggerFunction2 && gLinkedList && gTypewriterProcedure && gEntityList && gEnemyVTable && gUseDoorHookLocation
 			  && gUseDoor && gSceAtCreateItemAt && gGetInventoryModelData && gReadMinimumHeader && gOpenMerchant && gMeleeHead
-			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee))
+			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee && gFirepowerDivision))
 			return false;
 
 		if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
@@ -863,6 +867,12 @@ namespace Features
 		gEntityList = getValue<Entity**>(reinterpret_cast<Pointer>(gEntityList) + 2);
 		gEnemyVTable = getValue<Pointer>(gEnemyVTable + 2);
 		gUseDoorHookLocation = getValue<Pointer>(gUseDoorHookLocation + 3) + 1 * 8;
+		gOriginalFirepowerIdentity = GetFirepowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
+		
+		//For some reason, all firepower values shown on the UI are divided by the handgun's firepower at level 0, so modifying
+		//it will mess up firepower values shown for all weapons. This changes the game's code so it divides using a value at another address
+		//to allow players to modify the first handgun firepower value without messing up the UI.
+		setValue(gFirepowerDivision + 2, &gMockFirepowerIdentity);
 
 		//Install hooks
 		gGetModelDataOriginal = replaceFunction(gGetModelDataHookLocation, myGetInventoryModelData);
@@ -892,6 +902,7 @@ namespace Features
 
 	void Terminate()
 	{
+		setValue(gFirepowerDivision + 2, gOriginalFirepowerIdentity);
 		replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
 		replaceFunction(gDropRandomizerHookLocation, gDropRandomizerOriginal);
 		replaceFunction(gSceAtHookLocation, gSceAtOriginal);
