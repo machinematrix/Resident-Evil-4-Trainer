@@ -28,7 +28,7 @@ void InventoryListView::refresh()
 		}
 	}
 
-	for (Features::ItemData *first = Features::BegInventory(), *last = Features::EndInventory(); first != last; ++first)
+	for (Features::ItemData *first = Features::BeginInventory(), *last = Features::EndInventory(); first != last; ++first)
 	{
 		if (first->valid()) //there are no more invalid items in the list, so this is ok.
 		{

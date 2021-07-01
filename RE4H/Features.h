@@ -425,7 +425,7 @@ namespace Features
 	std::uint16_t GetHealthLimit();
 
 	String GetItemName(ItemId id); //throws out_of_range
-	ItemData* BegInventory();
+	ItemData* BeginInventory();
 	ItemData* EndInventory();
 	ItemData* AddItem();
 	const std::vector<String>& GetItemNames();
