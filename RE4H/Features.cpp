@@ -636,8 +636,9 @@ namespace Features
 	{
 		bool result = false;
 		std::vector<ItemId> candidates = { ItemId::TreasureBoxS, ItemId::FlashGrenade, ItemId::IncendiaryGrenade, ItemId::HandGrenade };
-		static std::default_random_engine engine;
-		static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(/*ItemIds::MagnumAmmo*/0, /*ItemIds::Mission5TreasureMap*/300);
+		static std::random_device hardwareEngine;
+		static std::mt19937 softwareEngine(hardwareEngine.entropy() ? hardwareEngine() : static_cast<std::mt19937::result_type>(time(nullptr)));
+		//static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(/*ItemIds::MagnumAmmo*/0, /*ItemIds::Mission5TreasureMap*/300);
 		InventoryIconData icon;
 
 		if (GetHealth() <= GetHealthLimit() / 2)
@@ -646,7 +647,7 @@ namespace Features
 			candidates.push_back(ItemId::FirstAidSpray);
 		}
 
-		for (ItemData *item = BegInventory(), *end = EndInventory(); item != end; ++item)
+		for (ItemData *item = BeginInventory(), *end = EndInventory(); item != end; ++item)
 		{
 			if (item->valid())
 			{
@@ -663,9 +664,15 @@ namespace Features
 			}
 		}
 
-		*outItemId = candidates[randomizer(engine) % candidates.size()];
+		std::uniform_int_distribution<size_t> candidateDistribution(0, candidates.size() - 1);
+
+		if (hardwareEngine.entropy())
+			*outItemId = candidates[candidateDistribution(hardwareEngine) % candidates.size()];
+		else
+			*outItemId = candidates[candidateDistribution(softwareEngine) % candidates.size()];
 		gGetInventoryModelData(*outItemId, &icon);
-		*outItemCount = randomizer(engine) % icon.stackLimit() + 1;
+		std::uniform_int_distribution<std::uint32_t> itemCountDistribution(1, icon.stackLimit());
+		*outItemCount = itemCountDistribution(softwareEngine);
 
 		result = true;
 
@@ -918,7 +925,7 @@ namespace Features
 		return gItems.at(id);
 	}
 
-	ItemData* BegInventory()
+	ItemData* BeginInventory()
 	{
 		return getValue<ItemData*>(gPlayerBase + PlayerBaseOffsets::Inventory);
 	}
