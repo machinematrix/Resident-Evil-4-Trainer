@@ -622,7 +622,7 @@ namespace Features
 		return mItemType;
 	}
 
-	void __cdecl myGetInventoryModelData(ItemId id, InventoryIconData *result)
+	void __cdecl MyGetInventoryModelData(ItemId id, InventoryIconData *result)
 	{
 		if (id != ItemId::Invalid)
 		{
@@ -636,20 +636,13 @@ namespace Features
 		}
 	}
 
-	int __cdecl myDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std::uint32_t *outItemCount, void *unknownPassZero)
+	int __cdecl MyDropRandomizer(std::uint32_t enemyId, ItemId *outItemId, std::uint32_t *outItemCount, void *unknownPassZero)
 	{
 		bool result = false;
-		std::vector<ItemId> candidates = { ItemId::TreasureBoxS, ItemId::FlashGrenade, ItemId::IncendiaryGrenade, ItemId::HandGrenade };
+		std::vector<ItemId> candidates = { ItemId::TreasureBoxS, ItemId::FlashGrenade, ItemId::IncendiaryGrenade, ItemId::HandGrenade, ItemId::GreenHerb, ItemId::FirstAidSpray };
 		static std::random_device hardwareEngine;
-		static std::mt19937 softwareEngine(hardwareEngine.entropy() ? hardwareEngine() : static_cast<std::mt19937::result_type>(time(nullptr)));
-		//static std::uniform_int_distribution<std::remove_reference<decltype(candidates)>::type::size_type> randomizer(/*ItemIds::MagnumAmmo*/0, /*ItemIds::Mission5TreasureMap*/300);
-		InventoryIconData icon;
-
-		if (GetHealth() <= GetHealthLimit() / 2)
-		{
-			candidates.push_back(ItemId::GreenHerb);
-			candidates.push_back(ItemId::FirstAidSpray);
-		}
+		static bool entropy = hardwareEngine.entropy() ? true : false;
+		static std::mt19937 softwareEngine(entropy ? hardwareEngine() : static_cast<std::mt19937::result_type>(time(nullptr)));
 
 		for (ItemData *item = BeginInventory(), *end = EndInventory(); item != end; ++item)
 		{
@@ -659,26 +652,46 @@ namespace Features
 				WeaponData *gun = GetWeaponDataPtr(item->itemId());
 
 				if (gun && std::find(ammoIds.cbegin(), ammoIds.cend(), gun->weaponAmmo()) != ammoIds.end())
-				{
 					candidates.push_back(gun->weaponAmmo());
-					candidates.push_back(gun->weaponAmmo());
-					candidates.push_back(gun->weaponAmmo());
-					candidates.push_back(gun->weaponAmmo());
-				}
 			}
 		}
 
-		std::uniform_int_distribution<size_t> candidateDistribution(0, candidates.size() - 1);
+		for (auto candidate : candidates)
+		{
+			float chance = .25f;
 
-		if (hardwareEngine.entropy())
-			*outItemId = candidates[candidateDistribution(hardwareEngine) % candidates.size()];
-		else
-			*outItemId = candidates[candidateDistribution(softwareEngine) % candidates.size()];
-		gGetInventoryModelData(*outItemId, &icon);
-		std::uniform_int_distribution<std::uint32_t> itemCountDistribution(1, icon.stackLimit());
-		*outItemCount = itemCountDistribution(softwareEngine);
+			switch (candidate)
+			{
+				case ItemId::HandcannonAmmo:
+				case ItemId::MagnumAmmo:
+					chance = .05f;
+					break;
+				case ItemId::HandGrenade:
+				case ItemId::IncendiaryGrenade:
+				case ItemId::FlashGrenade:
+				case ItemId::FirstAidSpray:
+				case ItemId::GreenHerb:
+					chance = .10f;
+					break;
+			}
 
-		result = true;
+			std::bernoulli_distribution candidateDistribution(chance);
+			
+			if (entropy && candidateDistribution(hardwareEngine) || !entropy && candidateDistribution(softwareEngine))
+			{
+				InventoryIconData icon;
+
+				result = true;
+				gGetInventoryModelData(candidate, &icon);
+				std::uniform_int_distribution<std::uint32_t> itemCountDistribution(1, icon.stackLimit());
+				*outItemId = candidate;
+				if (entropy)
+					*outItemCount = itemCountDistribution(hardwareEngine);
+				else
+					*outItemCount = itemCountDistribution(softwareEngine);
+				break;
+			}
+		}
 
 		return result;
 	}
@@ -877,8 +890,8 @@ namespace Features
 		setValue(gFirepowerDivision + 2, &gMockFirepowerIdentity);
 
 		//Install hooks
-		gGetModelDataOriginal = replaceFunction(gGetModelDataHookLocation, myGetInventoryModelData);
-		gDropRandomizerOriginal = replaceFunction(gDropRandomizerHookLocation, myDropRandomizer);
+		gGetModelDataOriginal = replaceFunction(gGetModelDataHookLocation, MyGetInventoryModelData);
+		gDropRandomizerOriginal = replaceFunction(gDropRandomizerHookLocation, MyDropRandomizer);
 		gSceAtOriginal = replaceFunction(gSceAtHookLocation, sceAtHook);
 		gOriginalLogger = replaceFunction(gLoggerFunction, gLoggerFunction);
 		gOriginalLogger2 = replaceFunction(gLoggerFunction2, gLoggerFunction2);
@@ -1318,7 +1331,7 @@ namespace Features
 	InventoryIconData GetItemDimensions(ItemId id)
 	{
 		InventoryIconData result = {};
-		myGetInventoryModelData(id, &result);
+		MyGetInventoryModelData(id, &result);
 		return result;
 	}
 
@@ -1350,7 +1363,7 @@ namespace Features
 	void ToggleMaxItemAmountHook(bool toggle)
 	{
 		if (toggle)
-			replaceFunction(gGetModelDataHookLocation, myGetInventoryModelData);
+			replaceFunction(gGetModelDataHookLocation, MyGetInventoryModelData);
 		else
 			replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
 	}
@@ -1518,7 +1531,7 @@ namespace Features
 	void EasyDrops(bool toggle)
 	{
 		if (toggle)
-			replaceFunction(gDropRandomizerHookLocation, myDropRandomizer);
+			replaceFunction(gDropRandomizerHookLocation, MyDropRandomizer);
 		else
 			replaceFunction(gDropRandomizerHookLocation, gDropRandomizerOriginal);
 	}
@@ -1538,6 +1551,7 @@ namespace Features
 			setValue(gRadioFunctionPatchLocation, originalCode);
 		}
 	}
+
 	bool IsRadioSkipEnabled()
 	{
 		return getValue<std::uint8_t>(gRadioFunctionPatchLocation) == 0xE9;
