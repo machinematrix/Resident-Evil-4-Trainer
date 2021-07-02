@@ -50,6 +50,7 @@ namespace MenuIdentifiers
 		MAX_AMOUNT_EDIT_BUTTON,
 		TOGGLE_TMP_FIRE_RATE,
 		TOGGLE_EASY_DROPS,
+		TOGGLE_RADIO,
 		SAVE_BUTTON,
 		MERCHANT_BUTTON
 	};
@@ -84,6 +85,7 @@ struct MainWindowInfo
 	HWND maxAmountEditButton;
 	HWND tmpCheckbox;
 	HWND easyDropsCheckbox;
+	HWND radioCheckbox;
 	HWND saveButton;
 	HWND merchantButton;
 	HHOOK kbHook;

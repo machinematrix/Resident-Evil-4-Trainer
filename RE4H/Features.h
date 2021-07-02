@@ -491,6 +491,10 @@ namespace Features
 
 	void EasyDrops(bool toggle);
 	bool EasyDrops();
+
+	//This is to avoid crashes with other characters in the main game.
+	void SkipRadioCutscenes(bool skip);
+	bool IsRadioSkipEnabled();
 }
 
 #endif

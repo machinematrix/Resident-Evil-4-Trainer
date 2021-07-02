@@ -124,6 +124,7 @@ namespace Features
 		Pointer gUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
 		Pointer gOriginalLogger = nullptr, gOriginalLogger2 = nullptr;
 		Pointer gFirepowerDivision; //bio4.exe+306718
+		Pointer gRadioFunctionPatchLocation; //bio4.exe+369D66
 		float *gOriginalFirepowerIdentity; //bio4.exe+800B50
 		float gMockFirepowerIdentity = 1.0f;
 		void(__cdecl *gUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
@@ -819,12 +820,13 @@ namespace Features
 		gMeleeKneeSuplex = reinterpret_cast<decltype(gMeleeKneeSuplex)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
 		gMelee = reinterpret_cast<decltype(gMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"));
 		gFirepowerDivision = patternScan("D8 35 ????????  D9 5D F8  D9 45 F8");
+		gRadioFunctionPatchLocation = patternScan("8B 92 DC010000  03 CF  51");
 
 		if (!(gHealthBase && gPlayerBase && gWeaponDataIndex && gFirePowerTable && gNoclipAddress && gDoorData
 			  && gDoorList && gDropRandomizerHookLocation && gGetModelDataHookLocation && gSceAtHookLocation && gTmpFireRate && gLoggerFunction
 			  && gLoggerFunction2 && gLinkedList && gTypewriterProcedure && gEntityList && gEnemyVTable && gUseDoorHookLocation
 			  && gUseDoor && gSceAtCreateItemAt && gGetInventoryModelData && gReadMinimumHeader && gOpenMerchant && gMeleeHead
-			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee && gFirepowerDivision))
+			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee && gFirepowerDivision && gRadioFunctionPatchLocation))
 			return false;
 
 		if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
@@ -903,6 +905,7 @@ namespace Features
 
 	void Terminate()
 	{
+		SkipRadioCutscenes(false);
 		setValue(gFirepowerDivision + 2, gOriginalFirepowerIdentity);
 		replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
 		replaceFunction(gDropRandomizerHookLocation, gDropRandomizerOriginal);
@@ -1523,5 +1526,20 @@ namespace Features
 	bool EasyDrops()
 	{
 		return follow(gDropRandomizerHookLocation) != gDropRandomizerOriginal;
+	}
+	
+	void SkipRadioCutscenes(bool skip)
+	{
+		if (const char jumpInstruction[] = { '\xE9', '\x1A', '\x02', '\x00', '\x00', '\x90' }; skip)
+			setValue(gRadioFunctionPatchLocation, jumpInstruction);
+		else
+		{
+			const char originalCode[] = { '\x8B', '\x92', '\xDC', '\x01', '\x00', '\x00' };
+			setValue(gRadioFunctionPatchLocation, originalCode);
+		}
+	}
+	bool IsRadioSkipEnabled()
+	{
+		return getValue<std::uint8_t>(gRadioFunctionPatchLocation) == 0xE9;
 	}
 }

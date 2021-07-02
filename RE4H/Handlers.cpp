@@ -142,6 +142,7 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	wndInfo.ashleyCheckbox = CreateWindow(WC_BUTTON, TEXT("Ashley"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_ASHLEY, nullptr, nullptr);
 	wndInfo.tmpCheckbox = CreateWindow(WC_BUTTON, TEXT("Fast TMP"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_TMP_FIRE_RATE, nullptr, nullptr);
 	wndInfo.easyDropsCheckbox = CreateWindow(WC_BUTTON, TEXT("Easy Drops"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_EASY_DROPS, nullptr, nullptr);
+	wndInfo.radioCheckbox = CreateWindow(WC_BUTTON, TEXT("Radio"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_RADIO, nullptr, nullptr);
 	wndInfo.characterComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)CHARACTER_COMBO_BOX, nullptr, nullptr);
 	wndInfo.costumeComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)COSTUME_COMBO_BOX, nullptr, nullptr);
 	wndInfo.difficultyComboBox = CreateWindow(WC_COMBOBOX, nullptr, CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VISIBLE | WS_CHILD, 0, 0, 0, 0, hWnd, (HMENU)DIFFICULTY_COMBO_BOX, nullptr, nullptr);
@@ -301,6 +302,9 @@ void onWmSize(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 	lastWnd = GetWindowRectInParent(wndInfo.tmpCheckbox);
 	MoveWindow(wndInfo.easyDropsCheckbox, lastWnd.right + spacing, lastWnd.top, buttonWidth * 60 / 100, buttonHeight, update);
 
+	lastWnd = GetWindowRectInParent(wndInfo.easyDropsCheckbox);
+	MoveWindow(wndInfo.radioCheckbox, lastWnd.right + spacing, lastWnd.top, buttonWidth * 60 / 100, buttonHeight, update);
+
 	lastWnd = GetWindowRectInParent(wndInfo.characterText);
 	MoveWindow(wndInfo.characterComboBox, lastWnd.right + spacing, lastWnd.top, buttonWidth, buttonHeight, update);
 	MoveWindow(wndInfo.costumeText, lastWnd.left, lastWnd.bottom + spacing, buttonWidth / 2, buttonHeight, update);
@@ -395,6 +399,7 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsNoclipOn(), 0);
 	SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)Features::IsFastTmpEnabled(), 0);
 	SendMessage(wndInfo.easyDropsCheckbox, BM_SETCHECK, (WPARAM)Features::EasyDrops(), 0);
+	SendMessage(wndInfo.radioCheckbox, BM_SETCHECK, (WPARAM)Features::IsRadioSkipEnabled(), 0);
 }
 
 void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
@@ -497,6 +502,10 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 
 		case TOGGLE_EASY_DROPS:
 			Features::EasyDrops(SendMessage(wndInfo.easyDropsCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			break;
+
+		case TOGGLE_RADIO:
+			Features::SkipRadioCutscenes(SendMessage(wndInfo.radioCheckbox, BM_GETCHECK, 0, 0) ? true : false);
 			break;
 
 		case CHARACTER_COMBO_BOX:
