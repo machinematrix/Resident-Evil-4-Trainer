@@ -6,6 +6,7 @@ using Pointer = char*;
 
 Pointer patternScanHeap(const std::string &unformattedPattern);
 Pointer patternScan(const std::string &unformattedPattern);
+Pointer patternScan(std::string_view unformattedPattern, std::wstring_view moduleName);
 Pointer follow(Pointer instruction);
 
 template<typename T>
@@ -47,6 +48,12 @@ Pointer replaceFunction(Pointer where, PointerType *function)
 	setValue(where + 1, reinterpret_cast<Pointer>(function) - where - 5);
 
 	return result;
+}
+
+template <typename T>
+T* addBytes(T *base, size_t offset)
+{
+	return reinterpret_cast<T*>(reinterpret_cast<Pointer>(base) + offset);
 }
 
 #endif

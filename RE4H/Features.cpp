@@ -5,7 +5,10 @@
 #include <cstdint>
 #include <regex>
 #include <filesystem>
+#include <charconv>
 #include <winsqlite/winsqlite3.h>
+#include <d3dx9.h>
+#include <tlhelp32.h>
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -97,9 +100,67 @@ namespace Features
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealth) == 0x324, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealthLimit) == 0x326, "Bad offset");
 
+	/*struct Camera
+	{
+		char mPadding1[0xA4];
+		Coordinates mUnknownCoords[2];
+		char mPadding2[0x4];
+		float mFov;
+		char mPadding3[0xB4];
+		float mMatrix[12];
+		char mPadding4[0x5C];
+		float mPitch;
+		float mYawOffset;
+	};
+
+	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownCoords) == 0xA4, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mFov) == 0xC0, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mMatrix) == 0x178, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mPitch) == 0x204, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mYawOffset) == 0x208, "Bad offset");*/
+
+	struct Camera
+	{
+		float mMatrix1[3][4];
+		float mCameraMatrix[3][4];
+		char mPadding1[0x4];
+		float mWidth;
+		char mPadding2[0x10];
+		float mHeight;
+		char mPadding3[0x14];
+		float mUnknownFloat1;
+		char mPadding4[0x8];
+		float mUnknownFloat2;
+		char mPadding5[0x4];
+		Coordinates mCameraCoordinates;
+		Coordinates mUnknownCoordinates;
+		char mPadding6[0x4];
+		float mFov;
+		float mRotationMatrix[3][3];
+	};
+
+	static_assert(offsetof(Features::Camera, Features::Camera::mMatrix1) == 0x0, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mCameraMatrix) == 0x30, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mWidth) == 0x64, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mHeight) == 0x78, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownFloat1) == 0x90, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownFloat2) == 0x9C, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mCameraCoordinates) == 0xA4, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownCoordinates) == 0xB0, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mFov) == 0xC0, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mRotationMatrix) == 0xC4, "Bad offset");
+
 	namespace
 	{
+		constexpr float kPi = 3.14159265358979323846264f;
 		constexpr const char *kDatabaseName = "RE4H.db";
+		constexpr const wchar_t *kProcessName = L"bio4.exe";
+		IDirect3DDevice9 **gDirect3D9Device; //bio4.exe+CECB28
+		HRESULT (__stdcall *gEndSceneOriginal)(IDirect3DDevice9*);
+		std::uint32_t *gD3DDeviceVTable; //d3d9.dll+5A102
+		//Camera *gCamera; //bio4.exe+870548 //bio4.exe+870330
+		float *gAspectRatio; //bio4.exe+71377C
+		Camera *gCamera; //bio4.exe+19F5B7
 		Pointer gHealthBase; //bio4.exe+806F3C
 		Pointer gPlayerBase; //bio4.exe+870FD4
 		Pointer gWeaponDataIndex; //bio4.exe+724B10
@@ -128,7 +189,7 @@ namespace Features
 		float *gOriginalFirepowerIdentity; //bio4.exe+800B50
 		float gMockFirepowerIdentity = 1.0f;
 		void(__cdecl *gUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
-		void(__cdecl *gSceAtCreateItemAt)(Coordinates coords, ItemId itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
+		void(__cdecl *gSceAtCreateItemAt)(const Coordinates &coords, ItemId itemId, int32_t amount, int32_t /*3 for treasures*/, int32_t, int32_t, int32_t);
 		void(__cdecl *gGetInventoryModelData)(ItemId id, InventoryIconData *result);
 		std::uint32_t(__cdecl *gReadMinimumHeader)(void *sceneHandle, void *unknown);
 		void(__cdecl *gOpenMerchant)(std::int32_t, std::int32_t);
@@ -622,6 +683,51 @@ namespace Features
 		return mItemType;
 	}
 
+	void SuspendProcess(std::wstring_view processName, bool freeze)
+	{
+		PROCESSENTRY32 entry;
+		entry.dwSize = sizeof(PROCESSENTRY32);
+		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+
+		if (Process32First(snapshot, &entry))
+		{
+			HANDLE currentThread = GetCurrentThread();
+			do
+			{
+				if (entry.szExeFile == processName.data())
+				{
+					THREADENTRY32 thEntry;
+					thEntry.dwSize = sizeof(THREADENTRY32);
+					HANDLE ThreadSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, entry.th32ProcessID);
+
+					if (Thread32First(ThreadSnapshot, &thEntry))
+					{
+						do
+						{
+							HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, false, thEntry.th32ThreadID);
+							
+							if (hThread != currentThread)
+							{
+								if (freeze && thEntry.th32OwnerProcessID == entry.th32ProcessID)
+									SuspendThread(hThread);
+								else
+									if (thEntry.th32OwnerProcessID == entry.th32ProcessID)
+										ResumeThread(hThread);
+								CloseHandle(hThread);
+							}
+						} while (Thread32Next(ThreadSnapshot, &thEntry));
+					}
+					CloseHandle(ThreadSnapshot);
+					CloseHandle(snapshot);
+					return;
+				}
+			} while (Process32Next(snapshot, &entry));
+		}
+
+		CloseHandle(snapshot);
+		return;
+	}
+
 	void __cdecl MyGetInventoryModelData(ItemId id, InventoryIconData *result)
 	{
 		if (id != ItemId::Invalid)
@@ -732,6 +838,101 @@ namespace Features
 
 		sqlite3_close_v2(database);
 	}
+
+	Coordinates operator-(const Coordinates &coords)
+	{
+		return { -coords.mX, -coords.mY, -coords.mZ };
+	}
+
+	Coordinates operator-(const Coordinates &lhs, const Coordinates &rhs)
+	{
+		return { lhs.mX - rhs.mX, lhs.mY - rhs.mY, lhs.mZ - rhs.mZ };
+	}
+
+	Coordinates operator+(const Coordinates &lhs, const Coordinates &rhs)
+	{
+		return { lhs.mX + rhs.mX, lhs.mY + rhs.mY, lhs.mZ + rhs.mZ };
+	}
+
+	Coordinates operator/(const Coordinates &dividend, float divisor)
+	{
+		return { dividend.mX / divisor, dividend.mY / divisor, dividend.mZ / divisor };
+	}
+
+	bool WorldToScreen(const Coordinates &pos, Coordinates &screen, float (&matrix)[3][4], int windowWidth, int windowHeight)
+	{
+		D3DXMATRIX view, projection, viewProjection;
+		Coordinates clipCoords;
+		float w, fovRadians = gCamera->mFov * (1 / *gAspectRatio) * kPi / 180.f;
+
+		D3DXMatrixPerspectiveFovRH(&projection, fovRadians, 1.f * windowWidth / windowHeight, 0.1f, 100000.f);
+
+		//Multiply with camera matrix to generate ViewProjection matrix
+		for (size_t row = 0; row < 3; ++row)
+			for (size_t column = 0; column < 4; ++column)
+				view(row, column) = matrix[row][column];
+		view(3, 0) = view(3, 1) = view(3, 2) = 0.f;
+		view(3, 3) = 1.f;
+
+		viewProjection = projection * view;
+
+		//Matrix-vector Product, multiplying world(eye) coordinates by projection matrix = clipCoords
+		clipCoords.mX = pos.mX * viewProjection(0, 0) + pos.mY * viewProjection(0, 1) + pos.mZ * viewProjection(0, 2) + viewProjection(0, 3);
+		clipCoords.mY = pos.mX * viewProjection(1, 0) + pos.mY * viewProjection(1, 1) + pos.mZ * viewProjection(1, 2) + viewProjection(1, 3);
+		clipCoords.mZ = pos.mX * viewProjection(2, 0) + pos.mY * viewProjection(2, 1) + pos.mZ * viewProjection(2, 2) + viewProjection(2, 3);
+		w = pos.mX * viewProjection(3, 0) + pos.mY * viewProjection(3, 1) + pos.mZ * viewProjection(3, 2) + viewProjection(3, 3);
+		
+		if (w < 0.1f)
+			return false;
+
+		//perspective division, dividing by clip.W = Normalized Device Coordinates
+		clipCoords.mX /= w * 10;
+		clipCoords.mY /= w * 10;
+		clipCoords.mZ /= w * 10;
+
+		//Transform to window coordinates
+		screen.mX = (windowWidth / 2 * clipCoords.mX) + (clipCoords.mX + windowWidth / 2);
+		screen.mY = -(windowHeight / 2 * clipCoords.mY) + (clipCoords.mY + windowHeight / 2);
+
+		return true;
+	}
+
+	__declspec(nothrow) HRESULT __stdcall EndSceneHook(IDirect3DDevice9 *device)
+	{
+		if (ID3DXFont *direct3D9Font; D3DXCreateFontA(device, 18, 9, FW_NORMAL, 0, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+													  DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &direct3D9Font) == S_OK)
+		{
+			D3DDEVICE_CREATION_PARAMETERS parameters;
+			RECT screen;
+
+			device->GetCreationParameters(&parameters);
+			GetWindowRect(parameters.hFocusWindow, &screen);
+
+			for (Entity *node = *gEntityList; node; node = node->mNext)
+			{
+				/*if (node->mVTable != gEnemyVTable || !node->mHealth)
+					continue;*/
+
+				if (Coordinates out; WorldToScreen(node->mCoords, out, gCamera->mCameraMatrix, screen.right, screen.bottom))
+				{
+					std::array<char, 6> strHealth = {};
+					RECT textRectangle;
+
+					std::to_chars(strHealth.data(), strHealth.data() + strHealth.size(), node->mHealth);
+					textRectangle.left = out.mX - 50;
+					textRectangle.top = out.mY - 50;
+					textRectangle.right = textRectangle.left + 100;
+					textRectangle.bottom = textRectangle.top + 100;
+					direct3D9Font->DrawTextA(nullptr, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER, D3DCOLOR_XRGB(0, 255, 255));
+				}
+			}
+
+			direct3D9Font->Release();
+			direct3D9Font = nullptr;
+		}
+
+		return gEndSceneOriginal(device);
+	}
 	
 	bool operator==(Character lhs, std::uint8_t rhs)
 	{
@@ -803,7 +1004,14 @@ namespace Features
 	bool Initialize()
 	{
 		sqlite3 *database = nullptr;
+		DWORD protect;
 
+		gDirect3D9Device = reinterpret_cast<IDirect3DDevice9**>(patternScan("A1 ????????  8B 08  8B 91 70010000  56  50  FF D2  89 77 04"));
+		gD3DDeviceVTable = reinterpret_cast<std::uint32_t*>(patternScan("C7 06 ????????  89 86 ????????  89 86 ????????  89 86 ????????  89 86 ????????", L"d3d9.dll"));
+		//gCamera = reinterpret_cast<Camera*>(patternScan("B9 ????????  E8 ????????  5F  5E  5B  8B E5  5D  C3  8B 15 ????????  8B 82 ????????"));
+		//gCamera = reinterpret_cast<Camera*>(patternScan("BE ????????  F3 A5  F6 05 ???????? 40"));
+		gAspectRatio = reinterpret_cast<float*>(patternScan("D9 05 ????????  D9 5C 24 04  D9 81 ????????  8B CE"));
+		gCamera = reinterpret_cast<Camera *>(patternScan("B9 ????????  5B E9  ????????  CC"));
 		gHealthBase = patternScan("A1 ????????  83 C0 60  6A 10  50  E8");
 		gPlayerBase = patternScan("B9 ????????  E8 ????????  8B 35 ????????  81");
 		gWeaponDataIndex = patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40");
@@ -839,7 +1047,9 @@ namespace Features
 			  && gDoorList && gDropRandomizerHookLocation && gGetModelDataHookLocation && gSceAtHookLocation && gTmpFireRate && gLoggerFunction
 			  && gLoggerFunction2 && gLinkedList && gTypewriterProcedure && gEntityList && gEnemyVTable && gUseDoorHookLocation
 			  && gUseDoor && gSceAtCreateItemAt && gGetInventoryModelData && gReadMinimumHeader && gOpenMerchant && gMeleeHead
-			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee && gFirepowerDivision && gRadioFunctionPatchLocation))
+			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee && gFirepowerDivision && gRadioFunctionPatchLocation
+			  && gD3DDeviceVTable && gDirect3D9Device
+			  ))
 			return false;
 
 		if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
@@ -865,6 +1075,10 @@ namespace Features
 
 		sqlite3_close_v2(database);
 
+		gDirect3D9Device = getValue<IDirect3DDevice9**>(reinterpret_cast<Pointer>(gDirect3D9Device) + 1);
+		//gCamera = getValue<Camera*>(reinterpret_cast<Pointer>(addBytes(gCamera, 1)));
+		gAspectRatio = getValue<float*>(reinterpret_cast<Pointer>(gAspectRatio) + 2);
+		gCamera = reinterpret_cast<Camera*>(pointerPath(reinterpret_cast<Pointer>(gCamera), 1, 4));
 		gHealthBase = pointerPath(gHealthBase, 0x1, 0x0);
 		gPlayerBase = getValue<Pointer>(gPlayerBase + 1);
 		gWeaponDataIndex = getValue<Pointer>(gWeaponDataIndex + 1);
@@ -878,11 +1092,12 @@ namespace Features
 		gLoggerFunction2 = follow(gLoggerFunction2 + 10);
 		gTmpFireRate = getValue<Pointer>(gTmpFireRate + 2);
 		gLinkedList = getValue<Pointer>(gLinkedList + 1);
-		gPlayerNode = getValue<Entity**>(reinterpret_cast<Pointer>(gEntityList) + 17);
+		gPlayerNode = getValue<Entity**>(/*reinterpret_cast<Pointer>(gEntityList) + 17*/reinterpret_cast<Pointer>(addBytes(gEntityList, 17)));
 		gEntityList = getValue<Entity**>(reinterpret_cast<Pointer>(gEntityList) + 2);
 		gEnemyVTable = getValue<Pointer>(gEnemyVTable + 2);
 		gUseDoorHookLocation = getValue<Pointer>(gUseDoorHookLocation + 3) + 1 * 8;
 		gOriginalFirepowerIdentity = GetFirepowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
+		gD3DDeviceVTable = getValue<std::uint32_t*>(reinterpret_cast<Pointer>(gD3DDeviceVTable) + 2);
 		
 		//For some reason, all firepower values shown on the UI are divided by the handgun's firepower at level 0, so modifying
 		//it will mess up firepower values shown for all weapons. This changes the game's code so it divides using a value at another address
@@ -896,6 +1111,15 @@ namespace Features
 		gOriginalLogger = replaceFunction(gLoggerFunction, gLoggerFunction);
 		gOriginalLogger2 = replaceFunction(gLoggerFunction2, gLoggerFunction2);
 		setValue(gUseDoorHookLocation, useDoorHook);
+		gEndSceneOriginal = reinterpret_cast<decltype(gEndSceneOriginal)>(gD3DDeviceVTable[42]);
+		
+		VirtualProtect(gD3DDeviceVTable, 100 * 4, PAGE_EXECUTE_READWRITE, &protect);
+		SuspendProcess(kProcessName, true);
+		gD3DDeviceVTable[42] = reinterpret_cast<std::uint32_t>(EndSceneHook);
+		(**reinterpret_cast<std::uint32_t ***>(gDirect3D9Device))[42] = reinterpret_cast<std::uint32_t>(EndSceneHook);
+		SuspendProcess(kProcessName, false);
+		VirtualProtect(gD3DDeviceVTable, 100 * 4, protect, &protect);
+		//gEndSceneOriginal = reinterpret_cast<decltype(gEndSceneOriginal)>((**reinterpret_cast<std::uint32_t ***>(gDirect3D9Device))[42]);
 
 		#ifndef NDEBUG
 		using std::cout;
@@ -903,14 +1127,16 @@ namespace Features
 		cout << "Health Base: " << (void*)gHealthBase << endl;
 		cout << "Player Base: " << (void*)gPlayerBase << endl;
 		cout << "Weapon Data Index: " << (void*)gWeaponDataIndex << endl;
-		cout << "Fire power table: " << (void*)gFirePowerTable << endl;
-		cout << "Noclip code: " << (void*)gNoclipAddress << endl;
-		cout << "Door data: " << (void*)gDoorData << endl;
+		cout << "Fire Power Table: " << (void*)gFirePowerTable << endl;
+		cout << "Noclip Code: " << (void*)gNoclipAddress << endl;
+		cout << "Door Data: " << (void*)gDoorData << endl;
 		cout << "Door List: " << (void *)gDoorList << endl;
 		cout << "Set Scene: " << (void*)gUseDoor << endl;
 		cout << "SceCreateItemAt: " << (void*)gSceAtCreateItemAt << endl;
 		cout << "Logger Function Jump: " << (void*)gLoggerFunction << endl;
-		cout << "Player entity pointer: " << (void *)gPlayerNode << endl;
+		cout << "Player Entity Pointer: " << (void *)gPlayerNode << endl;
+		cout << "IDirect3DDevice9 VTable: " << gD3DDeviceVTable << endl;
+		cout << "Direct3D Device Pointer: "<< *gDirect3D9Device << endl;
 		#endif
 
 		return true;
@@ -918,6 +1144,13 @@ namespace Features
 
 	void Terminate()
 	{
+		DWORD protect;
+		VirtualProtect(gD3DDeviceVTable, 100 * 4, PAGE_EXECUTE_READWRITE, &protect);
+		SuspendProcess(kProcessName, true);
+		gD3DDeviceVTable[42] = reinterpret_cast<std::uint32_t>(gEndSceneOriginal);
+		(**reinterpret_cast<std::uint32_t ***>(gDirect3D9Device))[42] = reinterpret_cast<std::uint32_t>(gEndSceneOriginal);
+		SuspendProcess(kProcessName, false);
+		VirtualProtect(gD3DDeviceVTable, 100 * 4, protect, &protect);
 		SkipRadioCutscenes(false);
 		setValue(gFirepowerDivision + 2, gOriginalFirepowerIdentity);
 		replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
@@ -931,6 +1164,13 @@ namespace Features
 	void SetHealth(std::uint16_t health)
 	{
 		setValue(gHealthBase + HealthBaseOffsets::Health, health);
+		//Coordinates coords{
+		//	gCamera->mCameraCoordinates.mX,
+		//	//(gCamera->mCameraCoordinates.mY + gCamera->mUnknownCoordinates.mY) / 2.f,
+		//	gCamera->mCameraCoordinates.mY - 100.f,
+		//	gCamera->mCameraCoordinates.mZ
+		//};
+		//SpawnPickup(coords, ItemId::ShotgunShells, 1);
 	}
 
 	std::uint16_t GetHealth()

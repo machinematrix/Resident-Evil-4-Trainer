@@ -56,6 +56,28 @@ namespace {
 		}
 		return true;
 	}
+
+	MODULEENTRY32 getModuleEntry(std::wstring_view mModuleName)
+	{
+		MODULEENTRY32 modEntry;
+		modEntry.dwSize = sizeof(MODULEENTRY32);
+		HANDLE hModuleSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, GetCurrentProcessId());
+
+		if (hModuleSnapshot && Module32First(hModuleSnapshot, &modEntry))
+		{
+			do {
+				if (mModuleName == modEntry.szModule) {
+					CloseHandle(hModuleSnapshot);
+					return modEntry;
+				}
+			} while (Module32Next(hModuleSnapshot, &modEntry));
+
+			CloseHandle(hModuleSnapshot);
+			throw std::runtime_error("Module not found");
+		}
+
+		throw std::runtime_error("Process not found");
+	}
 }
 
 Pointer patternScanHeap(const std::string &unformattedPattern)
@@ -124,6 +146,38 @@ Pointer patternScan(const std::string &unformattedPattern)
 	}
 
 	return 0;
+}
+
+Pointer patternScan(std::string_view unformattedPattern, std::wstring_view moduleName)
+{
+	Pointer result = nullptr;
+	MODULEENTRY32 moduleEntry;
+	std::string pattern;
+
+	if (unformattedPattern.empty())
+		return result;
+
+	try {
+		moduleEntry = getModuleEntry(moduleName);
+	}
+	catch (const std::runtime_error &) {
+		return result;
+	}
+
+	pattern = formatPattern(std::string(unformattedPattern));
+
+	for (auto i = pattern.size() - 1; i < moduleEntry.modBaseSize; ++i)
+	{
+		if (compPatternsR(pattern, (Pointer)moduleEntry.modBaseAddr + i))
+		{
+			Pointer result = (Pointer)moduleEntry.modBaseAddr + i - pattern.size() + 1;
+			if (result != pattern.data() && result != unformattedPattern.data()) {
+				return result;
+			}
+		}
+	}
+
+	return result;
 }
 
 Pointer follow(Pointer instruction)
