@@ -461,8 +461,8 @@ namespace Features
 	void SetDifficulty(Difficulty value);
 	Difficulty GetDifficulty();
 
-	void ToggleNoclip(bool toggle);
-	bool IsNoclipOn();
+	void ToggleClipping(bool toggle);
+	bool IsClippingEnabled();
 
 	void SpawnPickup(const Coordinates &coords, ItemId id, std::uint32_t amount);
 	void SpawnPickup(ItemId id, std::uint32_t amount);

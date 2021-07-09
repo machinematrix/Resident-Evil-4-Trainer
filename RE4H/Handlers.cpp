@@ -138,7 +138,7 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	wndInfo.healthLimitSet = CreateWindow(WC_BUTTON, TEXT("Set"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_LIMIT_SET, nullptr, nullptr);
 	wndInfo.healthLimitGet = CreateWindow(WC_BUTTON, TEXT("Get"), WS_VISIBLE | WS_CHILD | BS_CENTER, 0, 0, 0, 0, hWnd, (HMENU)HEALTH_LIMIT_GET, nullptr, nullptr);
 	wndInfo.healthLimitEdit = CreateWindow(WC_EDIT, nullptr, WS_CHILD | WS_VISIBLE | WS_BORDER, 0, 0, 0, 0, hWnd, (HMENU)HealthLimitEdit, nullptr, nullptr);
-	wndInfo.noclipCheckbox = CreateWindow(WC_BUTTON, TEXT("Noclip"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_NOCLIP, nullptr, nullptr);
+	wndInfo.noclipCheckbox = CreateWindow(WC_BUTTON, TEXT("No Clipping"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_NOCLIP, nullptr, nullptr);
 	wndInfo.ashleyCheckbox = CreateWindow(WC_BUTTON, TEXT("Ashley"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_ASHLEY, nullptr, nullptr);
 	wndInfo.tmpCheckbox = CreateWindow(WC_BUTTON, TEXT("Fast TMP"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_TMP_FIRE_RATE, nullptr, nullptr);
 	wndInfo.easyDropsCheckbox = CreateWindow(WC_BUTTON, TEXT("Easy Drops"), WS_VISIBLE | WS_CHILD | BS_LEFT | BS_AUTOCHECKBOX, 0, 0, 0, 0, hWnd, (HMENU)TOGGLE_EASY_DROPS, nullptr, nullptr);
@@ -220,7 +220,7 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	Features::SetDoorListUpdateCallback(callback);
 
 	SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)Features::IsAshleyPresent(), 0);
-	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsNoclipOn(), 0);
+	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsClippingEnabled(), 0);
 	SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)Features::IsFastTmpEnabled(), 0);
 	SendMessage(wndInfo.easyDropsCheckbox, BM_SETCHECK, (WPARAM)Features::EasyDrops(), 0);
 }
@@ -396,7 +396,7 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 
 	wndInfo.inventoryList->refresh();
 	SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)Features::IsAshleyPresent(), 0);
-	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsNoclipOn(), 0);
+	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsClippingEnabled(), 0);
 	SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)Features::IsFastTmpEnabled(), 0);
 	SendMessage(wndInfo.easyDropsCheckbox, BM_SETCHECK, (WPARAM)Features::EasyDrops(), 0);
 	SendMessage(wndInfo.radioCheckbox, BM_SETCHECK, (WPARAM)Features::IsRadioSkipEnabled(), 0);
@@ -489,7 +489,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			break;
 
 		case TOGGLE_NOCLIP:
-			Features::ToggleNoclip(SendMessage(wndInfo.noclipCheckbox, BM_GETCHECK, 0, 0) ? true : false);
+			Features::ToggleClipping(SendMessage(wndInfo.noclipCheckbox, BM_GETCHECK, 0, 0) ? true : false);
 			break;
 
 		case TOGGLE_ASHLEY:
@@ -668,8 +668,8 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			switch (i)
 			{
 				case KeyBindingsConfig::NOCLIP:
-					toggle = !Features::IsNoclipOn();
-					Features::ToggleNoclip(toggle);
+					toggle = !Features::IsClippingEnabled();
+					Features::ToggleClipping(toggle);
 					SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, toggle, 0);
 					break;
 				case KeyBindingsConfig::ASHLEY:
