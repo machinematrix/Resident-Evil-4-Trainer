@@ -462,7 +462,7 @@ namespace Features
 	Difficulty GetDifficulty();
 
 	void ToggleClipping(bool toggle);
-	bool IsClippingEnabled();
+	bool IsClippingDisabled();
 
 	void SpawnPickup(const Coordinates &coords, ItemId id, std::uint32_t amount);
 	void SpawnPickup(ItemId id, std::uint32_t amount);

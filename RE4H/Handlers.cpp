@@ -220,7 +220,7 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 	Features::SetDoorListUpdateCallback(callback);
 
 	SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)Features::IsAshleyPresent(), 0);
-	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsClippingEnabled(), 0);
+	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsClippingDisabled(), 0);
 	SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)Features::IsFastTmpEnabled(), 0);
 	SendMessage(wndInfo.easyDropsCheckbox, BM_SETCHECK, (WPARAM)Features::EasyDrops(), 0);
 }
@@ -396,7 +396,7 @@ void onWmTimer(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo)
 
 	wndInfo.inventoryList->refresh();
 	SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)Features::IsAshleyPresent(), 0);
-	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsClippingEnabled(), 0);
+	SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, (WPARAM)Features::IsClippingDisabled(), 0);
 	SendMessage(wndInfo.tmpCheckbox, BM_SETCHECK, (WPARAM)Features::IsFastTmpEnabled(), 0);
 	SendMessage(wndInfo.easyDropsCheckbox, BM_SETCHECK, (WPARAM)Features::EasyDrops(), 0);
 	SendMessage(wndInfo.radioCheckbox, BM_SETCHECK, (WPARAM)Features::IsRadioSkipEnabled(), 0);
@@ -668,7 +668,7 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			switch (i)
 			{
 				case KeyBindingsConfig::NOCLIP:
-					toggle = !Features::IsClippingEnabled();
+					toggle = !Features::IsClippingDisabled();
 					Features::ToggleClipping(toggle);
 					SendMessage(wndInfo.noclipCheckbox, BM_SETCHECK, toggle, 0);
 					break;

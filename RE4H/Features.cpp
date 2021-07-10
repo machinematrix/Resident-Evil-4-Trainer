@@ -83,7 +83,9 @@ namespace Features
 		std::uint8_t mAimingFlag; //1 == Aiming
 		char mPadding5[0x10];
 		Coordinates mCoords2;
-		char mPadding6[0x208];
+		char mPadding6[0x1C8];
+		Coordinates mCoords3; //seems to the center to the middle of the model
+		char mPadding7[0x34];
 		std::uint16_t mHealth;
 		std::uint16_t mHealthLimit;
 	}; //highest known offset: 0x79C
@@ -97,6 +99,7 @@ namespace Features
 	static_assert(offsetof(Features::Entity, Features::Entity::mRunningFlag) == 0xFE, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mAimingFlag) == 0xFF, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mCoords2) == 0x110, "Bad offset");
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords3) == 0x2E4, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealth) == 0x324, "Bad offset");
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealthLimit) == 0x326, "Bad offset");
 
@@ -866,22 +869,22 @@ namespace Features
 		return { dividend.mX / divisor, dividend.mY / divisor, dividend.mZ / divisor };
 	}
 
-	bool WorldToScreen(const Coordinates &pos, Coordinates &screen, float (&matrix)[3][4], int windowWidth, int windowHeight)
+	std::optional<std::tuple<int, int>> WorldToScreen(const Coordinates &pos, int windowWidth, int windowHeight)
 	{
-		D3DXMATRIX view, projection, viewProjection;
+		D3DXMATRIX view, viewProjection;
 		Coordinates clipCoords;
 		float w, fovRadians = gCamera->mFov * (1 / *gAspectRatio) * kPi / 180.f;
 
-		D3DXMatrixPerspectiveFovRH(&projection, fovRadians, 1.f * windowWidth / windowHeight, 0.1f, 100000.f);
+		D3DXMatrixPerspectiveFovRH(&viewProjection, fovRadians, 1.f * windowWidth / windowHeight, 0.1f, 100000.f);
 
 		//Multiply with camera matrix to generate ViewProjection matrix
 		for (size_t row = 0; row < 3; ++row)
 			for (size_t column = 0; column < 4; ++column)
-				view(row, column) = matrix[row][column];
+				view(row, column) = gCamera->mCameraMatrix[row][column];
 		view(3, 0) = view(3, 1) = view(3, 2) = 0.f;
 		view(3, 3) = 1.f;
 
-		viewProjection = projection * view;
+		viewProjection *= view;
 
 		//Matrix-vector Product, multiplying world(eye) coordinates by projection matrix = clipCoords
 		clipCoords.mX = pos.mX * viewProjection(0, 0) + pos.mY * viewProjection(0, 1) + pos.mZ * viewProjection(0, 2) + viewProjection(0, 3);
@@ -890,7 +893,7 @@ namespace Features
 		w = pos.mX * viewProjection(3, 0) + pos.mY * viewProjection(3, 1) + pos.mZ * viewProjection(3, 2) + viewProjection(3, 3);
 		
 		if (w < 0.1f)
-			return false;
+			return std::optional<std::tuple<int, int>>{};
 
 		//perspective division, dividing by clip.W = Normalized Device Coordinates
 		clipCoords.mX /= w * 10;
@@ -898,10 +901,10 @@ namespace Features
 		clipCoords.mZ /= w * 10;
 
 		//Transform to window coordinates
-		screen.mX = (windowWidth / 2 * clipCoords.mX) + (clipCoords.mX + windowWidth / 2);
-		screen.mY = -(windowHeight / 2 * clipCoords.mY) + (clipCoords.mY + windowHeight / 2);
-
-		return true;
+		return std::tuple<int, int> {
+			static_cast<int>((windowWidth / 2 * clipCoords.mX) + (clipCoords.mX + windowWidth / 2)),
+			static_cast<int>(-(windowHeight / 2 * clipCoords.mY) + (clipCoords.mY + windowHeight / 2))
+		};
 	}
 
 	__declspec(nothrow) HRESULT __stdcall EndSceneHook(IDirect3DDevice9 *device)
@@ -920,14 +923,14 @@ namespace Features
 				/*if (node->mVTable != gEnemyVTable || !node->mHealth)
 					continue;*/
 
-				if (Coordinates out; WorldToScreen(node->mCoords, out, gCamera->mCameraMatrix, screen.right, screen.bottom))
+				if (auto out = WorldToScreen(node->mCoords3, screen.right, screen.bottom))
 				{
 					std::array<char, 6> strHealth = {};
 					RECT textRectangle;
 
 					std::to_chars(strHealth.data(), strHealth.data() + strHealth.size(), node->mHealth);
-					textRectangle.left = out.mX - 50;
-					textRectangle.top = out.mY - 50;
+					textRectangle.left = std::get<0>(out.value()) - 50;
+					textRectangle.top = std::get<1>(out.value()) - 50;
 					textRectangle.right = textRectangle.left + 100;
 					textRectangle.bottom = textRectangle.top + 100;
 					direct3D9Font->DrawTextA(nullptr, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER, D3DCOLOR_XRGB(0, 255, 255));
@@ -1564,7 +1567,7 @@ namespace Features
 		}
 	}
 
-	bool IsClippingEnabled()
+	bool IsClippingDisabled()
 	{
 		//return getValue<std::uint8_t>(gNoclipAddress) == 0xC3 /*ret*/ ? true : false;
 		return follow(gClipFunctionHookLocation) == reinterpret_cast<Pointer>(ClippingFunctionHook);
