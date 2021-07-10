@@ -766,6 +766,8 @@ namespace Features
 			}
 		}
 
+		std::shuffle(candidates.begin(), candidates.end(), softwareEngine);
+
 		for (auto candidate : candidates)
 		{
 			float chance = .25f;
@@ -877,13 +879,14 @@ namespace Features
 
 		D3DXMatrixPerspectiveFovRH(&viewProjection, fovRadians, 1.f * windowWidth / windowHeight, 0.1f, 100000.f);
 
-		//Multiply with camera matrix to generate ViewProjection matrix
+		//Copy matrix values to a D3DXMATRIX in order to multiply it
 		for (size_t row = 0; row < 3; ++row)
 			for (size_t column = 0; column < 4; ++column)
 				view(row, column) = gCamera->mCameraMatrix[row][column];
 		view(3, 0) = view(3, 1) = view(3, 2) = 0.f;
 		view(3, 3) = 1.f;
 
+		//Multiply with camera matrix to generate ViewProjection matrix
 		viewProjection *= view;
 
 		//Matrix-vector Product, multiplying world(eye) coordinates by projection matrix = clipCoords
@@ -895,7 +898,7 @@ namespace Features
 		if (w < 0.1f)
 			return std::optional<std::tuple<int, int>>{};
 
-		//perspective division, dividing by clip.W = Normalized Device Coordinates
+		//perspective division, dividing by W = Normalized Device Coordinates
 		clipCoords.mX /= w * 10;
 		clipCoords.mY /= w * 10;
 		clipCoords.mZ /= w * 10;
@@ -922,6 +925,9 @@ namespace Features
 			{
 				/*if (node->mVTable != gEnemyVTable || !node->mHealth)
 					continue;*/
+
+				if (!node->mHealth || std::abs(node->mCoords.mX - node->mCoords3.mX) >= 100.f || std::abs(node->mCoords.mZ - node->mCoords3.mZ) >= 100.f)
+					continue;
 
 				if (auto out = WorldToScreen(node->mCoords3, screen.right, screen.bottom))
 				{
