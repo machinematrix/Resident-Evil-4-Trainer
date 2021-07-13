@@ -495,6 +495,9 @@ namespace Features
 	//This is to avoid crashes with other characters in the main game.
 	void SkipRadioCutscenes(bool skip);
 	bool IsRadioSkipEnabled();
+
+	void ToggleOverlay(bool toggle);
+	bool IsOverlayOn();
 }
 
 #endif

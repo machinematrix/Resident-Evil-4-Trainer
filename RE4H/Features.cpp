@@ -90,18 +90,18 @@ namespace Features
 		std::uint16_t mHealthLimit;
 	}; //highest known offset: 0x79C
 
-	static_assert(offsetof(Features::Entity, Features::Entity::mVTable) == 0x0, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mNext) == 0x8, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mCoords) == 0x94, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mRotation) == 0xA4, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mMeleeFlag) == 0xFC, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mMovementFlag) == 0xFD, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mRunningFlag) == 0xFE, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mAimingFlag) == 0xFF, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mCoords2) == 0x110, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mCoords3) == 0x2E4, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mHealth) == 0x324, "Bad offset");
-	static_assert(offsetof(Features::Entity, Features::Entity::mHealthLimit) == 0x326, "Bad offset");
+	static_assert(offsetof(Features::Entity, Features::Entity::mVTable) == 0x0);
+	static_assert(offsetof(Features::Entity, Features::Entity::mNext) == 0x8);
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords) == 0x94);
+	static_assert(offsetof(Features::Entity, Features::Entity::mRotation) == 0xA4);
+	static_assert(offsetof(Features::Entity, Features::Entity::mMeleeFlag) == 0xFC);
+	static_assert(offsetof(Features::Entity, Features::Entity::mMovementFlag) == 0xFD);
+	static_assert(offsetof(Features::Entity, Features::Entity::mRunningFlag) == 0xFE);
+	static_assert(offsetof(Features::Entity, Features::Entity::mAimingFlag) == 0xFF);
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords2) == 0x110);
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords3) == 0x2E4);
+	static_assert(offsetof(Features::Entity, Features::Entity::mHealth) == 0x324);
+	static_assert(offsetof(Features::Entity, Features::Entity::mHealthLimit) == 0x326);
 
 	/*struct Camera
 	{
@@ -142,16 +142,16 @@ namespace Features
 		float mRotationMatrix[3][3];
 	};
 
-	static_assert(offsetof(Features::Camera, Features::Camera::mMatrix1) == 0x0, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mCameraMatrix) == 0x30, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mWidth) == 0x64, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mHeight) == 0x78, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownFloat1) == 0x90, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownFloat2) == 0x9C, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mCameraCoordinates) == 0xA4, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownCoordinates) == 0xB0, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mFov) == 0xC0, "Bad offset");
-	static_assert(offsetof(Features::Camera, Features::Camera::mRotationMatrix) == 0xC4, "Bad offset");
+	static_assert(offsetof(Features::Camera, Features::Camera::mMatrix1) == 0x0);
+	static_assert(offsetof(Features::Camera, Features::Camera::mCameraMatrix) == 0x30);
+	static_assert(offsetof(Features::Camera, Features::Camera::mWidth) == 0x64);
+	static_assert(offsetof(Features::Camera, Features::Camera::mHeight) == 0x78);
+	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownFloat1) == 0x90);
+	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownFloat2) == 0x9C);
+	static_assert(offsetof(Features::Camera, Features::Camera::mCameraCoordinates) == 0xA4);
+	static_assert(offsetof(Features::Camera, Features::Camera::mUnknownCoordinates) == 0xB0);
+	static_assert(offsetof(Features::Camera, Features::Camera::mFov) == 0xC0);
+	static_assert(offsetof(Features::Camera, Features::Camera::mRotationMatrix) == 0xC4);
 
 	namespace
 	{
@@ -201,7 +201,7 @@ namespace Features
 		void(__cdecl *gMeleeKneeKrauser)(void *enemyPointer, void*);
 		void(__cdecl *gMeleeKneeSuplex)(void *enemyPointer, void*);
 		void(__cdecl *gGetModelDataOriginal)(ItemId, InventoryIconData*);
-		int(__cdecl *gDropRandomizerOriginal)(std::uint32_t, ItemId *, std::uint32_t *, void *);
+		int(__cdecl *gDropRandomizerOriginal)(std::uint32_t, ItemId*, std::uint32_t*, void*);
 		std::mutex gStackCapMutex;
 		std::vector<void*> gDoors;
 		std::map<ItemId, std::uint32_t> gItemStackCap;
@@ -808,7 +808,7 @@ namespace Features
 
 	std::uint32_t __cdecl SceAtHook(void *arg1, void *arg2)
 	{
-		std::uint32_t result = reinterpret_cast<decltype(SceAtHook)*>(gSceAtOriginal)(arg1, arg2);
+		std::uint32_t result = gSceAtOriginal(arg1, arg2);
 
 		RefreshDoorList();
 		if (gDoorListUpdateCallback)
@@ -1018,7 +1018,6 @@ namespace Features
 	bool Initialize()
 	{
 		sqlite3 *database = nullptr;
-		DWORD protect;
 		Pointer clippingFunctionCall;
 
 		gDirect3D9Device = reinterpret_cast<IDirect3DDevice9**>(patternScan("A1 ????????  8B 08  8B 91 70010000  56  50  FF D2  89 77 04"));
@@ -1087,11 +1086,10 @@ namespace Features
 
 		sqlite3_close_v2(database);
 
-		gDirect3D9Device = getValue<IDirect3DDevice9**>(reinterpret_cast<Pointer>(gDirect3D9Device) + 1);
-		//gCamera = getValue<Camera*>(reinterpret_cast<Pointer>(addBytes(gCamera, 1)));
+		gDirect3D9Device = getValue<IDirect3DDevice9**>(addBytes(gDirect3D9Device, 1));
 		gAspectRatio = getValue<float*>(addBytes(gAspectRatio, 2));
-		gCamera = reinterpret_cast<Camera*>(pointerPath(reinterpret_cast<Pointer>(gCamera), 1, 4));
-		gHealthBase = pointerPath(gHealthBase, 0x1, 0x0);
+		gCamera = pointerPath<Camera>(gCamera, 1, 4);
+		gHealthBase = pointerPath<std::remove_pointer_t<Pointer>>(gHealthBase, 0x1, 0x0);
 		gPlayerBase = getValue<Pointer>(gPlayerBase + 1);
 		gWeaponDataIndex = getValue<Pointer>(gWeaponDataIndex + 1);
 		gFirePowerTable = getValue<decltype(gFirePowerTable)>(addBytes(gFirePowerTable, 3));
@@ -1111,7 +1109,6 @@ namespace Features
 		gOriginalFirepowerIdentity = GetFirepowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
 		gD3DDeviceVTable = getValue<std::uint32_t*>(addBytes(gD3DDeviceVTable, 2));
 		gClipFunctionHookLocation = follow(clippingFunctionCall);
-		gOriginalClipFunction = reinterpret_cast<decltype(gOriginalClipFunction)>(follow(gClipFunctionHookLocation));
 		
 		//For some reason, all firepower values shown on the UI are divided by the handgun's firepower at level 0, so modifying
 		//it will mess up firepower values shown for all weapons. This changes the game's code so it divides using a value at another address
@@ -1125,15 +1122,9 @@ namespace Features
 		gOriginalLogger = replaceFunction(gLoggerFunction, gLoggerFunction);
 		gOriginalLogger2 = replaceFunction(gLoggerFunction2, gLoggerFunction2);
 		setValue(gUseDoorHookLocation, useDoorHook);
-		gEndSceneOriginal = reinterpret_cast<decltype(gEndSceneOriginal)>(gD3DDeviceVTable[42]);
-		
-		VirtualProtect(gD3DDeviceVTable, 100 * 4, PAGE_EXECUTE_READWRITE, &protect);
-		SuspendProcess(kProcessName, true);
-		gD3DDeviceVTable[42] = reinterpret_cast<std::uint32_t>(EndSceneHook);
-		(**reinterpret_cast<std::uint32_t ***>(gDirect3D9Device))[42] = reinterpret_cast<std::uint32_t>(EndSceneHook);
-		SuspendProcess(kProcessName, false);
-		VirtualProtect(gD3DDeviceVTable, 100 * 4, protect, &protect);
-		//gEndSceneOriginal = reinterpret_cast<decltype(gEndSceneOriginal)>((**reinterpret_cast<std::uint32_t ***>(gDirect3D9Device))[42]);
+		gOriginalClipFunction = reinterpret_cast<decltype(gOriginalClipFunction)>(follow(gClipFunctionHookLocation));
+		gEndSceneOriginal = getValue<decltype(gEndSceneOriginal)>(gD3DDeviceVTable + 42);
+		ToggleOverlay(true);
 
 		#ifndef NDEBUG
 		using std::cout;
@@ -1157,13 +1148,7 @@ namespace Features
 
 	void Terminate()
 	{
-		DWORD protect;
-		VirtualProtect(gD3DDeviceVTable, 100 * 4, PAGE_EXECUTE_READWRITE, &protect);
-		SuspendProcess(kProcessName, true);
-		gD3DDeviceVTable[42] = reinterpret_cast<std::uint32_t>(gEndSceneOriginal);
-		(**reinterpret_cast<std::uint32_t ***>(gDirect3D9Device))[42] = reinterpret_cast<std::uint32_t>(gEndSceneOriginal);
-		SuspendProcess(kProcessName, false);
-		VirtualProtect(gD3DDeviceVTable, 100 * 4, protect, &protect);
+		ToggleOverlay(false);
 		SkipRadioCutscenes(false);
 		setValue(gFirepowerDivision + 2, gOriginalFirepowerIdentity);
 		replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
@@ -1570,7 +1555,7 @@ namespace Features
 
 	bool IsClippingDisabled()
 	{
-		return follow(gClipFunctionHookLocation) == reinterpret_cast<Pointer>(ClippingFunctionHook);
+		return follow(gClipFunctionHookLocation) == ClippingFunctionHook;
 	}
 
 	void SpawnPickup(const Coordinates &coords, ItemId id, std::uint32_t amount)
@@ -1805,5 +1790,23 @@ namespace Features
 	bool IsRadioSkipEnabled()
 	{
 		return getValue<std::uint8_t>(gRadioFunctionPatchLocation) == 0xE9;
+	}
+
+	void ToggleOverlay(bool toggle)
+	{
+		DWORD protect;
+		auto *function = toggle ? EndSceneHook : gEndSceneOriginal;
+
+		VirtualProtect(gD3DDeviceVTable, 100 * 4, PAGE_EXECUTE_READWRITE, &protect);
+		SuspendProcess(kProcessName, true);
+		setValue(gD3DDeviceVTable + 42, function);
+		setValue(getValue<std::uint32_t *>(*gDirect3D9Device) + 42, function);
+		SuspendProcess(kProcessName, false);
+		VirtualProtect(gD3DDeviceVTable, 100 * 4, protect, &protect);
+	}
+
+	bool IsOverlayOn()
+	{
+		return getValue<void*>(gD3DDeviceVTable + 42) == EndSceneHook;
 	}
 }

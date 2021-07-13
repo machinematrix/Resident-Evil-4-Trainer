@@ -3,7 +3,6 @@
 #include <string>
 
 using Pointer = char*;
-
 Pointer patternScanHeap(const std::string &unformattedPattern);
 Pointer patternScan(const std::string &unformattedPattern);
 Pointer patternScan(std::string_view unformattedPattern, std::wstring_view moduleName);
@@ -28,16 +27,10 @@ void setValue(void *address, const T(&value)[sz])
 		reinterpret_cast<T*>(address)[i] = value[i];
 }
 
-template<typename T>
-Pointer pointerPath(Pointer baseAddress, const T& offset)
+template<typename ReturnType, typename ...Args >
+ReturnType* pointerPath(void *baseAddress, const Args& ...offsets)
 {
-	return getValue<Pointer>(baseAddress + offset);
-}
-
-template<typename T, typename ...Args>
-Pointer pointerPath(Pointer baseAddress, const T& offset, const Args& ...offsets)
-{
-	return pointerPath(getValue<Pointer>(baseAddress + offset), offsets...);
+	return (reinterpret_cast<ReturnType*>(baseAddress = getValue<void*>(reinterpret_cast<Pointer>(baseAddress) + offsets)), ...);
 }
 
 template <typename FunctionType>
