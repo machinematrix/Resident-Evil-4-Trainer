@@ -933,11 +933,11 @@ namespace Features
 					RECT textRectangle;
 
 					std::to_chars(strHealth.data(), strHealth.data() + strHealth.size(), node->mHealth);
-					textRectangle.left = std::get<0>(out.value()) - 50;
-					textRectangle.top = std::get<1>(out.value()) - 50;
-					textRectangle.right = textRectangle.left + 100;
-					textRectangle.bottom = textRectangle.top + 100;
-					direct3D9Font->DrawTextA(nullptr, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER, D3DCOLOR_XRGB(0, 255, 255));
+					textRectangle.left = std::get<0>(out.value()) - 25;
+					textRectangle.top = std::get<1>(out.value()) - 25;
+					textRectangle.right = textRectangle.left + 50;
+					textRectangle.bottom = textRectangle.top + 50;
+					direct3D9Font->DrawTextA(nullptr, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER | DT_VCENTER, D3DCOLOR_XRGB(0, 255, 255));
 				}
 			}
 
