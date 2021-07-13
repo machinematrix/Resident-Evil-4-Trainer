@@ -7,22 +7,22 @@ using Pointer = char*;
 Pointer patternScanHeap(const std::string &unformattedPattern);
 Pointer patternScan(const std::string &unformattedPattern);
 Pointer patternScan(std::string_view unformattedPattern, std::wstring_view moduleName);
-Pointer follow(Pointer instruction);
+void* follow(void *instruction);
 
 template<typename T>
-T getValue(Pointer address)
+T getValue(void *address)
 {
 	return *reinterpret_cast<T*>(address);
 }
 
 template<typename T>
-void setValue(Pointer address, T value)
+void setValue(void *address, T value)
 {
 	*reinterpret_cast<T*>(address) = value;
 }
 
 template<typename T, size_t sz>
-void setValue(Pointer address, const T(&value)[sz])
+void setValue(void *address, const T(&value)[sz])
 {
 	for (size_t i = 0; i < sz; ++i)
 		reinterpret_cast<T*>(address)[i] = value[i];
@@ -40,14 +40,14 @@ Pointer pointerPath(Pointer baseAddress, const T& offset, const Args& ...offsets
 	return pointerPath(getValue<Pointer>(baseAddress + offset), offsets...);
 }
 
-template <typename PointerType>
-Pointer replaceFunction(Pointer where, PointerType *function)
+template <typename FunctionType>
+FunctionType* replaceFunction(void *where, FunctionType *function)
 {
 	auto result = follow(where);
 
-	setValue(where + 1, reinterpret_cast<Pointer>(function) - where - 5);
+	setValue(reinterpret_cast<Pointer>(where) + 1, reinterpret_cast<Pointer>(function) - reinterpret_cast<Pointer>(where) - 5);
 
-	return result;
+	return reinterpret_cast<FunctionType*>(result);
 }
 
 template <typename T>

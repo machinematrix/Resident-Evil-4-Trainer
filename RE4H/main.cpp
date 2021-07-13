@@ -400,7 +400,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			modelEdit = GetDlgItem(hDlg, ModelEdit);
 			ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
 
-			float *firepowerEntry = Features::GetFirepowerTableEntry(data->firepowerIndex());
+			auto firepowerEntry = Features::GetFirepowerTableEntry(data->firepowerIndex());
 			for (size_t i = 0; i < 7; ++i)
 			{
 				SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());

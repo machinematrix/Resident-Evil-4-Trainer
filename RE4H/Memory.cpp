@@ -8,8 +8,8 @@
 #include <iostream>
 #include <iomanip>
 
-namespace {
-
+namespace
+{
 	std::string formatPattern(std::string str)
 	{
 		str.erase(remove(str.begin(), str.end(), 32), str.end());
@@ -26,6 +26,7 @@ namespace {
 			if (temp == "??") result.push_back(0x3F);
 			else result.push_back(std::stoi(temp, nullptr, 16));
 		}
+
 		return result;
 	}
 
@@ -50,10 +51,14 @@ namespace {
 
 	inline bool compPatternsR(const std::string &pattern, const char *toCompare)
 	{
-		for (std::string::size_type size = pattern.size(), i = size - 1;; --i) {
-			if (pattern[i] != '?' && pattern[i] != *(toCompare - (size - 1) + i)) return false;
-			if (!i) break;
+		for (std::string::size_type size = pattern.size(), i = size - 1;; --i)
+		{
+			if (pattern[i] != '?' && pattern[i] != *(toCompare - (size - 1) + i))
+				return false;
+			if (!i)
+				break;
 		}
+
 		return true;
 	}
 
@@ -157,10 +162,12 @@ Pointer patternScan(std::string_view unformattedPattern, std::wstring_view modul
 	if (unformattedPattern.empty())
 		return result;
 
-	try {
+	try
+	{
 		moduleEntry = getModuleEntry(moduleName);
 	}
-	catch (const std::runtime_error &) {
+	catch (const std::runtime_error &)
+	{
 		return result;
 	}
 
@@ -180,7 +187,7 @@ Pointer patternScan(std::string_view unformattedPattern, std::wstring_view modul
 	return result;
 }
 
-Pointer follow(Pointer instruction)
+void* follow(void *instruction)
 {
-	return instruction + getValue<std::int32_t>(instruction + 1) + 5;
+	return reinterpret_cast<Pointer>(instruction) + getValue<std::int32_t>(reinterpret_cast<Pointer>(instruction) + 1) + 5;
 }

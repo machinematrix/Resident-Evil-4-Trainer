@@ -444,7 +444,8 @@ namespace Features
 	WeaponData* GetWeaponDataPtr(ItemId id);
 	void SetWeaponDataPtr(WeaponData *target, const WeaponData &source, const float(&newFirepower)[7]);
 	bool IsWeapon(ItemId id);
-	float* GetFirepowerTableEntry(std::uint8_t i);
+	//float* GetFirepowerTableEntry(std::uint8_t i);
+	float(&GetFirepowerTableEntry(std::uint8_t i))[7];
 	void SetFirepowerTableEntry(std::uint8_t i, const float(&newValues)[7]);
 	const std::vector<ItemId> GetAmmoItemIds();
 
@@ -483,8 +484,7 @@ namespace Features
 	void OpenMerchant();
 
 	void Melee(MeleeType);
-	void SetPlayerCoordinates(const Coordinates &coordinates);
-	std::optional<Coordinates> GetPlayerCoordinates();
+	std::optional<Coordinates*> GetPlayerCoordinates();
 
 	std::vector<std::wstring> GetSceneFileNames();
 	void SetDoorListUpdateCallback(std::function<void(std::uint32_t, const std::vector<void*>&)>);

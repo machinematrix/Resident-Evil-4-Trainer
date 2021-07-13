@@ -167,26 +167,24 @@ namespace Features
 		Pointer gHealthBase; //bio4.exe+806F3C
 		Pointer gPlayerBase; //bio4.exe+870FD4
 		Pointer gWeaponDataIndex; //bio4.exe+724B10
-		Pointer gFirePowerTable; //bio4.exe+800B18
+		float (*gFirePowerTable)[7]; //bio4.exe+800B18
 		Pointer gDoorData; //bio4.exe+8502C0
 		Pointer gDoorList; //bio4.exe+867728. At dereference, then at +0x10, first four bits are door index * 2
-		Pointer gDropRandomizerHookLocation; //bio4.exe+1BDF1A
-		Pointer gDropRandomizerOriginal = nullptr;
-		Pointer gGetModelDataHookLocation; //bio4.exe+3898A6
-		Pointer gClipFunctionHookLocation; //bio4.exe+194C58
-		Pointer gGetModelDataOriginal = nullptr;
-		Pointer gSceAtHookLocation; //bio4.exe+23D004
-		Pointer gSceAtOriginal = nullptr;
+		void *gDropRandomizerHookLocation; //bio4.exe+1BDF1A
+		void *gGetModelDataHookLocation; //bio4.exe+3898A6
+		void *gClipFunctionHookLocation; //bio4.exe+194C58
+		void *gSceAtHookLocation; //bio4.exe+23D004
+		std::uint32_t (__cdecl *gSceAtOriginal)(void*, void*);
 		Pointer gTmpFireRate; //bio4.exe+70F8BC
-		Pointer gLoggerFunction; //bio4.exe+8300
-		Pointer gLoggerFunction2; //bio4.exe+CE5F
+		void *gLoggerFunction; //bio4.exe+8300
+		void *gLoggerFunction2; //bio4.exe+CE5F
 		Pointer gLinkedList; //bio4.exe+E6E608
 		Pointer gTypewriterProcedure; //bio4.exe+563FF0
 		Entity **gEntityList; //bio4.exe+7FDB18
 		Pointer gEnemyVTable; //bio4.exe+71035C. VTable for enemies that can be meelee'd
 		Entity **gPlayerNode; //bio4.exe+857054
 		Pointer gUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
-		Pointer gOriginalLogger = nullptr, gOriginalLogger2 = nullptr;
+		void *gOriginalLogger = nullptr, *gOriginalLogger2 = nullptr;
 		Pointer gFirepowerDivision; //bio4.exe+306718
 		Pointer gRadioFunctionPatchLocation; //bio4.exe+369D66
 		float *gOriginalFirepowerIdentity; //bio4.exe+800B50
@@ -202,6 +200,8 @@ namespace Features
 		void(__cdecl *gMeleeKnee)(void *enemyPointer, void*);
 		void(__cdecl *gMeleeKneeKrauser)(void *enemyPointer, void*);
 		void(__cdecl *gMeleeKneeSuplex)(void *enemyPointer, void*);
+		void(__cdecl *gGetModelDataOriginal)(ItemId, InventoryIconData*);
+		int(__cdecl *gDropRandomizerOriginal)(std::uint32_t, ItemId *, std::uint32_t *, void *);
 		std::mutex gStackCapMutex;
 		std::vector<void*> gDoors;
 		std::map<ItemId, std::uint32_t> gItemStackCap;
@@ -708,9 +708,7 @@ namespace Features
 					{
 						do
 						{
-							HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, false, thEntry.th32ThreadID);
-							
-							if (hThread != currentThread)
+							if (HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, false, thEntry.th32ThreadID); hThread && hThread != currentThread)
 							{
 								if (freeze && thEntry.th32OwnerProcessID == entry.th32ProcessID)
 									SuspendThread(hThread);
@@ -1030,7 +1028,7 @@ namespace Features
 		gHealthBase = patternScan("A1 ????????  83 C0 60  6A 10  50  E8");
 		gPlayerBase = patternScan("B9 ????????  E8 ????????  8B 35 ????????  81");
 		gWeaponDataIndex = patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40");
-		gFirePowerTable = patternScan("D9 04 8D ????????  D9 5D 08");
+		gFirePowerTable = reinterpret_cast<decltype(gFirePowerTable)>(patternScan("D9 04 8D ????????  D9 5D 08"));
 		//gNoclipAddress = patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57");
 		clippingFunctionCall = patternScan("E8 ????????  D9 86 ????????  8B 4D 10");
 		gDoorData = patternScan("B9 ????????  6A 0B  75 ??  6A 3A");
@@ -1059,13 +1057,11 @@ namespace Features
 		gFirepowerDivision = patternScan("D8 35 ????????  D9 5D F8  D9 45 F8");
 		gRadioFunctionPatchLocation = patternScan("8B 92 DC010000  03 CF  51");
 
-		if (!(gHealthBase && gPlayerBase && gWeaponDataIndex && gFirePowerTable && clippingFunctionCall && gDoorData
+		if (!(gDirect3D9Device && gD3DDeviceVTable && gAspectRatio && gCamera && gHealthBase && gPlayerBase && gWeaponDataIndex && gFirePowerTable && clippingFunctionCall && gDoorData
 			  && gDoorList && gDropRandomizerHookLocation && gGetModelDataHookLocation && gSceAtHookLocation && gTmpFireRate && gLoggerFunction
 			  && gLoggerFunction2 && gLinkedList && gTypewriterProcedure && gEntityList && gEnemyVTable && gUseDoorHookLocation
 			  && gUseDoor && gSceAtCreateItemAt && gGetInventoryModelData && gReadMinimumHeader && gOpenMerchant && gMeleeHead
-			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee && gFirepowerDivision && gRadioFunctionPatchLocation
-			  && gD3DDeviceVTable && gDirect3D9Device
-			  ))
+			  && gMeleeKnee && gMeleeKneeKrauser && gMeleeKneeSuplex && gMelee && gFirepowerDivision && gRadioFunctionPatchLocation))
 			return false;
 
 		if ((sqlite3_open(kDatabaseName, &database) & 0xFF) == SQLITE_OK)
@@ -1093,27 +1089,27 @@ namespace Features
 
 		gDirect3D9Device = getValue<IDirect3DDevice9**>(reinterpret_cast<Pointer>(gDirect3D9Device) + 1);
 		//gCamera = getValue<Camera*>(reinterpret_cast<Pointer>(addBytes(gCamera, 1)));
-		gAspectRatio = getValue<float*>(reinterpret_cast<Pointer>(gAspectRatio) + 2);
+		gAspectRatio = getValue<float*>(addBytes(gAspectRatio, 2));
 		gCamera = reinterpret_cast<Camera*>(pointerPath(reinterpret_cast<Pointer>(gCamera), 1, 4));
 		gHealthBase = pointerPath(gHealthBase, 0x1, 0x0);
 		gPlayerBase = getValue<Pointer>(gPlayerBase + 1);
 		gWeaponDataIndex = getValue<Pointer>(gWeaponDataIndex + 1);
-		gFirePowerTable = getValue<Pointer>(gFirePowerTable + 3);
+		gFirePowerTable = getValue<decltype(gFirePowerTable)>(addBytes(gFirePowerTable, 3));
 		gDoorData = getValue<Pointer>(gDoorData + 1);
 		gDoorList = getValue<Pointer>(gDoorList + 1);
 		gGetModelDataHookLocation = follow(gGetModelDataHookLocation);
 		gDropRandomizerHookLocation = follow(gDropRandomizerHookLocation);
 		gSceAtHookLocation = follow(gSceAtHookLocation);
 		gLoggerFunction = follow(gLoggerFunction);
-		gLoggerFunction2 = follow(gLoggerFunction2 + 10);
+		gLoggerFunction2 = follow(addBytes(gLoggerFunction2, 10));
 		gTmpFireRate = getValue<Pointer>(gTmpFireRate + 2);
 		gLinkedList = getValue<Pointer>(gLinkedList + 1);
-		gPlayerNode = getValue<Entity**>(/*reinterpret_cast<Pointer>(gEntityList) + 17*/reinterpret_cast<Pointer>(addBytes(gEntityList, 17)));
-		gEntityList = getValue<Entity**>(reinterpret_cast<Pointer>(gEntityList) + 2);
+		gPlayerNode = getValue<Entity**>(addBytes(gEntityList, 17));
+		gEntityList = getValue<Entity**>(addBytes(gEntityList, 2));
 		gEnemyVTable = getValue<Pointer>(gEnemyVTable + 2);
 		gUseDoorHookLocation = getValue<Pointer>(gUseDoorHookLocation + 3) + 1 * 8;
 		gOriginalFirepowerIdentity = GetFirepowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
-		gD3DDeviceVTable = getValue<std::uint32_t*>(reinterpret_cast<Pointer>(gD3DDeviceVTable) + 2);
+		gD3DDeviceVTable = getValue<std::uint32_t*>(addBytes(gD3DDeviceVTable, 2));
 		gClipFunctionHookLocation = follow(clippingFunctionCall);
 		gOriginalClipFunction = reinterpret_cast<decltype(gOriginalClipFunction)>(follow(gClipFunctionHookLocation));
 		
@@ -1146,7 +1142,6 @@ namespace Features
 		cout << "Player Base: " << (void*)gPlayerBase << endl;
 		cout << "Weapon Data Index: " << (void*)gWeaponDataIndex << endl;
 		cout << "Fire Power Table: " << (void*)gFirePowerTable << endl;
-		cout << "Noclip Code: " << (void*)gNoclipAddress << endl;
 		cout << "Door Data: " << (void*)gDoorData << endl;
 		cout << "Door List: " << (void *)gDoorList << endl;
 		cout << "Set Scene: " << (void*)gUseDoor << endl;
@@ -1416,14 +1411,14 @@ namespace Features
 		return GetWeaponDataPtr(id) ? true : false;
 	}
 
-	float* GetFirepowerTableEntry(std::uint8_t i)
+	float (&GetFirepowerTableEntry(std::uint8_t i))[7]
 	{
-		return reinterpret_cast<float*>(gFirePowerTable + i * 7 * sizeof(float));
+		return gFirePowerTable[i];
 	}
 
 	void SetFirepowerTableEntry(std::uint8_t i, const float(&newValues)[7])
 	{
-		setValue(gFirePowerTable + i * 7 * sizeof(float), newValues);
+		std::copy(std::begin(newValues), std::end(newValues), std::begin(gFirePowerTable[i]));
 	}
 
 	const std::vector<ItemId> GetAmmoItemIds()
@@ -1575,7 +1570,6 @@ namespace Features
 
 	bool IsClippingDisabled()
 	{
-		//return getValue<std::uint8_t>(gNoclipAddress) == 0xC3 /*ret*/ ? true : false;
 		return follow(gClipFunctionHookLocation) == reinterpret_cast<Pointer>(ClippingFunctionHook);
 	}
 
@@ -1745,18 +1739,12 @@ namespace Features
 		}
 	}
 
-	void SetPlayerCoordinates(const Coordinates &coordinates)
+	std::optional<Coordinates*> GetPlayerCoordinates()
 	{
-		if (Entity *playerEntity = *gPlayerNode)
-			playerEntity->mCoords = coordinates;
-	}
-
-	std::optional<Coordinates> GetPlayerCoordinates()
-	{
-		std::optional<Coordinates> result;
+		std::optional<Coordinates*> result;
 
 		if (Entity *playerEntity = *gPlayerNode)
-			result = playerEntity->mCoords;
+			result = &playerEntity->mCoords;
 
 		return result;
 	}

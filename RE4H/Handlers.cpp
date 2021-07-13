@@ -695,15 +695,13 @@ void onWmKeydown(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				case KeyBindingsConfig::INCREASE_ALTITUDE:
 					if (auto coordinates = Features::GetPlayerCoordinates())
 					{
-						coordinates.value().mY += 1000.f;
-						Features::SetPlayerCoordinates(coordinates.value());
+						coordinates.value()->mY += 1000.f;
 					}
 					break;
 				case KeyBindingsConfig::DECREASE_ALTITUDE:
 					if (auto coordinates = Features::GetPlayerCoordinates())
 					{
-						coordinates.value().mY -= 1000.f;
-						Features::SetPlayerCoordinates(coordinates.value());
+						coordinates.value()->mY -= 1000.f;
 					}
 					break;
 			}
