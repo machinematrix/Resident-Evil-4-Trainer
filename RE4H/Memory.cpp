@@ -186,8 +186,3 @@ Pointer patternScan(std::string_view unformattedPattern, std::wstring_view modul
 
 	return result;
 }
-
-void* follow(void *instruction)
-{
-	return reinterpret_cast<Pointer>(instruction) + getValue<std::int32_t>(reinterpret_cast<Pointer>(instruction) + 1) + 5;
-}

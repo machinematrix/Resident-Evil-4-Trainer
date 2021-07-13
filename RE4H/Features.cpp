@@ -186,7 +186,7 @@ namespace Features
 		Pointer gUseDoorHookLocation; //bio4.exe+2BB4DF + 1 * 8
 		void *gOriginalLogger = nullptr, *gOriginalLogger2 = nullptr;
 		Pointer gFirepowerDivision; //bio4.exe+306718
-		Pointer gRadioFunctionPatchLocation; //bio4.exe+369D66
+		void *gRadioFunctionPatchLocation; //bio4.exe+369D66
 		float *gOriginalFirepowerIdentity; //bio4.exe+800B50
 		float gMockFirepowerIdentity = 1.0f;
 		void(__cdecl *gUseDoor)(void*, void*); //first parameter is a pointer to a 312 byte (0x138) structure
@@ -817,7 +817,7 @@ namespace Features
 		return result;
 	}
 
-	void __cdecl useDoorHook(void *arg, void *arg2)
+	void __cdecl UseDoorHook(void *arg, void *arg2)
 	{
 		sqlite3 *database = nullptr;
 
@@ -847,26 +847,6 @@ namespace Features
 	{
 		if (entity != *gPlayerNode)
 			gOriginalClipFunction(entity, arg2);
-	}
-
-	Coordinates operator-(const Coordinates &coords)
-	{
-		return { -coords.mX, -coords.mY, -coords.mZ };
-	}
-
-	Coordinates operator-(const Coordinates &lhs, const Coordinates &rhs)
-	{
-		return { lhs.mX - rhs.mX, lhs.mY - rhs.mY, lhs.mZ - rhs.mZ };
-	}
-
-	Coordinates operator+(const Coordinates &lhs, const Coordinates &rhs)
-	{
-		return { lhs.mX + rhs.mX, lhs.mY + rhs.mY, lhs.mZ + rhs.mZ };
-	}
-
-	Coordinates operator/(const Coordinates &dividend, float divisor)
-	{
-		return { dividend.mX / divisor, dividend.mY / divisor, dividend.mZ / divisor };
 	}
 
 	std::optional<std::tuple<int, int>> WorldToScreen(const Coordinates &pos, int windowWidth, int windowHeight)
@@ -921,13 +901,14 @@ namespace Features
 
 			for (Entity *node = *gEntityList; node; node = node->mNext)
 			{
-				/*if (node->mVTable != gEnemyVTable || !node->mHealth)
-					continue;*/
-
-				if (!node->mHealth || std::abs(node->mCoords.mX - node->mCoords3.mX) >= 100.f || std::abs(node->mCoords.mZ - node->mCoords3.mZ) >= 100.f)
+				if (!node->mHealth)
 					continue;
+				auto *coords = &node->mCoords3;
 
-				if (auto out = WorldToScreen(node->mCoords3, screen.right, screen.bottom))
+				if (std::abs(node->mCoords.mX - node->mCoords3.mX) >= 100.f || std::abs(node->mCoords.mZ - node->mCoords3.mZ) >= 100.f)
+					coords = &node->mCoords;
+
+				if (auto out = WorldToScreen(*coords, screen.right, screen.bottom))
 				{
 					std::array<char, 6> strHealth = {};
 					RECT textRectangle;
@@ -1121,8 +1102,8 @@ namespace Features
 		gSceAtOriginal = replaceFunction(gSceAtHookLocation, SceAtHook);
 		gOriginalLogger = replaceFunction(gLoggerFunction, gLoggerFunction);
 		gOriginalLogger2 = replaceFunction(gLoggerFunction2, gLoggerFunction2);
-		setValue(gUseDoorHookLocation, useDoorHook);
-		gOriginalClipFunction = reinterpret_cast<decltype(gOriginalClipFunction)>(follow(gClipFunctionHookLocation));
+		setValue(gUseDoorHookLocation, UseDoorHook);
+		gOriginalClipFunction = follow<decltype(gOriginalClipFunction)>(gClipFunctionHookLocation);
 		gEndSceneOriginal = getValue<decltype(gEndSceneOriginal)>(gD3DDeviceVTable + 42);
 		ToggleOverlay(true);
 
@@ -1387,7 +1368,6 @@ namespace Features
 			target->capacity(i, source.capacity(i));
 		target->weaponAmmo(source.weaponAmmo());
 		target->model(source.model());
-
 		VirtualProtect(target, sizeof(WeaponData), oldProtect, &oldProtect);
 	}
 
@@ -1435,7 +1415,7 @@ namespace Features
 
 	void UseDoor(void *doorData)
 	{
-		useDoorHook(doorData, nullptr);
+		UseDoorHook(doorData, nullptr);
 	}
 
 	Pointer GetFirstValidDoor()
@@ -1765,10 +1745,7 @@ namespace Features
 
 	void EasyDrops(bool toggle)
 	{
-		if (toggle)
-			replaceFunction(gDropRandomizerHookLocation, MyDropRandomizer);
-		else
-			replaceFunction(gDropRandomizerHookLocation, gDropRandomizerOriginal);
+		replaceFunction(gDropRandomizerHookLocation, toggle ? MyDropRandomizer : gDropRandomizerOriginal);
 	}
 
 	bool EasyDrops()
@@ -1778,13 +1755,10 @@ namespace Features
 	
 	void SkipRadioCutscenes(bool skip)
 	{
-		if (const char jumpInstruction[] = { '\xE9', '\x1A', '\x02', '\x00', '\x00', '\x90' }; skip)
-			setValue(gRadioFunctionPatchLocation, jumpInstruction);
-		else
-		{
-			const char originalCode[] = { '\x8B', '\x92', '\xDC', '\x01', '\x00', '\x00' };
-			setValue(gRadioFunctionPatchLocation, originalCode);
-		}
+		static const char jumpInstruction[] = { '\xE9', '\x1A', '\x02', '\x00', '\x00', '\x90' };
+		static const char originalCode[] = { '\x8B', '\x92', '\xDC', '\x01', '\x00', '\x00' };
+
+		setValue(gRadioFunctionPatchLocation, skip ? jumpInstruction : originalCode);
 	}
 
 	bool IsRadioSkipEnabled()
