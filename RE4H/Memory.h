@@ -1,6 +1,7 @@
 #ifndef __MEMORY__
 #define __MEMORY__
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 using Pointer = char*;
