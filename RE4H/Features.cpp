@@ -1358,16 +1358,11 @@ namespace Features
 		return result;
 	}
 
-	void SetWeaponDataPtr(WeaponData *target, const WeaponData &source, const float(&newFirepower)[7])
+	void SetWeaponDataPtr(WeaponData *target, const WeaponData &source)
 	{
 		DWORD oldProtect;
 		VirtualProtect(target, sizeof(WeaponData), PAGE_READWRITE, &oldProtect);
-
-		SetFirepowerTableEntry(target->firepowerIndex(), newFirepower);
-		for (size_t i = 0; i < WeaponData::capacitySlotCount; ++i)
-			target->capacity(i, source.capacity(i));
-		target->weaponAmmo(source.weaponAmmo());
-		target->model(source.model());
+		*target = source;
 		VirtualProtect(target, sizeof(WeaponData), oldProtect, &oldProtect);
 	}
 

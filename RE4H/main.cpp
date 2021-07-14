@@ -425,41 +425,47 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 					Features::WeaponData newData = *data;
 					float newFirepower[7];
 
-					try {
-						for (size_t i = 0; i < 7; ++i) {
+					try
+					{
+						for (size_t i = 0; i < 7; ++i)
+						{
 							newFirepower[i] = std::stof(GetControlText(firePowerEdits[i]));
 							newData.capacity(i, std::stoi(GetControlText(capacityEdits[i])));
 						}
 					}
-					catch (const std::invalid_argument&) {
+					catch (const std::invalid_argument&)
+					{
 						ErrorBox(hDlg, TEXT("Invalid value in fire power and/or capacity"));
 						break;
 					}
 
-					try {
+					try
+					{
 						newData.model(std::stoi(GetControlText(modelEdit)));
 					}
-					catch (const std::invalid_argument&) {
+					catch (const std::invalid_argument&)
+					{
 						ErrorBox(hDlg, TEXT("Invalid value in model"));
 						break;
 					}
 
-					try {
-						auto curSel = ComboBox_GetCurSel(ammoCombo);
-
-						if (curSel != CB_ERR)
+					try
+					{
+						if (auto curSel = ComboBox_GetCurSel(ammoCombo); curSel != CB_ERR)
 						{
 							String strAmmo(SendMessage(ammoCombo, CB_GETLBTEXTLEN, curSel, 0), TEXT('\0'));
 							SendMessage(ammoCombo, CB_GETLBTEXT, curSel, (LPARAM)&strAmmo.front());
 							newData.weaponAmmo(ids[curSel]);
 						}
 					}
-					catch (const std::out_of_range&) {
+					catch (const std::out_of_range&)
+					{
 						ErrorBox(hDlg, TEXT("Invalid ammo type"));
 						break;
 					}
 
-					Features::SetWeaponDataPtr(data, newData, newFirepower);
+					Features::SetWeaponDataPtr(data, newData);
+					Features::SetFirepowerTableEntry(data->firepowerIndex(), newFirepower);
 				}
 				[[fallthrough]];
 				case IDCANCEL:

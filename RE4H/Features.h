@@ -442,7 +442,7 @@ namespace Features
 	const std::vector<StringView> GetCharacterCostumeNames(Character id);
 
 	WeaponData* GetWeaponDataPtr(ItemId id);
-	void SetWeaponDataPtr(WeaponData *target, const WeaponData &source, const float(&newFirepower)[7]);
+	void SetWeaponDataPtr(WeaponData *target, const WeaponData &source);
 	bool IsWeapon(ItemId id);
 	//float* GetFirepowerTableEntry(std::uint8_t i);
 	float(&GetFirepowerTableEntry(std::uint8_t i))[7];
