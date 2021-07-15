@@ -160,6 +160,7 @@ namespace Features
 		constexpr const wchar_t *kProcessName = L"bio4.exe";
 		IDirect3DDevice9 **gDirect3D9Device; //bio4.exe+CECB28
 		ID3DXFont *gOverlayFont;
+		ID3DXSprite *gOverlaySprite;
 		HRESULT (__stdcall *gEndSceneOriginal)(IDirect3DDevice9*);
 		HRESULT (__stdcall *gResetOriginal)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
 		std::uint32_t *gD3DDeviceVTable; //d3d9.dll+5A102
@@ -898,6 +899,7 @@ namespace Features
 		device->GetCreationParameters(&parameters);
 		GetWindowRect(parameters.hFocusWindow, &screen);
 
+		gOverlaySprite->Begin(D3DXSPRITE_ALPHABLEND);
 		for (Entity *node = *gEntityList; node; node = node->mNext)
 		{
 			if (!node->mHealth)
@@ -917,18 +919,21 @@ namespace Features
 				textRectangle.top = std::get<1>(out.value()) - 25;
 				textRectangle.right = textRectangle.left + 50;
 				textRectangle.bottom = textRectangle.top + 50;
-				gOverlayFont->DrawTextA(nullptr, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER | DT_VCENTER, D3DCOLOR_XRGB(0, 255, 255));
+				gOverlayFont->DrawTextA(gOverlaySprite, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER | DT_VCENTER, D3DCOLOR_XRGB(0, 255, 255));
 			}
 		}
+		gOverlaySprite->End();
 
 		return gEndSceneOriginal(device);
 	}
 
 	__declspec(nothrow) HRESULT __stdcall ResetHook(IDirect3DDevice9 *device, D3DPRESENT_PARAMETERS *presentationParameters)
 	{
+		gOverlaySprite->OnLostDevice();
 		gOverlayFont->OnLostDevice();
 		auto result = gResetOriginal(device, presentationParameters);
 		gOverlayFont->OnResetDevice();
+		gOverlaySprite->OnResetDevice();
 		return result;
 	}
 	
@@ -1072,7 +1077,9 @@ namespace Features
 		gDirect3D9Device = getValue<IDirect3DDevice9**>(addBytes(gDirect3D9Device, 1));
 		if (D3DXCreateFontA(*gDirect3D9Device, 18, 9, FW_NORMAL, 0, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 							DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &gOverlayFont) != S_OK)
-			return false;		
+			return false;
+		if (D3DXCreateSprite(*gDirect3D9Device, &gOverlaySprite) != S_OK)
+			return false;
 		gAspectRatio = getValue<float*>(addBytes(gAspectRatio, 2));
 		gCamera = pointerPath<Camera>(gCamera, 1, 4);
 		gHealthBase = pointerPath<std::remove_pointer_t<Pointer>>(gHealthBase, 0x1, 0x0);
@@ -1136,6 +1143,7 @@ namespace Features
 	void Terminate()
 	{
 		ToggleOverlay(false);
+		gOverlaySprite->Release();
 		gOverlayFont->Release();
 		SkipRadioCutscenes(false);
 		setValue(gFirepowerDivision + 2, gOriginalFirepowerIdentity);
