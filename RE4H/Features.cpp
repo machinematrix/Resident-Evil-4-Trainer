@@ -159,7 +159,9 @@ namespace Features
 		constexpr const char *kDatabaseName = "RE4H.db";
 		constexpr const wchar_t *kProcessName = L"bio4.exe";
 		IDirect3DDevice9 **gDirect3D9Device; //bio4.exe+CECB28
+		ID3DXFont *gOverlayFont;
 		HRESULT (__stdcall *gEndSceneOriginal)(IDirect3DDevice9*);
+		HRESULT (__stdcall *gResetOriginal)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
 		std::uint32_t *gD3DDeviceVTable; //d3d9.dll+5A102
 		//Camera *gCamera; //bio4.exe+870548 //bio4.exe+870330
 		float *gAspectRatio; //bio4.exe+71377C
@@ -890,43 +892,44 @@ namespace Features
 
 	__declspec(nothrow) HRESULT __stdcall EndSceneHook(IDirect3DDevice9 *device)
 	{
-		if (ID3DXFont *direct3D9Font; D3DXCreateFontA(device, 18, 9, FW_NORMAL, 0, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-													  DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &direct3D9Font) == S_OK)
+		D3DDEVICE_CREATION_PARAMETERS parameters;
+		RECT screen;
+
+		device->GetCreationParameters(&parameters);
+		GetWindowRect(parameters.hFocusWindow, &screen);
+
+		for (Entity *node = *gEntityList; node; node = node->mNext)
 		{
-			D3DDEVICE_CREATION_PARAMETERS parameters;
-			RECT screen;
+			if (!node->mHealth)
+				continue;
+			auto *coords = &node->mCoords3;
 
-			device->GetCreationParameters(&parameters);
-			GetWindowRect(parameters.hFocusWindow, &screen);
+			if (std::abs(node->mCoords.mX - node->mCoords3.mX) >= 100.f || std::abs(node->mCoords.mZ - node->mCoords3.mZ) >= 100.f)
+				coords = &node->mCoords;
 
-			for (Entity *node = *gEntityList; node; node = node->mNext)
+			if (auto out = WorldToScreen(*coords, screen.right - screen.left, screen.bottom - screen.top))
 			{
-				if (!node->mHealth)
-					continue;
-				auto *coords = &node->mCoords3;
+				std::array<char, 6> strHealth = {};
+				RECT textRectangle;
 
-				if (std::abs(node->mCoords.mX - node->mCoords3.mX) >= 100.f || std::abs(node->mCoords.mZ - node->mCoords3.mZ) >= 100.f)
-					coords = &node->mCoords;
-
-				if (auto out = WorldToScreen(*coords, screen.right, screen.bottom))
-				{
-					std::array<char, 6> strHealth = {};
-					RECT textRectangle;
-
-					std::to_chars(strHealth.data(), strHealth.data() + strHealth.size(), node->mHealth);
-					textRectangle.left = std::get<0>(out.value()) - 25;
-					textRectangle.top = std::get<1>(out.value()) - 25;
-					textRectangle.right = textRectangle.left + 50;
-					textRectangle.bottom = textRectangle.top + 50;
-					direct3D9Font->DrawTextA(nullptr, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER | DT_VCENTER, D3DCOLOR_XRGB(0, 255, 255));
-				}
+				std::to_chars(strHealth.data(), strHealth.data() + strHealth.size(), node->mHealth);
+				textRectangle.left = std::get<0>(out.value()) - 25;
+				textRectangle.top = std::get<1>(out.value()) - 25;
+				textRectangle.right = textRectangle.left + 50;
+				textRectangle.bottom = textRectangle.top + 50;
+				gOverlayFont->DrawTextA(nullptr, strHealth.data(), -1, &textRectangle, DT_NOCLIP | DT_CENTER | DT_VCENTER, D3DCOLOR_XRGB(0, 255, 255));
 			}
-
-			direct3D9Font->Release();
-			direct3D9Font = nullptr;
 		}
 
 		return gEndSceneOriginal(device);
+	}
+
+	__declspec(nothrow) HRESULT __stdcall ResetHook(IDirect3DDevice9 *device, D3DPRESENT_PARAMETERS *presentationParameters)
+	{
+		gOverlayFont->OnLostDevice();
+		auto result = gResetOriginal(device, presentationParameters);
+		gOverlayFont->OnResetDevice();
+		return result;
 	}
 	
 	bool operator==(Character lhs, std::uint8_t rhs)
@@ -1009,7 +1012,6 @@ namespace Features
 		gPlayerBase = patternScan("B9 ????????  E8 ????????  8B 35 ????????  81");
 		gWeaponDataIndex = patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40");
 		gFirePowerTable = reinterpret_cast<decltype(gFirePowerTable)>(patternScan("D9 04 8D ????????  D9 5D 08"));
-		//gNoclipAddress = patternScan("55 8B EC 53 8B 5D 08 56 8B B3 F4 00 00 00 57 8B 7D 0C 57");
 		clippingFunctionCall = patternScan("E8 ????????  D9 86 ????????  8B 4D 10");
 		gDoorData = patternScan("B9 ????????  6A 0B  75 ??  6A 3A");
 		gDoorList = patternScan("A1 ????????  53  05 8C000000  56  C6 45 CB 00");
@@ -1068,6 +1070,9 @@ namespace Features
 		sqlite3_close_v2(database);
 
 		gDirect3D9Device = getValue<IDirect3DDevice9**>(addBytes(gDirect3D9Device, 1));
+		if (D3DXCreateFontA(*gDirect3D9Device, 18, 9, FW_NORMAL, 0, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+							DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &gOverlayFont) != S_OK)
+			return false;		
 		gAspectRatio = getValue<float*>(addBytes(gAspectRatio, 2));
 		gCamera = pointerPath<Camera>(gCamera, 1, 4);
 		gHealthBase = pointerPath<std::remove_pointer_t<Pointer>>(gHealthBase, 0x1, 0x0);
@@ -1105,6 +1110,7 @@ namespace Features
 		setValue(gUseDoorHookLocation, UseDoorHook);
 		gOriginalClipFunction = follow<decltype(gOriginalClipFunction)>(gClipFunctionHookLocation);
 		gEndSceneOriginal = getValue<decltype(gEndSceneOriginal)>(gD3DDeviceVTable + 42);
+		gResetOriginal = getValue<decltype(gResetOriginal)>(gD3DDeviceVTable + 16);
 		ToggleOverlay(true);
 
 		#ifndef NDEBUG
@@ -1130,6 +1136,7 @@ namespace Features
 	void Terminate()
 	{
 		ToggleOverlay(false);
+		gOverlayFont->Release();
 		SkipRadioCutscenes(false);
 		setValue(gFirepowerDivision + 2, gOriginalFirepowerIdentity);
 		replaceFunction(gGetModelDataHookLocation, gGetModelDataOriginal);
@@ -1764,12 +1771,15 @@ namespace Features
 	void ToggleOverlay(bool toggle)
 	{
 		DWORD protect;
-		auto *function = toggle ? EndSceneHook : gEndSceneOriginal;
+		auto *endScene = toggle ? EndSceneHook : gEndSceneOriginal;
+		auto *reset = toggle ? ResetHook : gResetOriginal;
 
 		VirtualProtect(gD3DDeviceVTable, 100 * 4, PAGE_EXECUTE_READWRITE, &protect);
 		SuspendProcess(kProcessName, true);
-		setValue(gD3DDeviceVTable + 42, function);
-		setValue(getValue<std::uint32_t *>(*gDirect3D9Device) + 42, function);
+		setValue(gD3DDeviceVTable + 42, endScene);
+		setValue(gD3DDeviceVTable + 16, reset);
+		setValue(getValue<std::uint32_t*>(*gDirect3D9Device) + 42, endScene);
+		setValue(getValue<std::uint32_t*>(*gDirect3D9Device) + 16, reset);
 		SuspendProcess(kProcessName, false);
 		VirtualProtect(gD3DDeviceVTable, 100 * 4, protect, &protect);
 	}
