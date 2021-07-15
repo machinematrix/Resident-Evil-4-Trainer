@@ -1095,6 +1095,9 @@ namespace Features
 		gOriginalFirepowerIdentity = GetFirepowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
 		gD3DDeviceVTable = getValue<std::uint32_t*>(addBytes(gD3DDeviceVTable, 2));
 		gClipFunctionHookLocation = follow(clippingFunctionCall);
+		gOriginalClipFunction = follow<decltype(gOriginalClipFunction)>(gClipFunctionHookLocation);
+		gEndSceneOriginal = getValue<decltype(gEndSceneOriginal)>(gD3DDeviceVTable + 42);
+		gResetOriginal = getValue<decltype(gResetOriginal)>(gD3DDeviceVTable + 16);
 		
 		//For some reason, all firepower values shown on the UI are divided by the handgun's firepower at level 0, so modifying
 		//it will mess up firepower values shown for all weapons. This changes the game's code so it divides using a value at another address
@@ -1108,9 +1111,6 @@ namespace Features
 		gOriginalLogger = replaceFunction(gLoggerFunction, gLoggerFunction);
 		gOriginalLogger2 = replaceFunction(gLoggerFunction2, gLoggerFunction2);
 		setValue(gUseDoorHookLocation, UseDoorHook);
-		gOriginalClipFunction = follow<decltype(gOriginalClipFunction)>(gClipFunctionHookLocation);
-		gEndSceneOriginal = getValue<decltype(gEndSceneOriginal)>(gD3DDeviceVTable + 42);
-		gResetOriginal = getValue<decltype(gResetOriginal)>(gD3DDeviceVTable + 16);
 		ToggleOverlay(true);
 
 		#ifndef NDEBUG
