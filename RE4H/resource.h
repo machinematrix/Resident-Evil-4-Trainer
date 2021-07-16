@@ -2,10 +2,10 @@
 // Microsoft Visual C++ generated include file.
 // Used by RE4H.rc
 //
-#define ItemDialog                      101
+#define DLG_ITEM_DIALOG                 101
 #define DLG_WEAPONS_STATS_DIALOG        103
 #define DLG_KEYBINDINGS                 106
-#define ItemAmountDialog                109
+#define DLG_ITEM_AMOUNT_DIALOG          109
 #define ItemText                        1000
 #define ItemCombo                       1001
 #define AmountText                      1002

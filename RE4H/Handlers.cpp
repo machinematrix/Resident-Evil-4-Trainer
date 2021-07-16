@@ -439,7 +439,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			{
 				if (auto itemPtr = wndInfo.inventoryList->getItemAddress(selectedItem))
 				{
-					DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemDialog), hWnd, ItemDlgProc, (LPARAM)itemPtr);
+					DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_ITEM_DIALOG), hWnd, ItemDlgProc, (LPARAM)itemPtr);
 
 					if (DWORD error = GetLastError())
 					{
@@ -465,7 +465,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 				itemPtr->posX(8);
 				itemPtr->posY(15);
 				itemPtr->rotation(1);
-				auto result = DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemDialog), hWnd, ItemDlgProc, (LPARAM)itemPtr);
+				auto result = DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_ITEM_DIALOG), hWnd, ItemDlgProc, (LPARAM)itemPtr);
 				
 				if (result == -1)
 				{
@@ -481,7 +481,7 @@ void onWmCommand(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInf
 			break;
 
 		case MAX_AMOUNT_EDIT_BUTTON:
-			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(ItemAmountDialog), hWnd, EditMaxAmountDlgProc, 0);
+			DialogBoxParam(wndInfo.hInstance, MAKEINTRESOURCE(DLG_ITEM_AMOUNT_DIALOG), hWnd, EditMaxAmountDlgProc, 0);
 			break;
 
 		case ERASE_ITEM:
