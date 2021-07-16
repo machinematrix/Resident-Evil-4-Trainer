@@ -381,8 +381,8 @@ namespace Features
 		std::uint16_t mCapacityValues[7]; //0x8000 (i.e 32768) for infinite ammo
 	public:
 		ItemId id() const;
-		void firepowerIndex(std::uint8_t position);
-		std::uint8_t firepowerIndex() const;
+		void statIndex(std::uint8_t position);
+		std::uint8_t statIndex() const;
 		void model(std::uint8_t value);
 		std::uint8_t model() const;
 		void weaponAmmo(ItemId id);
@@ -446,8 +446,8 @@ namespace Features
 	bool IsWeapon(ItemId id);
 	float(&GetFirePowerTableEntry(std::uint8_t id))[7];
 	void SetFirePowerTableEntry(std::uint8_t id, const float(&newValues)[7]);
-	float(&GetFiringSpeedTableEntry(std::uint8_t id))[5];
-	void SetFiringSpeedTableEntry(std::uint8_t id, const float(&newValues)[7]);
+	const float(&GetFiringSpeedTableEntry(std::uint8_t id))[5];
+	void SetFiringSpeedTableEntry(std::uint8_t id, const float(&newValues)[5]);
 	const std::vector<ItemId> GetAmmoItemIds();
 
 	void SetMoney(std::uint32_t value);

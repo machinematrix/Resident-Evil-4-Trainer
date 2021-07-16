@@ -366,7 +366,7 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static HWND firePowerEdits[7], capacityEdits[7], modelEdit, ammoCombo;
+	static HWND firePowerEdits[7], firingSpeedEdits[5], capacityEdits[7], modelEdit, ammoCombo;
 	static std::vector<Features::ItemId> ids;
 	static Features::WeaponData *data;
 
@@ -390,6 +390,11 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			firePowerEdits[4] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_5);
 			firePowerEdits[5] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_6);
 			firePowerEdits[6] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_7);
+			firingSpeedEdits[0] = GetDlgItem(hDlg, IDC_FIRINGSPEED_LV_1);
+			firingSpeedEdits[1] = GetDlgItem(hDlg, IDC_FIRINGSPEED_LV_2);
+			firingSpeedEdits[2] = GetDlgItem(hDlg, IDC_FIRINGSPEED_LV_3);
+			firingSpeedEdits[3] = GetDlgItem(hDlg, IDC_FIRINGSPEED_LV_4);
+			firingSpeedEdits[4] = GetDlgItem(hDlg, IDC_FIRINGSPEED_LV_5);
 			capacityEdits[0] = GetDlgItem(hDlg, IDC_CAPACITY_LV_1);
 			capacityEdits[1] = GetDlgItem(hDlg, IDC_CAPACITY_LV_2);
 			capacityEdits[2] = GetDlgItem(hDlg, IDC_CAPACITY_LV_3);
@@ -400,10 +405,13 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 			modelEdit = GetDlgItem(hDlg, IDC_MODEL_EDIT);
 			ammoCombo = GetDlgItem(hDlg, IDC_AMMO_TYPE_COMBO);
 
-			auto firepowerEntry = Features::GetFirePowerTableEntry(data->firepowerIndex());
+			auto &firePowerEntry = Features::GetFirePowerTableEntry(data->statIndex());
+			auto &firingSpeedEntry = Features::GetFiringSpeedTableEntry(data->statIndex());;
 			for (size_t i = 0; i < 7; ++i)
 			{
-				SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
+				SetWindowText(firePowerEdits[i], std::to_wstring(firePowerEntry[i]).c_str());
+				if (i < 5)
+					SetWindowText(firingSpeedEdits[i], std::to_wstring(firingSpeedEntry[i]).c_str());
 				SetWindowText(capacityEdits[i], std::to_wstring(data->capacity(i)).c_str());
 			}
 			SetWindowText(modelEdit, std::to_wstring(data->model()).c_str());
@@ -423,13 +431,15 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				case IDOK:
 				{
 					Features::WeaponData newData = *data;
-					float newFirepower[7];
+					float newFirepower[7], newFiringSpeed[5];
 
 					try
 					{
 						for (size_t i = 0; i < 7; ++i)
 						{
 							newFirepower[i] = std::stof(GetControlText(firePowerEdits[i]));
+							if (i < 5)
+								newFiringSpeed[i] = std::stof(GetControlText(firingSpeedEdits[i]));
 							newData.capacity(i, std::stoi(GetControlText(capacityEdits[i])));
 						}
 					}
@@ -465,7 +475,8 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 					}
 
 					Features::SetWeaponDataPtr(data, newData);
-					Features::SetFirePowerTableEntry(data->firepowerIndex(), newFirepower);
+					Features::SetFirePowerTableEntry(data->statIndex(), newFirepower);
+					Features::SetFiringSpeedTableEntry(data->statIndex(), newFiringSpeed);
 				}
 				[[fallthrough]];
 				case IDCANCEL:

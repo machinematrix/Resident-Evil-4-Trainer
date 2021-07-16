@@ -643,12 +643,12 @@ namespace Features
 		return mId;
 	}
 
-	void WeaponData::firepowerIndex(std::uint8_t position)
+	void WeaponData::statIndex(std::uint8_t position)
 	{
 		mFirepowerIndex = position;
 	}
 
-	std::uint8_t WeaponData::firepowerIndex() const
+	std::uint8_t WeaponData::statIndex() const
 	{
 		return mFirepowerIndex;
 	}
@@ -1114,7 +1114,7 @@ namespace Features
 		gEntityList = getValue<Entity**>(addBytes(gEntityList, 2));
 		gEnemyVTable = getValue<Pointer>(gEnemyVTable + 2);
 		gUseDoorHookLocation = getValue<Pointer>(gUseDoorHookLocation + 3) + 1 * 8;
-		gOriginalFirepowerIdentity = GetFirePowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
+		gOriginalFirepowerIdentity = GetFirePowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->statIndex());
 		gD3DDeviceVTable = getValue<std::uint32_t*>(addBytes(gD3DDeviceVTable, 2));
 		gClipFunctionHookLocation = follow(clippingFunctionCall);
 		gOriginalClipFunction = follow<decltype(gOriginalClipFunction)>(gClipFunctionHookLocation);
@@ -1379,7 +1379,8 @@ namespace Features
 
 		while (iter->id() != ItemId::MagnumAmmo)
 		{
-			if (iter->id() == id) {
+			if (iter->id() == id)
+			{
 				result = iter;
 				break;
 			}
@@ -1411,14 +1412,17 @@ namespace Features
 		std::copy(std::begin(newValues), std::end(newValues), std::begin(gFirePowerTable[id]));
 	}
 
-	float(&GetFiringSpeedTableEntry(std::uint8_t id))[5]
+	const float(&GetFiringSpeedTableEntry(std::uint8_t id))[5]
 	{
 		return gFiringSpeedTable[id];
 	}
 
-	void SetFiringSpeedTableEntry(std::uint8_t id, const float(&newValues)[7])
+	void SetFiringSpeedTableEntry(std::uint8_t id, const float(&newValues)[5])
 	{
+		DWORD protect;
+		VirtualProtect(gFiringSpeedTable[id], sizeof(gFiringSpeedTable[id]), PAGE_EXECUTE_READWRITE, &protect);
 		std::copy(std::begin(newValues), std::end(newValues), std::begin(gFiringSpeedTable[id]));
+		VirtualProtect(gFiringSpeedTable[id], sizeof(gFiringSpeedTable[id]), protect, &protect);
 	}
 
 	const std::vector<ItemId> GetAmmoItemIds()
