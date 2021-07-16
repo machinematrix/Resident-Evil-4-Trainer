@@ -441,12 +441,13 @@ namespace Features
 	void FixCostume();
 	const std::vector<StringView> GetCharacterCostumeNames(Character id);
 
-	WeaponData* GetWeaponDataPtr(ItemId id);
+	const WeaponData* GetWeaponDataPtr(ItemId id);
 	void SetWeaponDataPtr(WeaponData *target, const WeaponData &source);
 	bool IsWeapon(ItemId id);
-	//float* GetFirepowerTableEntry(std::uint8_t i);
-	float(&GetFirepowerTableEntry(std::uint8_t i))[7];
-	void SetFirepowerTableEntry(std::uint8_t i, const float(&newValues)[7]);
+	float(&GetFirePowerTableEntry(std::uint8_t id))[7];
+	void SetFirePowerTableEntry(std::uint8_t id, const float(&newValues)[7]);
+	float(&GetFiringSpeedTableEntry(std::uint8_t id))[5];
+	void SetFiringSpeedTableEntry(std::uint8_t id, const float(&newValues)[7]);
 	const std::vector<ItemId> GetAmmoItemIds();
 
 	void SetMoney(std::uint32_t value);

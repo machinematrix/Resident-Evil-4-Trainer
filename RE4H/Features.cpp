@@ -181,6 +181,7 @@ namespace Features
 		Pointer gPlayerBase; //bio4.exe+870FD4
 		Pointer gWeaponDataIndex; //bio4.exe+724B10
 		float (*gFirePowerTable)[7]; //bio4.exe+800B18
+		float (*gFiringSpeedTable)[5];//bio4.exe+71E020
 		Pointer gDoorData; //bio4.exe+8502C0
 		Pointer gDoorList; //bio4.exe+867728. At dereference, then at +0x10, first four bits are door index * 2
 		void *gDropRandomizerHookLocation; //bio4.exe+1BDF1A
@@ -772,7 +773,7 @@ namespace Features
 			if (item->valid())
 			{
 				auto &ammoIds = GetAmmoItemIds();
-				WeaponData *gun = GetWeaponDataPtr(item->itemId());
+				const WeaponData *gun = GetWeaponDataPtr(item->itemId());
 
 				if (gun && std::find(ammoIds.cbegin(), ammoIds.cend(), gun->weaponAmmo()) != ammoIds.end())
 					candidates.push_back(gun->weaponAmmo());
@@ -1029,6 +1030,7 @@ namespace Features
 		gPlayerBase = patternScan("B9 ????????  E8 ????????  8B 35 ????????  81");
 		gWeaponDataIndex = patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40");
 		gFirePowerTable = reinterpret_cast<decltype(gFirePowerTable)>(patternScan("D9 04 8D ????????  D9 5D 08"));
+		gFiringSpeedTable = reinterpret_cast<decltype(gFiringSpeedTable)>(patternScan("D9 04 85 ????????  0FB7 45 0A  0D ????????  89 45 FC"));
 		clippingFunctionCall = patternScan("E8 ????????  D9 86 ????????  8B 4D 10");
 		gDoorData = patternScan("B9 ????????  6A 0B  75 ??  6A 3A");
 		gDoorList = patternScan("A1 ????????  53  05 8C000000  56  C6 45 CB 00");
@@ -1098,6 +1100,7 @@ namespace Features
 		gPlayerBase = getValue<Pointer>(gPlayerBase + 1);
 		gWeaponDataIndex = getValue<Pointer>(gWeaponDataIndex + 1);
 		gFirePowerTable = getValue<decltype(gFirePowerTable)>(addBytes(gFirePowerTable, 3));
+		gFiringSpeedTable = getValue<decltype(gFiringSpeedTable)>(addBytes(gFiringSpeedTable, 3));
 		gDoorData = getValue<Pointer>(gDoorData + 1);
 		gDoorList = getValue<Pointer>(gDoorList + 1);
 		gGetModelDataHookLocation = follow(gGetModelDataHookLocation);
@@ -1111,7 +1114,7 @@ namespace Features
 		gEntityList = getValue<Entity**>(addBytes(gEntityList, 2));
 		gEnemyVTable = getValue<Pointer>(gEnemyVTable + 2);
 		gUseDoorHookLocation = getValue<Pointer>(gUseDoorHookLocation + 3) + 1 * 8;
-		gOriginalFirepowerIdentity = GetFirepowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
+		gOriginalFirepowerIdentity = GetFirePowerTableEntry(GetWeaponDataPtr(Features::ItemId::Handgun)->firepowerIndex());
 		gD3DDeviceVTable = getValue<std::uint32_t*>(addBytes(gD3DDeviceVTable, 2));
 		gClipFunctionHookLocation = follow(clippingFunctionCall);
 		gOriginalClipFunction = follow<decltype(gOriginalClipFunction)>(gClipFunctionHookLocation);
@@ -1370,7 +1373,7 @@ namespace Features
 		return result;
 	}
 
-	WeaponData* GetWeaponDataPtr(ItemId id)
+	const WeaponData* GetWeaponDataPtr(ItemId id)
 	{
 		WeaponData *result = nullptr, *iter = (WeaponData*)gWeaponDataIndex;
 
@@ -1398,14 +1401,24 @@ namespace Features
 		return GetWeaponDataPtr(id) ? true : false;
 	}
 
-	float (&GetFirepowerTableEntry(std::uint8_t i))[7]
+	float (&GetFirePowerTableEntry(std::uint8_t id))[7]
 	{
-		return gFirePowerTable[i];
+		return gFirePowerTable[id];
 	}
 
-	void SetFirepowerTableEntry(std::uint8_t i, const float(&newValues)[7])
+	void SetFirePowerTableEntry(std::uint8_t id, const float(&newValues)[7])
 	{
-		std::copy(std::begin(newValues), std::end(newValues), std::begin(gFirePowerTable[i]));
+		std::copy(std::begin(newValues), std::end(newValues), std::begin(gFirePowerTable[id]));
+	}
+
+	float(&GetFiringSpeedTableEntry(std::uint8_t id))[5]
+	{
+		return gFiringSpeedTable[id];
+	}
+
+	void SetFiringSpeedTableEntry(std::uint8_t id, const float(&newValues)[7])
+	{
+		std::copy(std::begin(newValues), std::end(newValues), std::begin(gFiringSpeedTable[id]));
 	}
 
 	const std::vector<ItemId> GetAmmoItemIds()

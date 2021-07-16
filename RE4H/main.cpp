@@ -148,8 +148,8 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 	switch (message)
 	{
 		case WM_INITDIALOG:
-			itemCombo = GetDlgItem(hDlg, ItemMaxAmountCombo);
-			amountEdit = GetDlgItem(hDlg, ItemMaxAmountEdit);
+			itemCombo = GetDlgItem(hDlg, IDC_ITEM_MAX_AMOUNT_COMBO);
+			amountEdit = GetDlgItem(hDlg, IDC_ITEM_MAX_AMOUNT_EDIT);
 			enableCheck = GetDlgItem(hDlg, IDC_ENABLESTACKS);
 			itemComboIdentifier = GetDlgCtrlID(itemCombo);
 
@@ -166,7 +166,7 @@ BOOL CALLBACK EditMaxAmountDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARA
 				case IDCANCEL:
 					EndDialog(hDlg, 0);
 					break;
-				case ItemMaxAmountCombo:
+				case IDC_ITEM_MAX_AMOUNT_COMBO:
 					if (HIWORD(wParam) == CBN_SELCHANGE)
 					{
 						std::int16_t id = static_cast<std::int16_t>(SendMessage(itemCombo, CB_GETCURSEL, 0, 0));
@@ -216,17 +216,17 @@ BOOL CALLBACK ItemDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			item = reinterpret_cast<Features::ItemData*>(lParam);
 
-			itemCombo = GetDlgItem(hDlg, ItemCombo);
-			inventoryCombo = GetDlgItem(hDlg, InventoryCombo);
-			amountEdit = GetDlgItem(hDlg, AmountEdit);
-			firepowerCombo = GetDlgItem(hDlg, FirepowerCombo);
-			firingSpeedCombo = GetDlgItem(hDlg, FiringSpeedCombo);
-			reloadSpeedCombo = GetDlgItem(hDlg, ReloadSpeedCombo);
-			capacityCombo = GetDlgItem(hDlg, CapacityCombo);
-			ammoEdit = GetDlgItem(hDlg, AmmoEdit);
-			posXEdit = GetDlgItem(hDlg, PositionXEdit);
-			posYEdit = GetDlgItem(hDlg, PositionYEdit);
-			rotationCombo = GetDlgItem(hDlg, RotationCombo);
+			itemCombo = GetDlgItem(hDlg, IDC_ITEM_COMBO);
+			inventoryCombo = GetDlgItem(hDlg, IDC_INVENTORY_COMBO);
+			amountEdit = GetDlgItem(hDlg, IDC_AMOUNT_EDIT);
+			firepowerCombo = GetDlgItem(hDlg, IDC_FIREPOWER_COMBO);
+			firingSpeedCombo = GetDlgItem(hDlg, IDC_FIRING_SPEED_COMBO);
+			reloadSpeedCombo = GetDlgItem(hDlg, IDC_RELOAD_SPEED_COMBO);
+			capacityCombo = GetDlgItem(hDlg, IDC_CAPACITY_COMBO);
+			ammoEdit = GetDlgItem(hDlg, IDC_AMMO_EDIT);
+			posXEdit = GetDlgItem(hDlg, IDC_POSITION_X_EDIT);
+			posYEdit = GetDlgItem(hDlg, IDC_POSITION_Y_EDIT);
+			rotationCombo = GetDlgItem(hDlg, IDC_ROTATION_COMBO);
 
 			for (const auto &name : Features::GetItemNames())
 				SendMessage(itemCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(name.c_str()));
@@ -383,24 +383,24 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 				break;
 			}
 
-			firePowerEdits[0] = GetDlgItem(hDlg, FirePowerLv1);
-			firePowerEdits[1] = GetDlgItem(hDlg, FirePowerLv2);
-			firePowerEdits[2] = GetDlgItem(hDlg, FirePowerLv3);
-			firePowerEdits[3] = GetDlgItem(hDlg, FirePowerLv4);
-			firePowerEdits[4] = GetDlgItem(hDlg, FirePowerLv5);
-			firePowerEdits[5] = GetDlgItem(hDlg, FirePowerLv6);
-			firePowerEdits[6] = GetDlgItem(hDlg, FirePowerLv7);
-			capacityEdits[0] = GetDlgItem(hDlg, CapacityLv1);
-			capacityEdits[1] = GetDlgItem(hDlg, CapacityLv2);
-			capacityEdits[2] = GetDlgItem(hDlg, CapacityLv3);
-			capacityEdits[3] = GetDlgItem(hDlg, CapacityLv4);
-			capacityEdits[4] = GetDlgItem(hDlg, CapacityLv5);
-			capacityEdits[5] = GetDlgItem(hDlg, CapacityLv6);
-			capacityEdits[6] = GetDlgItem(hDlg, CapacityLv7);
-			modelEdit = GetDlgItem(hDlg, ModelEdit);
-			ammoCombo = GetDlgItem(hDlg, AmmoTypeCombo);
+			firePowerEdits[0] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_1);
+			firePowerEdits[1] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_2);
+			firePowerEdits[2] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_3);
+			firePowerEdits[3] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_4);
+			firePowerEdits[4] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_5);
+			firePowerEdits[5] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_6);
+			firePowerEdits[6] = GetDlgItem(hDlg, IDC_FIREPOWER_LV_7);
+			capacityEdits[0] = GetDlgItem(hDlg, IDC_CAPACITY_LV_1);
+			capacityEdits[1] = GetDlgItem(hDlg, IDC_CAPACITY_LV_2);
+			capacityEdits[2] = GetDlgItem(hDlg, IDC_CAPACITY_LV_3);
+			capacityEdits[3] = GetDlgItem(hDlg, IDC_CAPACITY_LV_4);
+			capacityEdits[4] = GetDlgItem(hDlg, IDC_CAPACITY_LV_5);
+			capacityEdits[5] = GetDlgItem(hDlg, IDC_CAPACITY_LV_6);
+			capacityEdits[6] = GetDlgItem(hDlg, IDC_CAPACITY_LV_7);
+			modelEdit = GetDlgItem(hDlg, IDC_MODEL_EDIT);
+			ammoCombo = GetDlgItem(hDlg, IDC_AMMO_TYPE_COMBO);
 
-			auto firepowerEntry = Features::GetFirepowerTableEntry(data->firepowerIndex());
+			auto firepowerEntry = Features::GetFirePowerTableEntry(data->firepowerIndex());
 			for (size_t i = 0; i < 7; ++i)
 			{
 				SetWindowText(firePowerEdits[i], std::to_wstring(firepowerEntry[i]).c_str());
@@ -465,7 +465,7 @@ BOOL CALLBACK WeaponDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPara
 					}
 
 					Features::SetWeaponDataPtr(data, newData);
-					Features::SetFirepowerTableEntry(data->firepowerIndex(), newFirepower);
+					Features::SetFirePowerTableEntry(data->firepowerIndex(), newFirepower);
 				}
 				[[fallthrough]];
 				case IDCANCEL:
