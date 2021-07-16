@@ -1,17 +1,17 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Handlers.h"
 #include <regex>
 
 HWND mainWindowHandle;
 
-void loggerCallback(const char *msgCouldBeNull1, const char*msgCouldBeNull2, const char*msg, ...)
+void LoggerCallback(const char *msgCouldBeNull1, const char*msgCouldBeNull2, const char*msg, ...)
 {
 	#ifndef NDEBUG
 	using std::string;
 
-	static std::mutex outputMutex;
-	std::string formatString;
-	string::size_type i = 0;
-	va_list argumentList;
+	std::string_view formatString;
+	string formattedOutput;
+	va_list argumentList, argumentList2;
 	void *returnAddress = nullptr;
 
 	__asm
@@ -38,80 +38,15 @@ void loggerCallback(const char *msgCouldBeNull1, const char*msgCouldBeNull2, con
 		va_start(argumentList, msg);
 	}
 
-	while ((i = formatString.find('%', i)) != string::npos)
-	{
-		switch (formatString[i + 1])
-		{
-		case 's': {//string
-			const char *strArg = va_arg(argumentList, const char *);
-			formatString.replace(i, 2, strArg);
-			i += strlen(strArg);
-			break;
-		}
-
-		case 'i': //int
-		case 'd': {
-			std::string strInt = std::to_string(va_arg(argumentList, int));
-			formatString.replace(i, 2, strInt);
-			i += strInt.size();
-			break;
-		}
-
-		case 'u': { //unsigned
-			std::string strUnsigned = std::to_string(va_arg(argumentList, unsigned));
-			formatString.replace(i, 2, strUnsigned);
-			i += strUnsigned.size();
-			break;
-		}
-
-		case 'f': { //float
-			std::string strFloat = std::to_string(va_arg(argumentList, float));
-			formatString.replace(i, 2, strFloat);
-			i += strFloat.size();
-			break;
-		}
-
-		default: {
-			static const std::regex hexRegex("%([[:digit:]]+)(x|d)");
-			std::smatch results;
-
-			if (std::regex_search(formatString.cbegin() + i, formatString.cend(), results, hexRegex) && !results.position())
-			{
-				std::ostringstream stream;
-				std::string strNum;
-				unsigned argument = va_arg(argumentList, unsigned), argumentLength = std::stoul(results[1]);
-
-				if (results[2] == 'x')
-					stream << std::hex;
-				stream << argument;
-				strNum = stream.str();
-
-				if (argumentLength <= strNum.size())
-					strNum.erase(strNum.begin(), strNum.begin() + (strNum.size() - argumentLength));
-				else
-					strNum.insert(0, argumentLength - strNum.size(), '0');
-
-				formatString.replace(i, results.length(), strNum);
-				i += strNum.size();
-			}
-			else
-			{
-				void *unknown = va_arg(argumentList, void*);
-
-				MessageBeep(MB_ICONERROR);
-				++i;
-			}
-			break;
-		}
-		}
-	}
-
+	va_copy(argumentList2, argumentList);
+	formattedOutput.resize(vsnprintf(nullptr, 0, formatString.data(), argumentList2));
+	va_end(argumentList2);
+	vsprintf(formattedOutput.data(), formatString.data(), argumentList);
 	va_end(argumentList);
 
-	outputMutex.lock();
-	std::cout << formatString << "\nReturn Address: " << returnAddress << '\n' << std::endl;
-	outputMutex.unlock();
-
+	std::ostringstream outputStream;
+	outputStream << formattedOutput << "\nReturn Address: " << returnAddress << '\n';
+	std::cout << outputStream.str(); //Print everything at once to avoid interleaved output.
 	#endif
 }
 
@@ -216,7 +151,7 @@ void onWmCreate(HWND hWnd, WPARAM wParam, LPARAM lParam, MainWindowInfo &wndInfo
 			SendMessage(wndInfo.sceneCombo, WM_CLEAR, 0, 0);
 	};
 
-	Features::SetLoggerCallback(loggerCallback);
+	Features::SetLoggerCallback(LoggerCallback);
 	Features::SetDoorListUpdateCallback(callback);
 
 	SendMessage(wndInfo.ashleyCheckbox, BM_SETCHECK, (WPARAM)Features::IsAshleyPresent(), 0);
