@@ -72,34 +72,46 @@ namespace Features
 		Pointer mVTable;
 		char mPadding1[0x4];
 		Entity *mNext;
-		char mPadding2[0x88];
+		float mMatrix1[3][4];
+		float mMatrix2[3][4];
+		char mPadding2[0x28];
 		Coordinates mCoords;
 		char mPadding3[0x4];
 		float mRotation;
-		char mPadding4[0x54];
+		char mPadding4[0x4];
+		Coordinates mScale1;
+		Coordinates mScale2;
+		char mPadding5[0x38];
 		std::uint8_t mMeleeFlag; //4 == meleeing
 		std::uint8_t mMovementFlag; //0 == Still | 1 == Walking forward | 2 == Walking backwards | 3 == Running | 4 == Turning | 5 == Quickturning
 		std::uint8_t mRunningFlag; //1 == Not running | 3 == Running
 		std::uint8_t mAimingFlag; //1 == Aiming
-		char mPadding5[0x10];
+		char mPadding6[0x10];
 		Coordinates mCoords2;
-		char mPadding6[0x1C8];
-		Coordinates mCoords3; //seems to the center to the middle of the model
-		char mPadding7[0x34];
+		char mPadding7[0x128];
+		Coordinates mCoords3;
+		char mPadding8[0x94];
+		Coordinates mCoords4; //seems to be the center of the model
+		char mPadding9[0x34];
 		std::uint16_t mHealth;
 		std::uint16_t mHealthLimit;
 	}; //highest known offset: 0x79C
 
 	static_assert(offsetof(Features::Entity, Features::Entity::mVTable) == 0x0);
 	static_assert(offsetof(Features::Entity, Features::Entity::mNext) == 0x8);
+	static_assert(offsetof(Features::Entity, Features::Entity::mMatrix1) == 0xC);
+	static_assert(offsetof(Features::Entity, Features::Entity::mMatrix2) == 0x3C);
 	static_assert(offsetof(Features::Entity, Features::Entity::mCoords) == 0x94);
 	static_assert(offsetof(Features::Entity, Features::Entity::mRotation) == 0xA4);
+	static_assert(offsetof(Features::Entity, Features::Entity::mScale1) == 0xAC);
+	static_assert(offsetof(Features::Entity, Features::Entity::mScale2) == 0xB8);
 	static_assert(offsetof(Features::Entity, Features::Entity::mMeleeFlag) == 0xFC);
 	static_assert(offsetof(Features::Entity, Features::Entity::mMovementFlag) == 0xFD);
 	static_assert(offsetof(Features::Entity, Features::Entity::mRunningFlag) == 0xFE);
 	static_assert(offsetof(Features::Entity, Features::Entity::mAimingFlag) == 0xFF);
 	static_assert(offsetof(Features::Entity, Features::Entity::mCoords2) == 0x110);
-	static_assert(offsetof(Features::Entity, Features::Entity::mCoords3) == 0x2E4);
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords3) == 0x244);
+	static_assert(offsetof(Features::Entity, Features::Entity::mCoords4) == 0x2E4);
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealth) == 0x324);
 	static_assert(offsetof(Features::Entity, Features::Entity::mHealthLimit) == 0x326);
 
@@ -161,8 +173,6 @@ namespace Features
 		IDirect3DDevice9 **gDirect3D9Device; //bio4.exe+CECB28
 		ID3DXFont *gOverlayFont;
 		ID3DXSprite *gOverlaySprite;
-		HRESULT (__stdcall *gEndSceneOriginal)(IDirect3DDevice9*);
-		HRESULT (__stdcall *gResetOriginal)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
 		std::uint32_t *gD3DDeviceVTable; //d3d9.dll+5A102
 		//Camera *gCamera; //bio4.exe+870548 //bio4.exe+870330
 		float *gAspectRatio; //bio4.exe+71377C
@@ -205,6 +215,8 @@ namespace Features
 		void(__cdecl *gMeleeKneeSuplex)(void *enemyPointer, void*);
 		void(__cdecl *gGetModelDataOriginal)(ItemId, InventoryIconData*);
 		int(__cdecl *gDropRandomizerOriginal)(std::uint32_t, ItemId*, std::uint32_t*, void*);
+		HRESULT(__stdcall *gEndSceneOriginal)(IDirect3DDevice9*);
+		HRESULT(__stdcall *gResetOriginal)(IDirect3DDevice9*, D3DPRESENT_PARAMETERS*);
 		std::mutex gStackCapMutex;
 		std::vector<void*> gDoors;
 		std::map<ItemId, std::uint32_t> gItemStackCap;
@@ -737,7 +749,7 @@ namespace Features
 	{
 		if (id != ItemId::Invalid)
 		{
-			std::unique_lock<std::mutex> lck(gStackCapMutex);
+			std::lock_guard<std::mutex> lck(gStackCapMutex);
 			auto amountIt = gItemStackCap.find(id);
 
 			gGetInventoryModelData(id, result);
@@ -904,9 +916,9 @@ namespace Features
 		{
 			if (!node->mHealth)
 				continue;
-			auto *coords = &node->mCoords3;
+			auto *coords = &node->mCoords4;
 
-			if (std::abs(node->mCoords.mX - node->mCoords3.mX) >= 100.f || std::abs(node->mCoords.mZ - node->mCoords3.mZ) >= 100.f)
+			if (std::abs(node->mCoords.mX - node->mCoords4.mX) >= 100.f || std::abs(node->mCoords.mZ - node->mCoords4.mZ) >= 100.f)
 				coords = &node->mCoords;
 
 			if (auto out = WorldToScreen(*coords, screen.right - screen.left, screen.bottom - screen.top))
