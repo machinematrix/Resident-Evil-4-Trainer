@@ -1,11 +1,12 @@
 #include "Features.h"
-#include <Windows.h>
+#include <future>
 #include <random>
 #include <type_traits>
 #include <cstdint>
 #include <regex>
 #include <filesystem>
 #include <charconv>
+#include <Windows.h>
 #include <winsqlite/winsqlite3.h>
 #include <d3dx9.h>
 #include <tlhelp32.h>
@@ -731,6 +732,7 @@ namespace Features
 								else
 									if (thEntry.th32OwnerProcessID == entry.th32ProcessID)
 										ResumeThread(hThread);
+
 								CloseHandle(hThread);
 							}
 						} while (Thread32Next(ThreadSnapshot, &thEntry));
@@ -1021,42 +1023,46 @@ namespace Features
 	{
 		sqlite3 *database = nullptr;
 		Pointer clippingFunctionCall;
+		std::vector<std::future<void>> scanFutures;
 
-		gDirect3D9Device = reinterpret_cast<IDirect3DDevice9**>(patternScan("A1 ????????  8B 08  8B 91 70010000  56  50  FF D2  89 77 04"));
-		gD3DDeviceVTable = reinterpret_cast<std::uint32_t*>(patternScan("C7 06 ????????  89 86 ????????  89 86 ????????  89 86 ????????  89 86 ????????", L"d3d9.dll"));
-		gAspectRatio = reinterpret_cast<float*>(patternScan("D9 05 ????????  D9 5C 24 04  D9 81 ????????  8B CE"));
-		gCamera = reinterpret_cast<Camera *>(patternScan("B9 ????????  5B E9  ????????  CC"));
-		gHealthBase = patternScan("A1 ????????  83 C0 60  6A 10  50  E8");
-		gPlayerBase = patternScan("B9 ????????  E8 ????????  8B 35 ????????  81");
-		gWeaponDataIndex = patternScan("B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40");
-		gFirePowerTable = reinterpret_cast<decltype(gFirePowerTable)>(patternScan("D9 04 8D ????????  D9 5D 08"));
-		gFiringSpeedTable = reinterpret_cast<decltype(gFiringSpeedTable)>(patternScan("D9 04 85 ????????  0FB7 45 0A  0D ????????  89 45 FC"));
-		clippingFunctionCall = patternScan("E8 ????????  D9 86 ????????  8B 4D 10");
-		gDoorData = patternScan("B9 ????????  6A 0B  75 ??  6A 3A");
-		gDoorList = patternScan("A1 ????????  53  05 8C000000  56  C6 45 CB 00");
-		gDropRandomizerHookLocation = patternScan("E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC");
-		gGetModelDataHookLocation = patternScan("E8 ????????  83 C4 08  80 7D 8A 01  74");
-		gSceAtHookLocation = patternScan("E8 ????????  8B 0D ????????  A1 ????????  8D 14 09");
-		gTmpFireRate = patternScan("D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41");
-		gLoggerFunction = patternScan("E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10");
-		gLoggerFunction2 = patternScan("50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3");
-		gLinkedList = patternScan("BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC");
-		gTypewriterProcedure = patternScan("55  8B EC  A1 ????????  81 88 28500000 00080000");
-		gEntityList = reinterpret_cast<decltype(gEntityList)>(patternScan("8B 35 ????????  85 F6  74 43  8B C6"));
-		gEnemyVTable = patternScan("C7 06 ????????  8B C6  5E  5D  C2 0400  33 C0  5E  5D  C2 0400  CCCCCCCCCCCCCCCCCCCC 55  8B EC  56  8B 75 08  85 F6  74 0D  8B CE  E8 ????????  C7 06 ????????  5E  5D  C3  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  C7 05 ???????? ????????  C7 05 ???????? ????????  C3");
-		gUseDoorHookLocation = patternScan("8B 04 DD ????????  8B 55 BC");
-		gUseDoor = reinterpret_cast<decltype(gUseDoor)>(patternScan("55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????"));
-		gSceAtCreateItemAt = reinterpret_cast<decltype(gSceAtCreateItemAt)>(patternScan("55  8B EC  83 EC 0C  57  6A 0D"));
-		gGetInventoryModelData = reinterpret_cast<decltype(gGetInventoryModelData)>(patternScan("55  8B EC  0FB7 45 ??  3D 0F010000"));
-		gReadMinimumHeader = reinterpret_cast<decltype(gReadMinimumHeader)>(patternScan("55  8B EC  53  8B 1D ????????  56  68 ????????"));
-		gOpenMerchant = reinterpret_cast<decltype(gOpenMerchant)>(patternScan("55  8B EC  A1 ????????  B9 00000004"));
-		gMeleeHead = reinterpret_cast<decltype(gMeleeHead)>(patternScan("55  8B EC  A1 ????????  0FB6 80 ????????  83 E8 03"));
-		gMeleeKnee = reinterpret_cast<decltype(gMeleeKnee)>(patternScan("55  8B EC  A1 ????????  80 B8 C84F0000 04"));
-		gMeleeKneeKrauser = reinterpret_cast<decltype(gMeleeKneeKrauser)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
-		gMeleeKneeSuplex = reinterpret_cast<decltype(gMeleeKneeSuplex)>(patternScan("55  8B EC  8B 45 08  80 B8 2C030000 00"));
-		gMelee = reinterpret_cast<decltype(gMelee)>(patternScan("55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C"));
-		gFirepowerDivision = patternScan("D8 35 ????????  D9 5D F8  D9 45 F8");
-		gRadioFunctionPatchLocation = patternScan("8B 92 DC010000  03 CF  51");
+		scanFutures.push_back(std::async(std::launch::async, patternScan<IDirect3DDevice9**>, std::ref(gDirect3D9Device), "A1 ????????  8B 08  8B 91 70010000  56  50  FF D2  89 77 04", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<std::uint32_t*>, std::ref(gD3DDeviceVTable), "C7 06 ????????  89 86 ????????  89 86 ????????  89 86 ????????  89 86 ????????", L"d3d9.dll"));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<float*>, std::ref(gAspectRatio), "D9 05 ????????  D9 5C 24 04  D9 81 ????????  8B CE", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Camera*>, std::ref(gCamera), "B9 ????????  5B E9  ????????  CC", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gHealthBase), "A1 ????????  83 C0 60  6A 10  50  E8", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gPlayerBase), "B9 ????????  E8 ????????  8B 35 ????????  81", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gWeaponDataIndex), "B9 ????????  8D A4 24 00000000  66 3B 31  74 10  40", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<float(*)[7]>, std::ref(gFirePowerTable), "D9 04 8D ????????  D9 5D 08", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<float(*)[5]>, std::ref(gFiringSpeedTable), "D9 04 85 ????????  0FB7 45 0A  0D ????????  89 45 FC", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(clippingFunctionCall), "E8 ????????  D9 86 ????????  8B 4D 10", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gDoorData), "B9 ????????  6A 0B  75 ??  6A 3A", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gDoorList), "A1 ????????  53  05 8C000000  56  C6 45 CB 00", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<void*>, std::ref(gDropRandomizerHookLocation), "E8 ????????  83 C4 10  83 F8 01  75 ??  8B 45 08  8B 4D FC", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<void*>, std::ref(gGetModelDataHookLocation), "E8 ????????  83 C4 08  80 7D 8A 01  74", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<void*>, std::ref(gSceAtHookLocation), "E8 ????????  8B 0D ????????  A1 ????????  8D 14 09", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gTmpFireRate), "D9 05 ????????  D9 45 D4  D8D1  DFE0  DDD9  F6 C4 41", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<void*>, std::ref(gLoggerFunction), "E8 ????????  83 C4 08  E8 ????????  53  0FB7 5F 10", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<void*>, std::ref(gLoggerFunction2), "50  68 ????????  6A 00  6A 00  E8 ????????  83 C4 10  33 C0  8B E5  5D  C3", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gLinkedList), "BB ????????  E8 ????????  89 45 FC  EB 03  8B 45 FC", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gTypewriterProcedure), "55  8B EC  A1 ????????  81 88 28500000 00080000", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Entity**>, std::ref(gEntityList), "8B 35 ????????  85 F6  74 43  8B C6", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gEnemyVTable), "C7 06 ????????  8B C6  5E  5D  C2 0400  33 C0  5E  5D  C2 0400  CCCCCCCCCCCCCCCCCCCC 55  8B EC  56  8B 75 08  85 F6  74 0D  8B CE  E8 ????????  C7 06 ????????  5E  5D  C3  CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  C7 05 ???????? ????????  C7 05 ???????? ????????  C3", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gUseDoorHookLocation), "8B 04 DD ????????  8B 55 BC", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gUseDoor)>, std::ref(gUseDoor), "55  8B EC  A1 ????????  53  33 DB  F7 40 54 ????????", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gSceAtCreateItemAt)>, std::ref(gSceAtCreateItemAt), "55  8B EC  83 EC 0C  57  6A 0D", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gGetInventoryModelData)>, std::ref(gGetInventoryModelData), "55  8B EC  0FB7 45 ??  3D 0F010000", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gReadMinimumHeader)>, std::ref(gReadMinimumHeader), "55  8B EC  53  8B 1D ????????  56  68 ????????", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gOpenMerchant)>, std::ref(gOpenMerchant), "55  8B EC  A1 ????????  B9 00000004", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gMeleeHead)>, std::ref(gMeleeHead), "55  8B EC  A1 ????????  0FB6 80 ????????  83 E8 03", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gMeleeKnee)>, std::ref(gMeleeKnee), "55  8B EC  A1 ????????  80 B8 C84F0000 04", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gMeleeKneeKrauser)>, std::ref(gMeleeKneeKrauser), "55  8B EC  8B 45 08  80 B8 2C030000 00", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gMeleeKneeSuplex)>, std::ref(gMeleeKneeSuplex), "55  8B EC  8B 45 08  80 B8 2C030000 00", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<decltype(gMelee)>, std::ref(gMelee), "55  8B EC  56  8B 35 ????????  8B CE  E8 ????????  8B 45 0C", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<Pointer>, std::ref(gFirepowerDivision), "D8 35 ????????  D9 5D F8  D9 45 F8", kProcessName));
+		scanFutures.push_back(std::async(std::launch::async, patternScan<void*>, std::ref(gRadioFunctionPatchLocation), "8B 92 DC010000  03 CF  51", kProcessName));
+
+		for (auto &future : scanFutures)
+			future.wait();
 
 		if (!(gDirect3D9Device && gD3DDeviceVTable && gAspectRatio && gCamera && gHealthBase && gPlayerBase && gWeaponDataIndex && gFirePowerTable && clippingFunctionCall && gDoorData
 			  && gDoorList && gDropRandomizerHookLocation && gGetModelDataHookLocation && gSceAtHookLocation && gTmpFireRate && gLoggerFunction
