@@ -1,4 +1,5 @@
 #include "Features.h"
+#include <chrono>
 #include <future>
 #include <random>
 #include <type_traits>
@@ -1735,9 +1736,11 @@ namespace Features
 
 					if (freezeRotation)
 					{
-						auto freezeRotation = [](Entity *playerEntity, float rotation) {
+						auto freezeRotation = [](Entity *playerEntity, float rotation)
+						{
+							using namespace std::literals::chrono_literals;
 							while (playerEntity->mMeleeFlag == 4)
-								playerEntity->mRotation = rotation, Sleep(5);
+								playerEntity->mRotation = rotation, std::this_thread::sleep_for(5ms);
 						};
 
 						std::thread(freezeRotation, playerEntity, rotation).detach();
