@@ -1,8 +1,11 @@
 #include <Windows.h>
 #include <CommCtrl.h>
+#include <psapi.h>
 
 #include <vector>
 #include <tuple>
+#include <array>
+#include <string_view>
 #include "Handlers.h"
 #include "Utility.h"
 #include "Features.h"
@@ -19,21 +22,37 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
+	BOOL result = TRUE;
+
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		if (HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, hModule, 0, nullptr))
-			CloseHandle(hThread);
+	{
+		using namespace std::string_view_literals;
+		std::array<char, MAX_PATH> fileNameBuffer = {};
+		GetModuleBaseNameA(GetCurrentProcess(), nullptr, fileNameBuffer.data(), fileNameBuffer.size());
+
+		if (std::string_view { fileNameBuffer.data() } == "bio4.exe"sv)
+		{
+			if (HANDLE hThread = CreateThread(nullptr, 0, ThreadProc, hModule, 0, nullptr))
+				CloseHandle(hThread);
+			else
+			{
+				ErrorBox(nullptr, TEXT("Could not create thread"));
+				result = FALSE;
+			}
+		}
 		else
-			ErrorBox(nullptr, TEXT("Could not create thread"));
+			result = FALSE;
 		break;
+	}
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 	case DLL_PROCESS_DETACH:
 		break;
 	}
 
-	return TRUE;
+	return result;
 }
 
 DWORD WINAPI ThreadProc(LPVOID lpParameter)
